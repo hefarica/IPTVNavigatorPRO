@@ -1170,7 +1170,7 @@
             // SECCIÓN 1: CONFIGURACIÓN BÁSICA (6 líneas)
             // ───────────────────────────────────────────────────────────────────
             '#KODIPROP:inputstream=inputstream.adaptive',
-            `#KODIPROP:inputstream.adaptive.manifest_type=${window._APE_DASH_CMAF_OMNI ? 'auto' : 'hls'}`, // DASH/CMAF Supremacy
+            `#KODIPROP:inputstream.adaptive.manifest_type=hls`, // APE v18.2 CMAF UNIVERSAL: fMP4 siempre servido vía HLS manifest
             '#KODIPROP:inputstream.adaptive.manifest_update_parameter=full',
             `#KODIPROP:inputstream.adaptive.stream_headers=${window._APE_HYDRA_STEALTH ? `User-Agent=${encodedUA}` : `User-Agent=${encodedUA}&Proxy-Authorization=${encodedProxyAuth}`}`,
             '#KODIPROP:inputstream.adaptive.chooser_bandwidth_mode=AUTO',
@@ -2333,14 +2333,13 @@
         let originHost = 'unknown';
         try { if (url && url.startsWith('http')) originHost = new URL(url).hostname; } catch (e) { }
 
-        let extAttrUrl = `${resolverBase}/resolve_quality.php?ch=${encodeURIComponent(chId)}&sid=${encodeURIComponent(chId)}&origin=${encodeURIComponent(originHost)}&p=${actualProfile}&mode=adaptive`;
-        if (window._APE_DASH_CMAF_OMNI) {
-            // ── CMAF/fMP4 UNIFICATION STRATEGY (APE v18.1) ──
-            // El formato final (cmaf | mpd | ts) se asigna en el Dispatcher de 3 Tiers (línea ~2447).
-            // Aquí solo se reserva el placeholder neutro &format=__APE_FORMAT__ para que el
-            // dispatcher lo sustituya con precisión quirúrgica sin colisiones de cadena.
-            extAttrUrl += `&format=__APE_FORMAT__`;
-        }
+        // ╔══════════════════════════════════════════════════════════════════════╗
+        // ║  APE v18.2 — CMAF/fMP4 UNIVERSAL (FORMATO ÚNICO E INCONDICIONAL)          ║
+        // ║  Todas las listas se generan SIEMPRE con &format=cmaf desde el origen.    ║
+        // ║  No hay toggles, no hay condicionales, no hay formatos alternativos.        ║
+        // ║  Un único contenedor fMP4 referenciado por .m3u8 y .mpd.                  ║
+        // ╚══════════════════════════════════════════════════════════════════════╝
+        let extAttrUrl = `${resolverBase}/resolve_quality.php?ch=${encodeURIComponent(chId)}&sid=${encodeURIComponent(chId)}&origin=${encodeURIComponent(originHost)}&p=${actualProfile}&format=cmaf&mode=direct`;
 
         // 🟧 RUTA 1: VÍA DIRECTA M3U8 (URL / Payload Crudo)
         // ESTRICTAMENTE: Identidad, Promesas y Telemetría Matemática Cruda (bw, ping, buf, th1, pfseg)
@@ -2374,10 +2373,10 @@
         lines.push(`#EXT-X-TELCHEMY-TR101290:SYNC_LOSS=0,CC_ERROR=0,PCR_ERR=0`);
 
         // ⚡ PRE-WARMER ZERO-ZAPPING (Predictive Caching - Reducido a Top 5 para no saturar sockets)
-        // Si DASH/CMAF está habilitado, disparamos el worker predictivo
-        if (window._APE_DASH_CMAF_OMNI && index < 5) {
+        // APE v18.2: Pre-calentamiento SIEMPRE activo con format=cmaf (incondicional)
+        if (index < 5) {
             try {
-                const prewarmUrl = `${resolverBase}/resolve_quality.php?ch=${encodeURIComponent(chId)}&sid=${encodeURIComponent(chId)}&origin=${encodeURIComponent(originHost)}&format=cmaf`;
+                const prewarmUrl = `${resolverBase}/resolve_quality.php?ch=${encodeURIComponent(chId)}&sid=${encodeURIComponent(chId)}&origin=${encodeURIComponent(originHost)}&format=cmaf&mode=direct`;
                 // Request opaca "no-cors" diferida para no interferir con ReadableStream context
                 setTimeout(() => {
                     fetch(prewarmUrl, { mode: 'no-cors', cache: 'no-store' }).catch(() => { });
@@ -2386,22 +2385,10 @@
         }
 
         // 🛡️ FORENSIC MATRIX: Player Enslavement (KODI Anchor & Proxy Nullification)
-        // CMAF v18.1: manifest_type se decide según el tier del reproductor destino.
-        // - CMAF tier  → hls  (fMP4 + HLS manifest, nativo en Apple/OTT/TiviMate/ExoPlayer)
-        // - MPD tier   → mpd  (DASH puro para reproductores que lo exigen explícitamente)
-        // - TS tier    → (sin KODIPROP, evita crash en VLC/Smarters con directiva desconocida)
-        if (window._APE_DASH_CMAF_OMNI) {
-            const _kpTargetPlayer = stealthUA.toLowerCase();
-            const _kpAcceptsCmaf = ['ott', 'tivimate', 'exoplayer', 'apple', 'ios', 'tvos', 'macos']
-                .some(p => _kpTargetPlayer.includes(p));
-            const _kpAcceptsMpd = ['kodi'].some(p => _kpTargetPlayer.includes(p));
-            if (_kpAcceptsCmaf) {
-                lines.push(`#KODIPROP:inputstream.adaptive.manifest_type=hls`);
-            } else if (_kpAcceptsMpd) {
-                lines.push(`#KODIPROP:inputstream.adaptive.manifest_type=mpd`);
-            }
-            // TS tier: sin KODIPROP (VLC/Smarters no lo necesitan y puede causar crash)
-        }
+        // APE v18.2 CMAF UNIVERSAL: manifest_type=hls SIEMPRE (fMP4 servido vía HLS manifest).
+        // Todos los reproductores (OTT Nav, TiviMate, ExoPlayer, Kodi, Apple) leen fMP4
+        // a través de un HLS manifest. No hay condicionales ni tiers alternativos.
+        lines.push(`#KODIPROP:inputstream.adaptive.manifest_type=hls`);
         // lines.push(`#EXTVLCOPT:http-proxy=`); // Ocultado para evitar bug en OTT Nav que lee la sig linea como proxy
 
         // ── FORENSIC JSON SANITATION (Anti TiviMate/ExoPlayer Crash) ──
@@ -2433,86 +2420,27 @@
         // DIRECTIVA MAESTRA DE ORQUESTACIÓN: Se conservan íntegros todos los Headers del DNA APE
         lines.push(`#EXTHTTP:${JSON.stringify(stealthHeaders)}`);
 
-        // ═══════════════════════════════════════════════════════════════════════════════
-        // 🧠 INTELIGENCIA DE DESPACHO MULTI-REPRODUCTOR (APE v18.1) — CMAF/fMP4 UNIFIED 🧠
-        //
-        // ARQUITECTURA DE 3 TIERS:
-        //
-        //  TIER 1 — CMAF/fMP4 (Unificado HLS+DASH)
-        //    Reproductores: OTT Navigator, TiviMate, ExoPlayer, Apple (iOS/tvOS/macOS)
-        //    Formato URL:   &format=cmaf  &mode=direct
-        //    KODIPROP:      manifest_type=hls  (fMP4 servido vía HLS manifest)
-        //    Beneficio:     Un solo contenedor fMP4 referenciado por .m3u8 y .mpd →
-        //                   elimina la "guerra de formatos", maximiza CDN cache hit.
-        //
-        //  TIER 2 — DASH/MPD (Puro XML)
-        //    Reproductores: Kodi (cuando NO está en tier CMAF)
-        //    Formato URL:   &format=mpd   &mode=adaptive
-        //    KODIPROP:      manifest_type=mpd
-        //    Beneficio:     Compatibilidad nativa con inputstream.adaptive de Kodi.
-        //
-        //  TIER 3 — TS/HLS Legado
-        //    Reproductores: VLC, Smarters, Genéricos, desconocidos
-        //    Formato URL:   &format=ts    &mode=direct
-        //    KODIPROP:      (ninguno — evita crash en reproductores estrictos)
-        //    Beneficio:     Máxima compatibilidad con reproductores que no entienden fMP4.
-        //
-        // REGLA DE ORO: El placeholder &format=__APE_FORMAT__ en extAttrUrl garantiza que
-        // el dispatcher sea el ÚNICO punto de escritura del parámetro format, sin colisiones.
-        // ═══════════════════════════════════════════════════════════════════════════════
-        
-        let targetUrl = url;
-        let emitStreamInf = false;
-        
-        // El stealthUA es lo que el usuario eligió en el UI como reproductor destino
-        const _targetPlayer = stealthUA.toLowerCase();
-        
-        if (window._APE_DASH_CMAF_OMNI) {
-            // ── TIER 1: CMAF/fMP4 — Reproductores modernos con soporte nativo fMP4 ──
-            // OTT Navigator, TiviMate y ExoPlayer leen fMP4 vía HLS manifest nativamente.
-            // Apple (iOS/tvOS/macOS) soporta CMAF desde iOS 10+ / macOS 10.12+.
-            const _playerAcceptsCmaf = ['ott', 'tivimate', 'exoplayer', 'apple', 'ios', 'tvos', 'macos']
-                .some(p => _targetPlayer.includes(p));
+        // ╔══════════════════════════════════════════════════════════════════════════════╗
+        // ║  🧠 DESPACHO UNIVERSAL CMAF/fMP4 (APE v18.2) 🧠                                ║
+        // ║                                                                              ║
+        // ║  PRINCIPIO: TODAS las listas se generan con &format=cmaf SIEMPRE.           ║
+        // ║  No hay tiers, no hay condicionales por reproductor, no hay formatos         ║
+        // ║  alternativos. Un único contenedor fMP4 unifica HLS y DASH.                 ║
+        // ║                                                                              ║
+        // ║  La URL ya contiene &format=cmaf&mode=direct desde su construcción          ║
+        // ║  (línea 2342). Este bloque solo inyecta #EXT-X-STREAM-INF y la URL final.   ║
+        // ╔══════════════════════════════════════════════════════════════════════════════╗
+        // ║  RFC 8216: #EXT-X-STREAM-INF se inyecta SIEMPRE para que todos los          ║
+        // ║  reproductores modernos puedan hacer ABR y track selection sobre fMP4.       ║
+        // ╚══════════════════════════════════════════════════════════════════════════════╝
 
-            // ── TIER 2: DASH/MPD — Reproductores que requieren XML MPD explícito ──
-            // Kodi con inputstream.adaptive requiere manifest_type=mpd para DASH nativo.
-            const _playerAcceptsMpd = !_playerAcceptsCmaf &&
-                ['kodi'].some(p => _targetPlayer.includes(p));
+        // La URL ya tiene &format=cmaf&mode=direct desde su construcción (línea 2342).
+        // No se necesita ningún .replace() adicional.
+        const targetUrl = extAttrUrl;
 
-            // ── EXT-X-STREAM-INF — Solo reproductores que soportan ABR/track selection ──
-            const _playerSupportsStreamInf = ['ott', 'ottnavigator', 'ott_navigator', 'tivimate', 'kodi', 'apple', 'ios', 'tvos', 'macos']
-                .some(p => _targetPlayer.includes(p));
-
-            if (_playerSupportsStreamInf) emitStreamInf = true;
-
-            if (_playerAcceptsCmaf) {
-                // ✅ TIER 1: CMAF/fMP4 — Ruta unificada HLS+DASH (elimina "guerra de formatos")
-                // Un único contenedor fMP4 es referenciado tanto por .m3u8 como por .mpd,
-                // reduciendo costos de infraestructura y maximizando la eficiencia del CDN.
-                targetUrl = extAttrUrl
-                    .replace('format=__APE_FORMAT__', 'format=cmaf')
-                    .replace('mode=adaptive', 'mode=direct');
-            } else if (_playerAcceptsMpd) {
-                // ✅ TIER 2: DASH/MPD puro — Kodi con inputstream.adaptive
-                targetUrl = extAttrUrl
-                    .replace('format=__APE_FORMAT__', 'format=mpd');
-                // mode=adaptive se conserva para que Kodi gestione el ABR vía MPD
-            } else {
-                // ✅ TIER 3: TS/HLS Legado — VLC, Smarters, reproductores genéricos
-                targetUrl = extAttrUrl
-                    .replace('format=__APE_FORMAT__', 'format=ts')
-                    .replace('mode=adaptive', 'mode=direct');
-            }
-
-            if (emitStreamInf) {
-                // LEY DEL PROTOCOLO RFC 8216: STREAM-INF inyectado ÚNICAMENTE justo antes de la URL variante.
-                lines.push(streamInf);
-            }
-            lines.push(targetUrl);
-        } else {
-            // Modo Standard (DASH/CMAF desactivado). URL limpia original sin modificar.
-            lines.push(targetUrl);
-        }
+        // #EXT-X-STREAM-INF: inyectado SIEMPRE (RFC 8216) para habilitar ABR sobre fMP4
+        lines.push(streamInf);
+        lines.push(targetUrl);
 
         // Stream redundante: TS failover (solo si redundant-streams ON)
         if (isModuleEnabled(MODULE_FEATURES.redundantStreams) && window._APE_REDUNDANT_STREAMS === true) {
@@ -2799,8 +2727,8 @@
                     target_mos: (profile === 'P0' || profile === 'P1' || profile === 'P2') ? 4.9 : 4.5,
                     jitter_ms_max: 30,
                     pl_tolerance: (profile === 'P0' || profile === 'P1') ? 0.01 : 0.1,
-                    // 🚀 ANTIGRAVITY OMNI-PROTOCOL: Forzar format=cmaf si está activo, sino ts
-                    format: window._APE_DASH_CMAF_OMNI ? 'cmaf' : 'ts'
+                    // APE v18.2 CMAF UNIVERSAL: format=cmaf siempre (incondicional)
+                    format: 'cmaf'
                 },
                 security_evasion: {
                     ghost_protocol: !!window._APE_GHOST_PROTOCOL,
@@ -2831,11 +2759,11 @@
                     force_ai_sr: true,
                     luma_denoise: 'hqdn3d'
                 },
-                // 🚀 ANTIGRAVITY DASH-CMAF OMNI-PROTOCOL SUPREMACY
-                manifest_preference: window._APE_DASH_CMAF_OMNI ? ["dash", "hls_fmp4", "hls_ts"] : ["hls_ts", "ts"],
+                // APE v18.2 CMAF UNIVERSAL: manifest_preference y fmp4_enabled siempre activos
+                manifest_preference: ["hls_fmp4", "dash", "hls_ts"],
                 codec_priority: "av1,vp9,hevc",
                 dash_drm: false,
-                fmp4_enabled: !!window._APE_DASH_CMAF_OMNI,
+                fmp4_enabled: true,
                 ape_directives_inherited: true,
                 quantum_visual: !!window._APE_QUANTUM_VISUAL,
                 // 🧬 DNA FULL INJECTION (200+ UI PARAMETERS)
