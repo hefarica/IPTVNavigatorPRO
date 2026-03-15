@@ -1170,7 +1170,7 @@
             // SECCIÓN 1: CONFIGURACIÓN BÁSICA (6 líneas)
             // ───────────────────────────────────────────────────────────────────
             '#KODIPROP:inputstream=inputstream.adaptive',
-            `#KODIPROP:inputstream.adaptive.manifest_type=hls`, // APE v18.2 CMAF UNIVERSAL: fMP4 siempre servido vía HLS manifest
+            `#KODIPROP:inputstream.adaptive.manifest_type=hls`, // APE v18.2: CMAF universal, fMP4 vía HLS manifest siempre
             '#KODIPROP:inputstream.adaptive.manifest_update_parameter=full',
             `#KODIPROP:inputstream.adaptive.stream_headers=${window._APE_HYDRA_STEALTH ? `User-Agent=${encodedUA}` : `User-Agent=${encodedUA}&Proxy-Authorization=${encodedProxyAuth}`}`,
             '#KODIPROP:inputstream.adaptive.chooser_bandwidth_mode=AUTO',
@@ -2333,13 +2333,8 @@
         let originHost = 'unknown';
         try { if (url && url.startsWith('http')) originHost = new URL(url).hostname; } catch (e) { }
 
-        // ╔══════════════════════════════════════════════════════════════════════╗
-        // ║  APE v18.2 — CMAF/fMP4 UNIVERSAL (FORMATO ÚNICO E INCONDICIONAL)          ║
-        // ║  Todas las listas se generan SIEMPRE con &format=cmaf desde el origen.    ║
-        // ║  No hay toggles, no hay condicionales, no hay formatos alternativos.        ║
-        // ║  Un único contenedor fMP4 referenciado por .m3u8 y .mpd.                  ║
-        // ╚══════════════════════════════════════════════════════════════════════╝
-        let extAttrUrl = `${resolverBase}/resolve_quality.php?ch=${encodeURIComponent(chId)}&sid=${encodeURIComponent(chId)}&origin=${encodeURIComponent(originHost)}&p=${actualProfile}&format=cmaf&mode=direct`;
+        let extAttrUrl = `${resolverBase}/resolve_quality.php?ch=${encodeURIComponent(chId)}&sid=${encodeURIComponent(chId)}&origin=${encodeURIComponent(originHost)}&p=${actualProfile}&mode=adaptive`;
+        extAttrUrl += `&format=cmaf`; // APE v18.2: format=cmaf siempre, incondicional
 
         // 🟧 RUTA 1: VÍA DIRECTA M3U8 (URL / Payload Crudo)
         // ESTRICTAMENTE: Identidad, Promesas y Telemetría Matemática Cruda (bw, ping, buf, th1, pfseg)
@@ -2373,10 +2368,10 @@
         lines.push(`#EXT-X-TELCHEMY-TR101290:SYNC_LOSS=0,CC_ERROR=0,PCR_ERR=0`);
 
         // ⚡ PRE-WARMER ZERO-ZAPPING (Predictive Caching - Reducido a Top 5 para no saturar sockets)
-        // APE v18.2: Pre-calentamiento SIEMPRE activo con format=cmaf (incondicional)
-        if (index < 5) {
+        // Si DASH/CMAF está habilitado, disparamos el worker predictivo
+        if (window._APE_DASH_CMAF_OMNI && index < 5) {
             try {
-                const prewarmUrl = `${resolverBase}/resolve_quality.php?ch=${encodeURIComponent(chId)}&sid=${encodeURIComponent(chId)}&origin=${encodeURIComponent(originHost)}&format=cmaf&mode=direct`;
+                const prewarmUrl = `${resolverBase}/resolve_quality.php?ch=${encodeURIComponent(chId)}&sid=${encodeURIComponent(chId)}&origin=${encodeURIComponent(originHost)}&format=cmaf`;
                 // Request opaca "no-cors" diferida para no interferir con ReadableStream context
                 setTimeout(() => {
                     fetch(prewarmUrl, { mode: 'no-cors', cache: 'no-store' }).catch(() => { });
@@ -2385,10 +2380,7 @@
         }
 
         // 🛡️ FORENSIC MATRIX: Player Enslavement (KODI Anchor & Proxy Nullification)
-        // APE v18.2 CMAF UNIVERSAL: manifest_type=hls SIEMPRE (fMP4 servido vía HLS manifest).
-        // Todos los reproductores (OTT Nav, TiviMate, ExoPlayer, Kodi, Apple) leen fMP4
-        // a través de un HLS manifest. No hay condicionales ni tiers alternativos.
-        lines.push(`#KODIPROP:inputstream.adaptive.manifest_type=hls`);
+        lines.push(`#KODIPROP:inputstream.adaptive.manifest_type=hls`); // APE v18.2: CMAF universal
         // lines.push(`#EXTVLCOPT:http-proxy=`); // Ocultado para evitar bug en OTT Nav que lee la sig linea como proxy
 
         // ── FORENSIC JSON SANITATION (Anti TiviMate/ExoPlayer Crash) ──
@@ -2420,27 +2412,45 @@
         // DIRECTIVA MAESTRA DE ORQUESTACIÓN: Se conservan íntegros todos los Headers del DNA APE
         lines.push(`#EXTHTTP:${JSON.stringify(stealthHeaders)}`);
 
-        // ╔══════════════════════════════════════════════════════════════════════════════╗
-        // ║  🧠 DESPACHO UNIVERSAL CMAF/fMP4 (APE v18.2) 🧠                                ║
-        // ║                                                                              ║
-        // ║  PRINCIPIO: TODAS las listas se generan con &format=cmaf SIEMPRE.           ║
-        // ║  No hay tiers, no hay condicionales por reproductor, no hay formatos         ║
-        // ║  alternativos. Un único contenedor fMP4 unifica HLS y DASH.                 ║
-        // ║                                                                              ║
-        // ║  La URL ya contiene &format=cmaf&mode=direct desde su construcción          ║
-        // ║  (línea 2342). Este bloque solo inyecta #EXT-X-STREAM-INF y la URL final.   ║
-        // ╔══════════════════════════════════════════════════════════════════════════════╗
-        // ║  RFC 8216: #EXT-X-STREAM-INF se inyecta SIEMPRE para que todos los          ║
-        // ║  reproductores modernos puedan hacer ABR y track selection sobre fMP4.       ║
-        // ╚══════════════════════════════════════════════════════════════════════════════╝
-
-        // La URL ya tiene &format=cmaf&mode=direct desde su construcción (línea 2342).
-        // No se necesita ningún .replace() adicional.
-        const targetUrl = extAttrUrl;
-
-        // #EXT-X-STREAM-INF: inyectado SIEMPRE (RFC 8216) para habilitar ABR sobre fMP4
-        lines.push(streamInf);
-        lines.push(targetUrl);
+        // ═══════════════════════════════════════════════════════════════════════
+        // 🧠 INTELIGENCIA DE DESPACHO MULTI-REPRODUCTOR (APE v18.0) 🧠
+        // Reemplazo del "Obligatorio TiviMate" ciego por un dispatcher consciente.
+        // Evalúa el User-Agent destino para decidir:
+        // 1. ¿Soporta y NECESITA #EXT-X-STREAM-INF para track selection/ABR?
+        // 2. ¿Soporta XML MPD directo o colisiona y requiere puente TS/HLS?
+        // ═══════════════════════════════════════════════════════════════════════
+        
+        let targetUrl = url;
+        let emitStreamInf = false;
+        
+        // El stealthUA es lo que el usuario eligió en el UI como reproductor destino
+        const _targetPlayer = stealthUA.toLowerCase();
+        
+        if (window._APE_DASH_CMAF_OMNI) {
+            // Evaluamos según el reproductor seleccionado si inyectamos STREAM-INF
+            const _playerSupportsStreamInf = ['ott', 'ottnavigator', 'ott_navigator', 'tivimate', 'kodi', 'apple', 'ios', 'tvos', 'macos']
+                .some(p => _targetPlayer.includes(p));
+            
+            // 🌐 CMAF/fMP4 UNIFICATION STRATEGY 🌐
+            // CMAF unifica HLS y DASH en un solo contenedor fragmentado (fMP4).
+            // Reproductores modernos (OTT Nav, TiviMate, ExoPlayer, Apple) lo leen nativamente.
+            const _playerAcceptsCmaf = ['ott', 'tivimate', 'kodi', 'exoplayer', 'apple', 'ios', 'tvos', 'macos']
+                .some(p => _targetPlayer.includes(p));
+        
+            if (_playerSupportsStreamInf) emitStreamInf = true;
+            
+            // APE v18.2: format=cmaf ya está en la URL desde su construcción. Solo ajustar mode.
+            targetUrl = extAttrUrl.replace('mode=adaptive', 'mode=direct');
+        
+            if (emitStreamInf) {
+                // LEY DEL PROTOCOLO RFC 8216: STREAM-INF inyectado ÚNICAMENTE justo antes de la URL variante.
+                lines.push(streamInf);
+            }
+            lines.push(targetUrl);
+        } else {
+            // Modo Standard (DASH desactivado). URL limpia original
+            lines.push(targetUrl);
+        }
 
         // Stream redundante: TS failover (solo si redundant-streams ON)
         if (isModuleEnabled(MODULE_FEATURES.redundantStreams) && window._APE_REDUNDANT_STREAMS === true) {
@@ -2727,8 +2737,8 @@
                     target_mos: (profile === 'P0' || profile === 'P1' || profile === 'P2') ? 4.9 : 4.5,
                     jitter_ms_max: 30,
                     pl_tolerance: (profile === 'P0' || profile === 'P1') ? 0.01 : 0.1,
-                    // APE v18.2 CMAF UNIVERSAL: format=cmaf siempre (incondicional)
-                    format: 'cmaf'
+                    // 🚀 ANTIGRAVITY OMNI-PROTOCOL: Forzar format=cmaf si está activo, sino ts
+                    format: 'cmaf' // APE v18.2: CMAF universal
                 },
                 security_evasion: {
                     ghost_protocol: !!window._APE_GHOST_PROTOCOL,
@@ -2759,11 +2769,11 @@
                     force_ai_sr: true,
                     luma_denoise: 'hqdn3d'
                 },
-                // APE v18.2 CMAF UNIVERSAL: manifest_preference y fmp4_enabled siempre activos
-                manifest_preference: ["hls_fmp4", "dash", "hls_ts"],
+                // 🚀 ANTIGRAVITY DASH-CMAF OMNI-PROTOCOL SUPREMACY
+                manifest_preference: ["hls_fmp4", "dash", "hls_ts"], // APE v18.2: CMAF universal
                 codec_priority: "av1,vp9,hevc",
                 dash_drm: false,
-                fmp4_enabled: true,
+                fmp4_enabled: true, // APE v18.2: siempre activo
                 ape_directives_inherited: true,
                 quantum_visual: !!window._APE_QUANTUM_VISUAL,
                 // 🧬 DNA FULL INJECTION (200+ UI PARAMETERS)
