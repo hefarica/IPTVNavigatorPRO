@@ -1,0 +1,9 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="hbo" tvg-name="HBO" tvg-logo="https://example.com/logos/hbo.png" group-title="Movies",HBO
+http://cdn-server-1.example.com/live/premium/hbo.m3u8
+#EXTINF:-1 tvg-id="espn" tvg-name="ESPN" tvg-logo="https://example.com/logos/espn.png" group-title="Sports",ESPN
+http://cdn-server-2.example.com/streams/sports/espn.m3u8
+#EXTINF:-1 tvg-id="cnn" tvg-name="CNN" tvg-logo="https://example.com/logos/cnn.png" group-title="News",CNN
+https://stream-cdn.net/news/cnn/playlist.m3u8
+#EXTINF:-1 tvg-id="discovery" tvg-name="Discovery Channel" tvg-logo="https://example.com/logos/discovery.png" group-title="Documentary",Discovery Channel
+http://cdn-server-1.example.com/live/docs/discovery.m3u8

@@ -1,0 +1,512 @@
+{
+    "meta": {
+        "version": "15.0.0-ULTIMATE",
+        "generated_at": "2026-01-02T09:33:00Z",
+        "author": "APE Team",
+        "description": "APE Profiles v15 with dual-level telemetry, content-aware buffers, and 60s hysteresis failback"
+    },
+    "global_settings": {
+        "default_profile": "P2",
+        "failover_strategy": "immediate_downgrade",
+        "failback_strategy": "hysteresis_60s",
+        "telemetry_interval_ms": 100,
+        "snapshot_interval_seconds": 10,
+        "log_level": "INFO",
+        "redis_ttl_seconds": 3600,
+        "max_consecutive_failures": 3
+    },
+    "profiles": {
+        "P0": {
+            "id": "P0",
+            "name": "8K_ULTRA_EXTREME",
+            "priority": 100,
+            "description": "Maximum quality 8K for premium content and live sports",
+            "resolution": {
+                "width": 7680,
+                "height": 4320,
+                "label": "8K UHD"
+            },
+            "fps_range": {
+                "min": 50,
+                "max": 60,
+                "recommended": 60
+            },
+            "bitrate_range_mbps": {
+                "min": 60.0,
+                "max": 100.0,
+                "recommended": 80.0
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 3000,
+                    "max_ms": 5000,
+                    "target_ms": 4000
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 4000,
+                    "max_ms": 7000,
+                    "target_ms": 5500
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 15000,
+                    "max_ms": 25000,
+                    "target_ms": 20000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 12000,
+                    "max_ms": 20000,
+                    "target_ms": 16000
+                }
+            },
+            "codec_priority": [
+                "av1",
+                "hevc",
+                "h264"
+            ],
+            "audio_config": {
+                "codec": "aac",
+                "sample_rate": 48000,
+                "channels": 2,
+                "bitrate_kbps": 256
+            },
+            "performance_requirements": {
+                "bandwidth_min_mbps": 100,
+                "latency_max_ms": 30,
+                "packet_loss_max_pct": 0.1,
+                "cpu_free_min_pct": 50,
+                "ram_free_min_mb": 3000
+            },
+            "reconnection_policy": {
+                "max_retries": 5,
+                "backoff_strategy": "exponential",
+                "base_delay_ms": 1000,
+                "max_delay_ms": 16000
+            },
+            "features": {
+                "hdr_support": true,
+                "dolby_vision": true,
+                "adaptive_bitrate": true
+            },
+            "use_cases": [
+                "8K Live Sports",
+                "Premium Cinema",
+                "Technical Demos"
+            ]
+        },
+        "P1": {
+            "id": "P1",
+            "name": "4K_ULTRA_HIGH_FPS",
+            "priority": 90,
+            "description": "4K at 50-60fps for sports and fast action",
+            "resolution": {
+                "width": 3840,
+                "height": 2160,
+                "label": "4K UHD"
+            },
+            "fps_range": {
+                "min": 50,
+                "max": 60,
+                "recommended": 60
+            },
+            "bitrate_range_mbps": {
+                "min": 35.0,
+                "max": 60.0,
+                "recommended": 45.0
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 2500,
+                    "max_ms": 4500,
+                    "target_ms": 3500
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 3500,
+                    "max_ms": 6500,
+                    "target_ms": 5000
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 12000,
+                    "max_ms": 20000,
+                    "target_ms": 16000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 10000,
+                    "max_ms": 18000,
+                    "target_ms": 14000
+                }
+            },
+            "codec_priority": [
+                "hevc",
+                "h264"
+            ],
+            "audio_config": {
+                "codec": "aac",
+                "sample_rate": 48000,
+                "channels": 2,
+                "bitrate_kbps": 192
+            },
+            "performance_requirements": {
+                "bandwidth_min_mbps": 60,
+                "latency_max_ms": 50,
+                "packet_loss_max_pct": 0.5,
+                "cpu_free_min_pct": 40,
+                "ram_free_min_mb": 2000
+            },
+            "reconnection_policy": {
+                "max_retries": 5,
+                "backoff_strategy": "exponential",
+                "base_delay_ms": 1000,
+                "max_delay_ms": 16000
+            },
+            "features": {
+                "hdr_support": true,
+                "dolby_vision": false,
+                "adaptive_bitrate": true
+            },
+            "use_cases": [
+                "4K Sports",
+                "Action Movies",
+                "Gaming Streams"
+            ]
+        },
+        "P2": {
+            "id": "P2",
+            "name": "4K_STANDARD",
+            "priority": 80,
+            "description": "4K at 24-30fps for movies and premium series",
+            "resolution": {
+                "width": 3840,
+                "height": 2160,
+                "label": "4K UHD"
+            },
+            "fps_range": {
+                "min": 24,
+                "max": 30,
+                "recommended": 30
+            },
+            "bitrate_range_mbps": {
+                "min": 20.0,
+                "max": 40.0,
+                "recommended": 30.0
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 2000,
+                    "max_ms": 4000,
+                    "target_ms": 3000
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 3000,
+                    "max_ms": 6000,
+                    "target_ms": 4500
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 10000,
+                    "max_ms": 18000,
+                    "target_ms": 14000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 8000,
+                    "max_ms": 15000,
+                    "target_ms": 12000
+                }
+            },
+            "codec_priority": [
+                "hevc",
+                "h264"
+            ],
+            "audio_config": {
+                "codec": "aac",
+                "sample_rate": 48000,
+                "channels": 2,
+                "bitrate_kbps": 192
+            },
+            "performance_requirements": {
+                "bandwidth_min_mbps": 40,
+                "latency_max_ms": 70,
+                "packet_loss_max_pct": 1.0,
+                "cpu_free_min_pct": 35,
+                "ram_free_min_mb": 1500
+            },
+            "reconnection_policy": {
+                "max_retries": 7,
+                "backoff_strategy": "exponential",
+                "base_delay_ms": 1000,
+                "max_delay_ms": 32000
+            },
+            "features": {
+                "hdr_support": true,
+                "dolby_vision": false,
+                "adaptive_bitrate": true
+            },
+            "use_cases": [
+                "Netflix/Prime 4K",
+                "Premium Movies",
+                "Documentaries"
+            ]
+        },
+        "P3": {
+            "id": "P3",
+            "name": "FHD_BALANCED",
+            "priority": 70,
+            "description": "Full HD balanced - default for general use",
+            "resolution": {
+                "width": 1920,
+                "height": 1080,
+                "label": "Full HD"
+            },
+            "fps_range": {
+                "min": 24,
+                "max": 30,
+                "recommended": 30
+            },
+            "bitrate_range_mbps": {
+                "min": 6.0,
+                "max": 12.0,
+                "recommended": 8.0
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 2000,
+                    "max_ms": 4000,
+                    "target_ms": 3000
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 3000,
+                    "max_ms": 6000,
+                    "target_ms": 4500
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 8000,
+                    "max_ms": 15000,
+                    "target_ms": 12000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 6000,
+                    "max_ms": 12000,
+                    "target_ms": 9000
+                }
+            },
+            "codec_priority": [
+                "h264",
+                "hevc"
+            ],
+            "audio_config": {
+                "codec": "aac",
+                "sample_rate": 44100,
+                "channels": 2,
+                "bitrate_kbps": 128
+            },
+            "performance_requirements": {
+                "bandwidth_min_mbps": 12,
+                "latency_max_ms": 100,
+                "packet_loss_max_pct": 2.0,
+                "cpu_free_min_pct": 25,
+                "ram_free_min_mb": 800
+            },
+            "reconnection_policy": {
+                "max_retries": 10,
+                "backoff_strategy": "exponential",
+                "base_delay_ms": 1000,
+                "max_delay_ms": 64000
+            },
+            "features": {
+                "hdr_support": false,
+                "dolby_vision": false,
+                "adaptive_bitrate": true
+            },
+            "use_cases": [
+                "General TV",
+                "HD Series",
+                "News Channels"
+            ]
+        },
+        "P4": {
+            "id": "P4",
+            "name": "HD_BASIC",
+            "priority": 60,
+            "description": "HD Ready 720p for limited connections",
+            "resolution": {
+                "width": 1280,
+                "height": 720,
+                "label": "HD Ready"
+            },
+            "fps_range": {
+                "min": 24,
+                "max": 30,
+                "recommended": 25
+            },
+            "bitrate_range_mbps": {
+                "min": 3.0,
+                "max": 6.0,
+                "recommended": 4.5
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 2500,
+                    "max_ms": 5000,
+                    "target_ms": 3800
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 3000,
+                    "max_ms": 6000,
+                    "target_ms": 4500
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 8000,
+                    "max_ms": 15000,
+                    "target_ms": 12000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 6000,
+                    "max_ms": 12000,
+                    "target_ms": 9000
+                }
+            },
+            "codec_priority": [
+                "h264"
+            ],
+            "audio_config": {
+                "codec": "aac",
+                "sample_rate": 44100,
+                "channels": 2,
+                "bitrate_kbps": 96
+            },
+            "performance_requirements": {
+                "bandwidth_min_mbps": 6,
+                "latency_max_ms": 150,
+                "packet_loss_max_pct": 3.0,
+                "cpu_free_min_pct": 20,
+                "ram_free_min_mb": 500
+            },
+            "reconnection_policy": {
+                "max_retries": 15,
+                "backoff_strategy": "exponential",
+                "base_delay_ms": 2000,
+                "max_delay_ms": 128000
+            },
+            "features": {
+                "hdr_support": false,
+                "dolby_vision": false,
+                "adaptive_bitrate": true
+            },
+            "use_cases": [
+                "4G/5G Limited",
+                "Mid-range Devices",
+                "Network Fallback"
+            ]
+        },
+        "P5": {
+            "id": "P5",
+            "name": "SD_FAILSAFE",
+            "priority": 50,
+            "description": "SD 480p - emergency failsafe profile",
+            "resolution": {
+                "width": 854,
+                "height": 480,
+                "label": "SD"
+            },
+            "fps_range": {
+                "min": 24,
+                "max": 25,
+                "recommended": 25
+            },
+            "bitrate_range_mbps": {
+                "min": 0.5,
+                "max": 3.0,
+                "recommended": 1.5
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 3000,
+                    "max_ms": 6000,
+                    "target_ms": 4500
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 4000,
+                    "max_ms": 8000,
+                    "target_ms": 6000
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 8000,
+                    "max_ms": 15000,
+                    "target_ms": 12000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 6000,
+                    "max_ms": 12000,
+                    "target_ms": 9000
+                }
+            },
+            "codec_priority": [
+                "h264"
+            ],
+            "audio_config": {
+                "codec": "aac",
+                "sample_rate": 44100,
+                "channels": 2,
+                "bitrate_kbps": 64
+            },
+            "performance_requirements": {
+                "bandwidth_min_mbps": 3,
+                "latency_max_ms": 250,
+                "packet_loss_max_pct": 5.0,
+                "cpu_free_min_pct": 10,
+                "ram_free_min_mb": 256
+            },
+            "reconnection_policy": {
+                "max_retries": 20,
+                "backoff_strategy": "linear",
+                "base_delay_ms": 5000,
+                "max_delay_ms": 180000
+            },
+            "features": {
+                "hdr_support": false,
+                "dolby_vision": false,
+                "adaptive_bitrate": false
+            },
+            "use_cases": [
+                "3G/4G Very Limited",
+                "Emergency Mode",
+                "Legacy Devices"
+            ]
+        }
+    },
+    "failover_rules": {
+        "downgrade": {
+            "type": "immediate",
+            "delay_ms": 0,
+            "triggers": [
+                "bandwidth_low",
+                "latency_high",
+                "buffer_critical"
+            ],
+            "description": "Immediate downgrade to prevent freezes"
+        },
+        "upgrade": {
+            "type": "hysteresis",
+            "delay_seconds": 60,
+            "stability_checks": 6,
+            "check_interval_seconds": 10,
+            "description": "Upgrade after 60s stability to prevent flapping"
+        }
+    },
+    "telemetry_thresholds": {
+        "critical": {
+            "cpu_free_pct": 10,
+            "ram_free_mb": 200,
+            "bandwidth_mbps": 2,
+            "latency_ms": 500,
+            "packet_loss_pct": 5.0,
+            "buffer_health_pct": 20
+        },
+        "warning": {
+            "cpu_free_pct": 25,
+            "ram_free_mb": 500,
+            "bandwidth_mbps": 5,
+            "latency_ms": 200,
+            "packet_loss_pct": 2.0,
+            "buffer_health_pct": 40
+        }
+    }
+}

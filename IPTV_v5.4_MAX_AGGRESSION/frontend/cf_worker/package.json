@@ -1,0 +1,23 @@
+{
+    "name": "iptv-gateway",
+    "version": "1.0.0",
+    "description": "IPTV Gateway - Cloudflare Worker for M3U8 proxy with URL rewriting",
+    "main": "src/index.js",
+    "scripts": {
+        "dev": "wrangler dev",
+        "deploy": "wrangler deploy",
+        "tail": "wrangler tail"
+    },
+    "keywords": [
+        "iptv",
+        "m3u8",
+        "cloudflare",
+        "worker",
+        "proxy"
+    ],
+    "author": "IPTV Navigator PRO",
+    "license": "MIT",
+    "devDependencies": {
+        "wrangler": "^3.0.0"
+    }
+}

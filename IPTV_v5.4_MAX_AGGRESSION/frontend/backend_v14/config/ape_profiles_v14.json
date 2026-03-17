@@ -1,0 +1,66 @@
+{
+    "P0": {
+        "name": "ULTRA_EXTREME",
+        "level": "L6",
+        "resolution": "8K / 4K 60fps",
+        "bitrate_mbps": 50,
+        "buffer_live": 4000,
+        "buffer_vod": 25000,
+        "headers": 200,
+        "trigger": {
+            "min_bandwidth": 30,
+            "max_packet_loss": 0.5
+        }
+    },
+    "P1": {
+        "name": "4K_EXTREME",
+        "level": "L5",
+        "resolution": "4K 30fps",
+        "bitrate_mbps": 25,
+        "buffer_live": 3000,
+        "buffer_vod": 18000,
+        "headers": 154,
+        "trigger": {
+            "min_bandwidth": 25,
+            "max_packet_loss": 1.0
+        }
+    },
+    "P3": {
+        "name": "FHD_ADVANCED",
+        "level": "L3",
+        "resolution": "1920x1080",
+        "bitrate_mbps": 10,
+        "buffer_live": 2500,
+        "buffer_vod": 12000,
+        "headers": 92,
+        "trigger": {
+            "min_bandwidth": 8,
+            "max_packet_loss": 2.0
+        }
+    },
+    "P4": {
+        "name": "HD_STABLE",
+        "level": "L2",
+        "resolution": "1280x720",
+        "bitrate_mbps": 5,
+        "buffer_live": 2000,
+        "buffer_vod": 8000,
+        "headers": 58,
+        "trigger": {
+            "min_bandwidth": 5,
+            "max_latency": 100
+        }
+    },
+    "P5": {
+        "name": "SD_SAFE",
+        "level": "L1",
+        "resolution": "854x480",
+        "bitrate_mbps": 1.5,
+        "buffer_live": 1500,
+        "buffer_vod": 6000,
+        "headers": 28,
+        "trigger": {
+            "last_resort": true
+        }
+    }
+}

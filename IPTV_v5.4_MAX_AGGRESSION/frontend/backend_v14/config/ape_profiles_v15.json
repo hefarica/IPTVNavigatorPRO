@@ -1,0 +1,284 @@
+{
+    "version": "15.0.0-ULTIMATE",
+    "profiles": {
+        "P0": {
+            "name": "8K Ultra HD",
+            "resolution": "7680x4320",
+            "fps": 60,
+            "bitrate_mbps": 60,
+            "requirements": {
+                "bandwidth_min_mbps": 60,
+                "latency_max_ms": 30,
+                "packet_loss_max_pct": 0.1,
+                "cpu_available_min_pct": 40
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 3000,
+                    "max_ms": 5000,
+                    "target_ms": 4000
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 4000,
+                    "max_ms": 7000,
+                    "target_ms": 5500
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 15000,
+                    "max_ms": 25000,
+                    "target_ms": 20000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 12000,
+                    "max_ms": 20000,
+                    "target_ms": 16000
+                }
+            },
+            "reconnection": {
+                "max_retries": 5,
+                "backoff": "exponential",
+                "base_ms": 1000,
+                "max_ms": 16000
+            },
+            "use_cases": [
+                "WiFi 6E",
+                "Fiber 1Gbps+",
+                "5G mmWave"
+            ]
+        },
+        "P1": {
+            "name": "4K Ultra HD",
+            "resolution": "3840x2160",
+            "fps": 60,
+            "bitrate_mbps": 20,
+            "requirements": {
+                "bandwidth_min_mbps": 20,
+                "latency_max_ms": 50,
+                "packet_loss_max_pct": 0.3,
+                "cpu_available_min_pct": 30
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 2500,
+                    "max_ms": 4500,
+                    "target_ms": 3500
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 3500,
+                    "max_ms": 6500,
+                    "target_ms": 5000
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 12000,
+                    "max_ms": 20000,
+                    "target_ms": 16000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 10000,
+                    "max_ms": 18000,
+                    "target_ms": 14000
+                }
+            },
+            "reconnection": {
+                "max_retries": 5,
+                "backoff": "exponential",
+                "base_ms": 1000,
+                "max_ms": 16000
+            },
+            "use_cases": [
+                "5G",
+                "Fiber 300Mbps+",
+                "WiFi 6"
+            ]
+        },
+        "P2": {
+            "name": "Full HD",
+            "resolution": "1920x1080",
+            "fps": 60,
+            "bitrate_mbps": 8,
+            "requirements": {
+                "bandwidth_min_mbps": 8,
+                "latency_max_ms": 100,
+                "packet_loss_max_pct": 0.5,
+                "cpu_available_min_pct": 20
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 2000,
+                    "max_ms": 4000,
+                    "target_ms": 3000
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 3000,
+                    "max_ms": 6000,
+                    "target_ms": 4500
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 10000,
+                    "max_ms": 18000,
+                    "target_ms": 14000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 8000,
+                    "max_ms": 15000,
+                    "target_ms": 12000
+                }
+            },
+            "reconnection": {
+                "max_retries": 7,
+                "backoff": "exponential",
+                "base_ms": 1000,
+                "max_ms": 32000
+            },
+            "use_cases": [
+                "4G+",
+                "WiFi 5",
+                "Cable 100Mbps"
+            ]
+        },
+        "P3": {
+            "name": "HD Ready",
+            "resolution": "1280x720",
+            "fps": 30,
+            "bitrate_mbps": 3.5,
+            "requirements": {
+                "bandwidth_min_mbps": 3.5,
+                "latency_max_ms": 200,
+                "packet_loss_max_pct": 1.0,
+                "cpu_available_min_pct": 15
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 2000,
+                    "max_ms": 4000,
+                    "target_ms": 3000
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 2500,
+                    "max_ms": 5000,
+                    "target_ms": 3800
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 8000,
+                    "max_ms": 15000,
+                    "target_ms": 12000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 6000,
+                    "max_ms": 12000,
+                    "target_ms": 9000
+                }
+            },
+            "reconnection": {
+                "max_retries": 10,
+                "backoff": "exponential",
+                "base_ms": 2000,
+                "max_ms": 64000
+            },
+            "use_cases": [
+                "4G stable",
+                "WiFi weak",
+                "ADSL 10Mbps"
+            ]
+        },
+        "P4": {
+            "name": "SD",
+            "resolution": "854x480",
+            "fps": 30,
+            "bitrate_mbps": 1.5,
+            "requirements": {
+                "bandwidth_min_mbps": 1.5,
+                "latency_max_ms": 400,
+                "packet_loss_max_pct": 2.0,
+                "cpu_available_min_pct": 10
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 2500,
+                    "max_ms": 5000,
+                    "target_ms": 3800
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 3000,
+                    "max_ms": 6000,
+                    "target_ms": 4500
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 8000,
+                    "max_ms": 15000,
+                    "target_ms": 12000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 6000,
+                    "max_ms": 12000,
+                    "target_ms": 9000
+                }
+            },
+            "reconnection": {
+                "max_retries": 15,
+                "backoff": "exponential",
+                "base_ms": 2000,
+                "max_ms": 128000
+            },
+            "use_cases": [
+                "3G",
+                "4G unstable",
+                "Congested network"
+            ]
+        },
+        "P5": {
+            "name": "Low Quality",
+            "resolution": "640x360",
+            "fps": 25,
+            "bitrate_mbps": 0.6,
+            "requirements": {
+                "bandwidth_min_mbps": 0.6,
+                "latency_max_ms": 800,
+                "packet_loss_max_pct": 5.0,
+                "cpu_available_min_pct": 5
+            },
+            "buffer_config": {
+                "LIVE_SPORTS": {
+                    "min_ms": 3000,
+                    "max_ms": 6000,
+                    "target_ms": 4500
+                },
+                "LIVE_NEWS": {
+                    "min_ms": 4000,
+                    "max_ms": 8000,
+                    "target_ms": 6000
+                },
+                "VOD_MOVIES": {
+                    "min_ms": 8000,
+                    "max_ms": 15000,
+                    "target_ms": 12000
+                },
+                "VOD_SERIES": {
+                    "min_ms": 6000,
+                    "max_ms": 12000,
+                    "target_ms": 9000
+                }
+            },
+            "reconnection": {
+                "max_retries": 20,
+                "backoff": "linear",
+                "base_ms": 5000,
+                "max_ms": 180000
+            },
+            "use_cases": [
+                "2G",
+                "3G very weak",
+                "Emergency mode"
+            ]
+        }
+    },
+    "default_profile": "P2",
+    "content_types": [
+        "LIVE_SPORTS",
+        "LIVE_NEWS",
+        "VOD_MOVIES",
+        "VOD_SERIES"
+    ],
+    "hysteresis_seconds": 60,
+    "telemetry_interval_ms": 100
+}

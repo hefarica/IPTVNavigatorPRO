@@ -1,0 +1,36 @@
+# Backups
+*.backup-*
+*.bak_*
+*.bak
+*.orig
+
+# Temporary
+/tmp/
+*.tmp
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archives (keep .zip references but they're large)
+*.zip
+
+# Node
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# Sensitive
+.env
+*.pem
+*.key
