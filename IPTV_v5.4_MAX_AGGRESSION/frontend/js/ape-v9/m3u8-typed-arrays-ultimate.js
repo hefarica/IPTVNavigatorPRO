@@ -20,7 +20,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '22.0.0-FUSION-FANTASMA-NUCLEAR';
+    const VERSION = '22.1.0-FUSION-FANTASMA-NUCLEAR';
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 👻 FUSIÓN FANTASMA v22.0 — MÓDULO 1: UA ROTATION ENGINE v19.1
@@ -300,6 +300,12 @@
             tags.push(`#EXT-X-APE-FALLBACK-REAL-IP:${h451['X-Real-IP']}`);
 
             return tags;
+        },
+
+        // 👻 FUSIÓN FANTASMA v22.1: buildBlock() — genera bloque M3U8 completo desde context
+        buildBlock: function(context) {
+            const tags = this.buildFallbackTags(context.channel, context.index);
+            return tags.join('\n') + '\n';
         }
     };
 
@@ -2007,15 +2013,18 @@
         lines.push(...build_kodiprop(cfg, profile, index));
         lines.push(...build_ape_block(cfg, profile, index));
 
-        // ── 👻 FUSIÓN FANTASMA v22.0: UA Rotation por canal ──
+        // ── 👻 FUSIÓN FANTASMA v22.1: UA Rotation por canal ──
         lines.push(`#EXT-X-APE-STEALTH-UA:${getRotatedUserAgent('random')}`);
         lines.push(`#EXT-X-APE-STEALTH-XFF:${getRandomIp()}`);
         lines.push(`#EXT-X-APE-STEALTH-FINGERPRINT:${generateRandomString(32)}`);
 
-        // ── 👻 FUSIÓN FANTASMA v22.0: Pre-Armed Fallback Responses ──
-        lines.push(...PRE_ARMED_RESPONSE_BUILDER.buildFallbackTags(channel, index));
+        // ── 👻 FUSIÓN FANTASMA v22.1: Integración de Módulos ──
+        const context = buildInitialContext(channel, index);
+        const preArmedBlock = PRE_ARMED_RESPONSE_BUILDER.buildBlock(context);
+        lines.push(preArmedBlock.trim());
 
-        // ── 👻 FUSIÓN FANTASMA v22.0: ISP Throttle Nuclear Escalation ──
+        // ── 👻 FUSIÓN FANTASMA v22.1: ISP Throttle Nuclear Escalation ──
+        lines.push(`#EXT-X-APE-ISP-THROTTLE-ESCALATION:LEVEL=NUCLEAR`);
         lines.push(...generateISPThrottleEscalation(profile, cfg));
 
         const bandwidth = (cfg.bitrate || 5000) >= 1000000 ? (cfg.bitrate || 5000) : (cfg.bitrate || 5000) * 1000;
@@ -2211,6 +2220,9 @@
     // ═══════════════════════════════════════════════════════════════════════════
 
     if (typeof window !== 'undefined') {
+        // 👻 Fusión Fantasma v22.1: Registro global directo
+        window.APEAtomicStealthEngine = APEAtomicStealthEngine;
+
         // API Global
         window.M3U8TypedArraysGenerator = {
             generate: generateM3U8,
@@ -2222,7 +2234,7 @@
             profiles: PROFILES,
             version: VERSION,
 
-            // 👻 Fusión Fantasma v22.0 API
+            // 👻 Fusión Fantasma v22.1 API
             AtomicStealthEngine: APEAtomicStealthEngine,
             Cortex: IPTV_SUPPORT_CORTEX_V3,
             PreArmed: PRE_ARMED_RESPONSE_BUILDER,
