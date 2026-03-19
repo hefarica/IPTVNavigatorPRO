@@ -220,7 +220,7 @@
                 hevc_level: '6.1',
                 color_depth: 10,
                 // Directivas avanzadas para Hardware AI y BWDIF
-                video_filter: 'bwdif=1,hqdn3d,nlmeans,unsharp', // Desentrelazado + Multi-Frame AI Denoise + Sharpen
+                video_filter: 'bwdif=1,hqdn3d=4:3:6:4,nlmeans=h=6:p=3:r=15,unsharp=5:5:0.8', // Desentrelazado + Denoise Agresivo (hqdn3d+nlmeans) + Sharpen
                 hw_dec_accelerator: 'any',
                 lcevc: true,
                 lcevc_state: 'ACTIVE_ENFORCED', // LCEVC v16.4.1 compliance
@@ -1645,7 +1645,8 @@
 
             // ── PHASE 4 EDGE COMPUTE & GOD-TIER INJECTORS (KODIPROP) ──
             "X-VMAF-Target": "95.0",
-            "X-Film-Grain-Preservation": "STRICT",
+            "X-Film-Grain-Preservation": "DISABLED_IPTV_CLEAN",
+            "X-Denoise-Strategy": "AGGRESSIVE_NLM",
             "X-Low-Downswitch": "AGGRESSIVE_HOLD",
             "X-Chroma-Subsampling": "4:4:4",
             "X-Color-Depth": "10bit",
@@ -1912,7 +1913,10 @@
 
             // 5. God-Tier Perceptual Quality (Film Grain & Bitrate)
             `#EXT-X-APE-VMAF-TARGET:95.0`,
-            `#EXT-X-APE-FILM-GRAIN-PRESERVATION:STRICT`,
+            `#EXT-X-APE-FILM-GRAIN-PRESERVATION:DISABLED`,
+            `#EXT-X-APE-DENOISE-STRATEGY:AGGRESSIVE_IPTV_CLEAN`,
+            `#EXT-X-APE-DENOISE-ALGORITHM:NLMEANS+HQDN3D`,
+            `#EXT-X-APE-DEBLOCK-STRENGTH:MAXIMUM`,
 
             // 6. Protección Térmica (Edge-Compute Limiters)
             `#EXT-X-APE-HEARTBEAT-THERMAL:TRUE`,
@@ -2351,7 +2355,7 @@
 
         // ── SKILL: Quantum Pixel Overdrive v5 (HW Decoder) ──
         lines.push('#EXTVLCOPT:hw-dec-accelerator=any');
-        lines.push('#EXTVLCOPT:video-filter=hqdn3d');
+        lines.push('#EXTVLCOPT:video-filter=hqdn3d,nlmeans');
 
         lines.push(...generateEXTVLCOPT(profile));
         lines.push(...build_kodiprop(cfg, profile, index));
@@ -2363,7 +2367,7 @@
         lines.push('#EXTATTRFROMURL:color-depth=10bit,color-space=bt2020,color-range=full');
         lines.push('#EXTATTRFROMURL:pixel-format=yuv420p10le,chroma-subsampling=4:4:4');
         lines.push('#EXTATTRFROMURL:hdr-mode=auto,tone-mapping=reinhard-adaptive');
-        lines.push('#EXTATTRFROMURL:deinterlace=auto,deblock=maximum,denoise=film-grain-preserve');
+        lines.push('#EXTATTRFROMURL:deinterlace=auto,deblock=maximum,denoise=aggressive');
         lines.push('#EXTATTRFROMURL:sharpening=adaptive-unsharp,sharpening-strength=7');
         lines.push('#EXTATTRFROMURL:video-output=best,hw-decode=force,gpu-scaling=high-quality');
 
@@ -2419,7 +2423,7 @@
         lines.push('#EXT-X-VNOVA-LCEVC-TARGET-SDK:LCEVCdecJS_v1.2.1+');
         // VNOVA Config B64: correction + detail + rendering config
         const vnovaConfig = {
-            correction: { deblocking_filter: "HIGH_ADAPTIVE", denoise_level: "FILM_GRAIN_PRESERVATION_V2", dering_strength: 8 },
+            correction: { deblocking_filter: "MAXIMUM_ADAPTIVE", denoise_level: "AGGRESSIVE_IPTV_CLEAN", denoise_algorithm: "NLMEANS_TEMPORAL", dering_strength: 10 },
             detail: { sharpening_algorithm: "UNSHARP_MASK_ADAPTIVE", sharpening_strength: 7, texture_enhancement: "NEURAL_TEXTURE_V2" },
             rendering: { dithering: "BLUE_NOISE_TEMPORAL", color_space: "BT2020_NCL", transfer_function: "PQ_DYNAMIC_SDR_UPCONVERT" },
             performance: { threading_mode: "TILE_PARALLEL", tile_columns: 4, tile_rows: 2, gpu_acceleration: "PREFERRED" },
