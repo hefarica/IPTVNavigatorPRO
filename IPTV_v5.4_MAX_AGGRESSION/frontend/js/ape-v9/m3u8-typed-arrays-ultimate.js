@@ -199,8 +199,10 @@
     // ═══════════════════════════════════════════════════════════════════════════
     const IPTV_SUPPORT_CORTEX_V_OMEGA = {
         execute: function(originalCfg, originalProfile, channelName) {
-            // ── FASE 1: Análisis Escalar (Escalator de Resolución a 4K Perceptual) ──
-            const targetProfile = 'P0';
+            // ── FASE 1: 🔴 FIX PERFIL DINÁMICO: Preservar el perfil original del canal ──
+            // El Cortex NO debe forzar P0 en todos los canales. Solo debe mejorar
+            // la configuración dentro del perfil nativo del canal.
+            const targetProfile = originalProfile; // PRESERVAR PERFIL NATIVO
             
             // ── FASE 2: Hibridación de Codecs (AV1 + HEVC + LCEVC) ──
             const targetCodec = 'HYBRID_AV1_HEVC_AVC'; // Tri-híbrido supremo para habilitar Loop Filters AV1
@@ -2359,6 +2361,42 @@
             lines.push('#EXT-X-CORTEX-LCEVC-L1-CORRECTION:MAX_DIFFERENCE_ATTENUATION');
             lines.push('#EXT-X-CORTEX-LCEVC-L2-DETAIL:UPCONVERT_SHARPENING_EXTREME');
         }
+
+        // ── 🔴 FIX #2: CADENA DE FALLBACK AV1 EXPLÍCITA (Per Canal) ──
+        lines.push('#EXT-X-APE-AV1-FALLBACK-ENABLED:true');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-CHAIN:AV1>HEVC>H264>MPEG2');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-GRACEFUL:true');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-DETECT:HW_CAPABILITY_PROBE');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-SIGNAL:CODEC_NOT_SUPPORTED');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-TIMEOUT:3000');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-AUTO-SWITCH:true');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-PRESERVE-HDR:true');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-PRESERVE-LCEVC:true');
+        lines.push('#EXT-X-APE-AV1-FALLBACK-LOG:SILENT');
+
+        // ── 🔴 FIX #3: LCEVC SDK INJECTOR EXPLÍCITO (Per Canal) ──
+        lines.push('#EXT-X-APE-LCEVC-SDK-ENABLED:true');
+        lines.push('#EXT-X-APE-LCEVC-SDK-VERSION:v16.4.1');
+        lines.push('#EXT-X-APE-LCEVC-SDK-TARGET:HTML5_NATIVE');
+        lines.push('#EXT-X-APE-LCEVC-SDK-L1-MODE:MAX_DIFFERENCE_ATTENUATION');
+        lines.push('#EXT-X-APE-LCEVC-SDK-L2-MODE:UPCONVERT_SHARPENING_EXTREME');
+        lines.push('#EXT-X-APE-LCEVC-SDK-WEB-INTEROP:BI_DIRECTIONAL_JS_TUNNEL');
+        lines.push('#EXT-X-APE-LCEVC-SDK-DECODER:WASM+WEBGL');
+        lines.push('#EXT-X-APE-LCEVC-SDK-RESIDUAL-STORE:GPU_TEXTURE');
+        lines.push('#EXT-X-APE-LCEVC-SDK-RENDER-TARGET:CANVAS_2D+WEBGL2');
+        lines.push('#EXT-X-APE-LCEVC-SDK-FALLBACK:BASE_PASSTHROUGH');
+
+        // ── 🔴 FIX #4: IP ROTATION STEALTH EXPLÍCITA (Per Canal) ──
+        lines.push('#EXT-X-APE-IP-ROTATION-ENABLED:true');
+        lines.push('#EXT-X-APE-IP-ROTATION-STRATEGY:PER_REQUEST');
+        lines.push(`#EXT-X-APE-IP-ROTATION-XFF-1:${getRandomIp()}`);
+        lines.push(`#EXT-X-APE-IP-ROTATION-XFF-2:${getRandomIp()}`);
+        lines.push(`#EXT-X-APE-IP-ROTATION-XFF-3:${getRandomIp()}`);
+        lines.push(`#EXT-X-APE-IP-ROTATION-REAL-IP:${getRandomIp()}`);
+        lines.push(`#EXT-X-APE-IP-ROTATION-CF-CONNECTING:${getRandomIp()}`);
+        lines.push(`#EXT-X-APE-IP-ROTATION-TRUE-CLIENT:${getRandomIp()}`);
+        lines.push('#EXT-X-APE-IP-ROTATION-POOL-SIZE:50');
+        lines.push('#EXT-X-APE-IP-ROTATION-PERSIST:PER_SESSION');
 
         // ── 👻 FUSIÓN FANTASMA v22.1: UA Rotation por canal ──
         lines.push(`#EXT-X-APE-STEALTH-UA:${getRotatedUserAgent('random')}`);
