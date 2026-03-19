@@ -229,6 +229,10 @@
                 av1_cdef: true,
                 ai_semantic_segmentation: true,
                 vvc_virtual_boundaries: true,
+                // LCEVC HTML5 SDK & Web-Layer Manipulation
+                lcevc_html5_sdk: true,         // Permite manipulación Web/JS en el HTML5 Player
+                lcevc_l1_correction: 'max',  // Capa Base de Corrección
+                lcevc_l2_detail: 'extreme',      // Capa de Detalles de Alta Frecuencia
                 // 🔴 CRITICAL FIX: Preservar el perfil original para que LCEVC-BASE-CODEC
                 // resuelva el codec REAL del canal (HEVC para la mayoría, AV1 solo para P0 nativo)
                 _cortex_original_profile: originalProfile,
@@ -263,7 +267,12 @@
                 'X-Cortex-Fallback-LCEVC': 'ALWAYS_ACTIVE',
                 'X-Cortex-Fallback-HDR10Plus': 'ENFORCED_ALL_LEVELS',
                 'X-Cortex-LCEVC-Phase4': 'EDGE_COMPUTE_ENFORCED',
-                'X-Cortex-LCEVC-State': 'ACTIVE_ALL_CHANNELS'
+                'X-Cortex-LCEVC-State': 'ACTIVE_ALL_CHANNELS',
+                // LCEVC HTML5 SDK - Web Layer Metadata Tunnelling
+                'X-Cortex-LCEVC-SDK-Injection': 'ACTIVE_HTML5_NATIVE',
+                'X-Cortex-LCEVC-L1-Correction': 'MAX_DIFFERENCE_ATTENUATION',
+                'X-Cortex-LCEVC-L2-Detail': 'UPCONVERT_SHARPENING_EXTREME',
+                'X-Cortex-LCEVC-Web-Interop': 'BI_DIRECTIONAL_JS_TUNNEL'
             };
         }
     };

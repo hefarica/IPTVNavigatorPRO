@@ -46,6 +46,11 @@ Este módulo es una entidad inyectada directamente en el generador M3U8 del clie
    - **Segmentación Semántica**: Fuerza el escaneo de +250 capas de profundidad mediante IA para perfilar rostros, fondos y ropas.
    - **Loop Filters**: Activa en hardware `AV1 Deblocking`, `AV1 CDEF` (Mejora Direccional) y represión de bordes VVC virtuales.
 
+10. **LCEVC HTML5 SDK Web Interop (Tunneling)**
+   - Integración nativa bidireccional desde JavaScript hacia el reproductor HTML5 compatible con LCEVC.
+   - **Control Capa L1 (Base Correction)**: Maximiza la diferencia de atenuación.
+   - **Control Capa L2 (Detail Frequency)**: Inyecta metadatos para "Upconvert Sharpening" extremo.
+
 ```http
 X-Cortex-Omega-State: ACTIVE_DOMINANT
 X-Cortex-Player-Enslavement: ENFORCED
@@ -61,4 +66,10 @@ X-Cortex-AV1-CDEF: ENABLED_DIRECTIONAL_RESTORATION
 X-Cortex-VVC-Virtual-Boundaries: EDGE_ARTIFACT_SUPPRESSION
 X-Cortex-AI-MultiFrame-NR: MASSIVE_MOTION_COMPENSATED
 X-Cortex-AI-Semantic-Segmentation: ENABLED_250_LAYERS
+X-Cortex-Fallback-Chain: AV1>HEVC>H264
+X-Cortex-LCEVC-Phase4: EDGE_COMPUTE_ENFORCED
+X-Cortex-LCEVC-SDK-Injection: ACTIVE_HTML5_NATIVE
+X-Cortex-LCEVC-L1-Correction: MAX_DIFFERENCE_ATTENUATION
+X-Cortex-LCEVC-L2-Detail: UPCONVERT_SHARPENING_EXTREME
+X-Cortex-LCEVC-Web-Interop: BI_DIRECTIONAL_JS_TUNNEL
 ```
