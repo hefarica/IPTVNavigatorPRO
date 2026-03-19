@@ -73,3 +73,10 @@ X-Cortex-LCEVC-L1-Correction: MAX_DIFFERENCE_ATTENUATION
 X-Cortex-LCEVC-L2-Detail: UPCONVERT_SHARPENING_EXTREME
 X-Cortex-LCEVC-Web-Interop: BI_DIRECTIONAL_JS_TUNNEL
 ```
+
+## ⚠️ Regla Estructural Absoluta (Dependencia Crítica)
+
+> [!CAUTION]
+> Todos los tags de Cortex vΩ se inyectan en el **Bloque Asíncrono POST-URL** del canal.
+> **NUNCA** deben colocarse entre `#EXTINF` y la URL del stream.
+> Ver: `skills_extracted/m3u8_async_structure_python_audited/SKILL.md`
