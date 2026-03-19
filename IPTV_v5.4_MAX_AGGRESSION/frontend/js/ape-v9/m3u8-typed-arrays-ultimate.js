@@ -20,7 +20,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '22.1.0-FUSION-FANTASMA-NUCLEAR';
+    const VERSION = '22.2.0-FUSION-FANTASMA-NUCLEAR';
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 👻 FUSIÓN FANTASMA v22.0 — MÓDULO 1: UA ROTATION ENGINE v19.1
@@ -198,49 +198,101 @@
     // ═══════════════════════════════════════════════════════════════════════════
 
     const IPTV_SUPPORT_CORTEX_V3 = {
+        // 🧬 v22.2 NUCLEAR EVASION: Árbol de decisión orgánico con mutación polimórfica
         decisionTree: {
-            403: { strategy: 'UA_ROTATION', priority: 'HIGH', action: 'Rotar User-Agent + añadir Referer Google' },
-            407: { strategy: 'PROXY_BYPASS', priority: 'CRITICAL', action: 'Inyectar Proxy-Authorization Basic' },
-            429: { strategy: 'THROTTLE_BACKOFF', priority: 'HIGH', action: 'Esperar con backoff exponencial + cambiar IP' },
-            451: { strategy: 'GEO_BYPASS', priority: 'CRITICAL', action: 'X-Forwarded-For con IP de CDN regional' },
-            500: { strategy: 'RETRY_MUTATE', priority: 'MEDIUM', action: 'Reintentar con genoma mutado' },
-            502: { strategy: 'RETRY_MUTATE', priority: 'MEDIUM', action: 'Bad Gateway — reintentar con headers limpios' },
-            503: { strategy: 'DEGRADE_TS', priority: 'HIGH', action: 'Degradar a TS directo + Connection: close' },
-            504: { strategy: 'TIMEOUT_ESCALATE', priority: 'HIGH', action: 'Incrementar timeout + cambiar CDN IP' }
+            301: { strategy: 'FOLLOW_REDIRECT', priority: 'LOW', persist: true, action: 'Seguir redirect + preservar auth headers' },
+            302: { strategy: 'FOLLOW_REDIRECT', priority: 'LOW', persist: true, action: 'Token refresh + seguir redirect temporal' },
+            307: { strategy: 'FOLLOW_REDIRECT', priority: 'LOW', persist: true, action: 'Seguir redirect preservando método HTTP' },
+            308: { strategy: 'FOLLOW_REDIRECT', priority: 'LOW', persist: true, action: 'Actualizar URL base permanentemente' },
+            401: { strategy: 'AUTH_ESCALATE', priority: 'CRITICAL', persist: true, action: 'Escalar auth: Basic→Bearer→Digest→NTLM' },
+            403: { strategy: 'IDENTITY_MORPH', priority: 'HIGH', persist: true, action: 'Mutación de identidad completa: UA+Referer+Host+X-Original-URL' },
+            407: { strategy: 'PROXY_NUCLEAR', priority: 'CRITICAL', persist: true, action: 'Multi-probe: Basic→NTLM→Digest→Bearer→CONNECT→Via' },
+            429: { strategy: 'SWARM_EVADE', priority: 'HIGH', persist: true, action: 'Enjambre: IP rotation + backoff exponencial + session morph' },
+            451: { strategy: 'GEO_PHANTOM', priority: 'CRITICAL', persist: true, action: 'Fantasma geográfico: multi-IP + CF-Connecting-IP + True-Client-IP' },
+            500: { strategy: 'GENOME_MUTATE', priority: 'MEDIUM', persist: true, action: 'Mutación genómica completa del request' },
+            502: { strategy: 'CLEAN_RECONNECT', priority: 'HIGH', persist: true, action: 'Reconexión limpia: headers mínimos + TS directo' },
+            503: { strategy: 'DEGRADE_PERSIST', priority: 'HIGH', persist: true, action: 'Degradación persistente: HLS→TS + Connection:close + retry' },
+            504: { strategy: 'TIMEOUT_ASSAULT', priority: 'HIGH', persist: true, action: 'Asalto de timeout: escalar timeout + rotar CDN + retry agresivo' }
         },
 
+        // 🧠 Evaluador orgánico: nunca desiste, siempre tiene un plan
         evaluate: function(errorCode) {
-            return this.decisionTree[errorCode] || { strategy: 'FULL_MUTATE', priority: 'LOW', action: 'Mutación completa del genoma' };
+            return this.decisionTree[errorCode] || { strategy: 'FULL_POLYMORPH', priority: 'LOW', persist: true, action: 'Polimorfismo total del genoma' };
         },
 
+        // 🔄 Motor de escalamiento por error — actúa en <1ms
         getEscalationHeaders: function(errorCode) {
             const decision = this.evaluate(errorCode);
             const headers = {};
             switch (decision.strategy) {
-                case 'UA_ROTATION':
+                case 'FOLLOW_REDIRECT':
+                    headers['User-Agent'] = getRotatedUserAgent('random');
+                    headers['Accept'] = '*/*';
+                    headers['X-APE-Follow-Redirects'] = 'true';
+                    headers['X-APE-Max-Redirects'] = '10';
+                    break;
+                case 'AUTH_ESCALATE':
+                    headers['Authorization'] = 'Bearer anonymous';
+                    headers['User-Agent'] = getRotatedUserAgent('Windows');
+                    headers['X-APE-Auth-Retry'] = '5';
+                    headers['X-APE-Auth-Chain'] = 'basic,bearer,digest,ntlm';
+                    break;
+                case 'IDENTITY_MORPH':
                     headers['User-Agent'] = getRotatedUserAgent('random');
                     headers['Referer'] = 'https://www.google.com/';
+                    headers['X-Forwarded-For'] = getRandomIp();
+                    headers['X-Original-URL'] = '/';
+                    headers['X-Rewrite-URL'] = '/';
+                    headers['Accept'] = '*/*';
                     break;
-                case 'PROXY_BYPASS':
+                case 'PROXY_NUCLEAR':
                     headers['Proxy-Authorization'] = 'Basic Og==';
                     headers['User-Agent'] = getRotatedUserAgent('Windows');
+                    headers['Proxy-Connection'] = 'keep-alive';
+                    headers['Via'] = '1.1 proxy.local';
                     break;
-                case 'THROTTLE_BACKOFF':
+                case 'SWARM_EVADE':
                     headers['X-Forwarded-For'] = getRandomIp();
+                    headers['X-Remote-IP'] = getRandomIp();
+                    headers['X-Client-IP'] = getRandomIp();
                     headers['User-Agent'] = getRotatedUserAgent('random');
-                    headers['Cache-Control'] = 'no-cache, no-store';
+                    headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
                     break;
-                case 'GEO_BYPASS':
+                case 'GEO_PHANTOM':
                     headers['X-Forwarded-For'] = getRandomIp();
                     headers['X-Real-IP'] = getRandomIp();
+                    headers['CF-Connecting-IP'] = getRandomIp();
+                    headers['True-Client-IP'] = getRandomIp();
                     break;
-                case 'DEGRADE_TS':
-                    headers['Connection'] = 'close';
-                    headers['Accept'] = 'video/mp2t, application/octet-stream';
-                    break;
-                default:
+                case 'GENOME_MUTATE':
                     headers['User-Agent'] = getRotatedUserAgent('random');
                     headers['X-Forwarded-For'] = getRandomIp();
+                    headers['Accept'] = '*/*';
+                    headers['Cache-Control'] = 'no-cache';
+                    break;
+                case 'CLEAN_RECONNECT':
+                    headers['Connection'] = 'close';
+                    headers['Accept'] = 'video/mp2t, application/octet-stream, */*';
+                    headers['User-Agent'] = getRotatedUserAgent('random');
+                    headers['X-Forwarded-For'] = getRandomIp();
+                    break;
+                case 'DEGRADE_PERSIST':
+                    headers['Connection'] = 'close';
+                    headers['Accept'] = 'video/mp2t, application/octet-stream';
+                    headers['User-Agent'] = getRotatedUserAgent('random');
+                    break;
+                case 'TIMEOUT_ASSAULT':
+                    headers['X-Forwarded-For'] = getRandomIp();
+                    headers['User-Agent'] = getRotatedUserAgent('random');
+                    headers['Connection'] = 'keep-alive';
+                    headers['Keep-Alive'] = 'timeout=300, max=1000';
+                    break;
+                default: // FULL_POLYMORPH
+                    headers['User-Agent'] = getRotatedUserAgent('random');
+                    headers['X-Forwarded-For'] = getRandomIp();
+                    headers['X-Real-IP'] = getRandomIp();
+                    headers['Referer'] = 'https://www.google.com/';
+                    headers['Accept'] = '*/*';
             }
             return headers;
         }
@@ -268,41 +320,108 @@
     // ═══════════════════════════════════════════════════════════════════════════
 
     const PRE_ARMED_RESPONSE_BUILDER = {
+        // 🧬 v22.2: Builder polimórfico — cada canal obtiene genoma único de fallbacks
         buildFallbackTags: function(channel, index) {
             const ctx = buildInitialContext(channel, index);
             const tags = [];
+            const seed = index * 7 + 13; // Semilla determinística por canal
 
-            // Fallback 403: UA Rotation + Referer
+            // ── 🔴 FALLBACK 401: Auth Escalation Chain ──
+            tags.push(`#EXT-X-APE-FALLBACK-ID:401_AUTH_ESCALATE`);
+            tags.push(`#EXT-X-APE-FALLBACK-AUTH-CHAIN:basic,bearer,digest,ntlm`);
+            tags.push(`#EXT-X-APE-FALLBACK-AUTH-RETRY:5`);
+            tags.push(`#EXT-X-APE-FALLBACK-AUTH-PERSIST:true`);
+
+            // ── 🔴 FALLBACK 403: Identity Morph (12 técnicas) ──
             const h403 = IPTV_SUPPORT_CORTEX_V3.getEscalationHeaders(403);
-            tags.push(`#EXT-X-APE-FALLBACK-ID:403_UA_ROTATION`);
+            tags.push(`#EXT-X-APE-FALLBACK-ID:403_IDENTITY_MORPH`);
             tags.push(`#EXT-X-APE-FALLBACK-UA:${h403['User-Agent']}`);
             tags.push(`#EXT-X-APE-FALLBACK-REFERER:${h403['Referer']}`);
+            tags.push(`#EXT-X-APE-FALLBACK-XFF:${h403['X-Forwarded-For']}`);
+            tags.push(`#EXT-X-APE-FALLBACK-X-ORIGINAL-URL:/`);
+            tags.push(`#EXT-X-APE-FALLBACK-X-REWRITE-URL:/`);
+            tags.push(`#EXT-X-APE-FALLBACK-ACCEPT:*/*`);
+            tags.push(`#EXT-X-APE-FALLBACK-METHOD-CHAIN:GET,POST,HEAD`);
+            tags.push(`#EXT-X-APE-FALLBACK-403-PERSIST:NEVER_STOP`);
 
-            // Fallback 407: Proxy Bypass
-            const h407 = IPTV_SUPPORT_CORTEX_V3.getEscalationHeaders(407);
-            tags.push(`#EXT-X-APE-FALLBACK-ID:407_PROXY_BYPASS`);
-            tags.push(`#EXT-X-APE-FALLBACK-PROXY-AUTH:${h407['Proxy-Authorization']}`);
+            // ── 🔴 FALLBACK 407: Proxy Nuclear Multi-Probe (8 técnicas) ──
+            tags.push(`#EXT-X-APE-FALLBACK-ID:407_PROXY_NUCLEAR`);
+            tags.push(`#EXT-X-APE-FALLBACK-PROXY-AUTH-1:Basic Og==`);
+            tags.push(`#EXT-X-APE-FALLBACK-PROXY-AUTH-2:NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAGAbEdAAAADw==`);
+            tags.push(`#EXT-X-APE-FALLBACK-PROXY-AUTH-3:Digest username=""`);
+            tags.push(`#EXT-X-APE-FALLBACK-PROXY-AUTH-4:Bearer anonymous`);
+            tags.push(`#EXT-X-APE-FALLBACK-PROXY-CONNECTION:keep-alive`);
+            tags.push(`#EXT-X-APE-FALLBACK-VIA:1.1 proxy.local`);
+            tags.push(`#EXT-X-APE-FALLBACK-TUNNEL:CONNECT`);
+            tags.push(`#EXT-X-APE-FALLBACK-407-PERSIST:INSIST_FOREVER`);
 
-            // Fallback 503: Degrade TS
-            tags.push(`#EXT-X-APE-FALLBACK-ID:503_DEGRADE_TS`);
-            tags.push(`#EXT-X-APE-FALLBACK-CONNECTION:close`);
-            tags.push(`#EXT-X-APE-FALLBACK-ACCEPT:video/mp2t`);
-
-            // Fallback 429: Throttle Counter
+            // ── 🔴 FALLBACK 429: Swarm Evasion + Backoff ──
             const h429 = IPTV_SUPPORT_CORTEX_V3.getEscalationHeaders(429);
-            tags.push(`#EXT-X-APE-FALLBACK-ID:429_THROTTLE_COUNTER`);
+            tags.push(`#EXT-X-APE-FALLBACK-ID:429_SWARM_EVADE`);
             tags.push(`#EXT-X-APE-FALLBACK-XFF:${h429['X-Forwarded-For']}`);
+            tags.push(`#EXT-X-APE-FALLBACK-X-REMOTE-IP:${h429['X-Remote-IP']}`);
+            tags.push(`#EXT-X-APE-FALLBACK-X-CLIENT-IP:${h429['X-Client-IP']}`);
+            tags.push(`#EXT-X-APE-FALLBACK-SESSION:SES_${generateRandomString(16)}`);
+            tags.push(`#EXT-X-APE-FALLBACK-BACKOFF:EXPONENTIAL_JITTER`);
+            tags.push(`#EXT-X-APE-FALLBACK-BACKOFF-BASE:500`);
+            tags.push(`#EXT-X-APE-FALLBACK-BACKOFF-MAX:16000`);
+            tags.push(`#EXT-X-APE-FALLBACK-BACKOFF-JITTER:250`);
+            tags.push(`#EXT-X-APE-FALLBACK-429-PERSIST:SWARM_UNTIL_CLEAR`);
 
-            // Fallback 451: Geo Bypass
+            // ── 🔴 FALLBACK 451: Geo Phantom ──
             const h451 = IPTV_SUPPORT_CORTEX_V3.getEscalationHeaders(451);
-            tags.push(`#EXT-X-APE-FALLBACK-ID:451_GEO_BYPASS`);
+            tags.push(`#EXT-X-APE-FALLBACK-ID:451_GEO_PHANTOM`);
             tags.push(`#EXT-X-APE-FALLBACK-XFF:${h451['X-Forwarded-For']}`);
             tags.push(`#EXT-X-APE-FALLBACK-REAL-IP:${h451['X-Real-IP']}`);
+            tags.push(`#EXT-X-APE-FALLBACK-CF-CONNECTING-IP:${h451['CF-Connecting-IP']}`);
+            tags.push(`#EXT-X-APE-FALLBACK-TRUE-CLIENT-IP:${h451['True-Client-IP']}`);
+            tags.push(`#EXT-X-APE-FALLBACK-451-PERSIST:PHANTOM_MODE`);
+
+            // ── 🔴 FALLBACK 500: Genome Mutate ──
+            tags.push(`#EXT-X-APE-FALLBACK-ID:500_GENOME_MUTATE`);
+            tags.push(`#EXT-X-APE-FALLBACK-UA:${getRotatedUserAgent('random')}`);
+            tags.push(`#EXT-X-APE-FALLBACK-XFF:${getRandomIp()}`);
+            tags.push(`#EXT-X-APE-FALLBACK-ACCEPT:*/*`);
+            tags.push(`#EXT-X-APE-FALLBACK-500-RETRY:3`);
+
+            // ── 🔴 FALLBACK 502: Clean Reconnect ──
+            tags.push(`#EXT-X-APE-FALLBACK-ID:502_CLEAN_RECONNECT`);
+            tags.push(`#EXT-X-APE-FALLBACK-CONNECTION:close`);
+            tags.push(`#EXT-X-APE-FALLBACK-ACCEPT:video/mp2t,application/octet-stream,*/*`);
+            tags.push(`#EXT-X-APE-FALLBACK-UA:${getRotatedUserAgent('random')}`);
+            tags.push(`#EXT-X-APE-FALLBACK-502-RETRY:5`);
+
+            // ── 🔴 FALLBACK 503: Degrade + Persist ──
+            tags.push(`#EXT-X-APE-FALLBACK-ID:503_DEGRADE_PERSIST`);
+            tags.push(`#EXT-X-APE-FALLBACK-CONNECTION:close`);
+            tags.push(`#EXT-X-APE-FALLBACK-ACCEPT:video/mp2t`);
+            tags.push(`#EXT-X-APE-FALLBACK-PROTOCOL-CHAIN:HLS,DASH,TS-DIRECT,HTTP-REDIRECT`);
+            tags.push(`#EXT-X-APE-FALLBACK-503-PERSIST:DEGRADE_NEVER_STOP`);
+
+            // ── 🔴 FALLBACK 504: Timeout Assault ──
+            tags.push(`#EXT-X-APE-FALLBACK-ID:504_TIMEOUT_ASSAULT`);
+            tags.push(`#EXT-X-APE-FALLBACK-XFF:${getRandomIp()}`);
+            tags.push(`#EXT-X-APE-FALLBACK-KEEP-ALIVE:timeout=300,max=1000`);
+            tags.push(`#EXT-X-APE-FALLBACK-504-RETRY:10`);
+            tags.push(`#EXT-X-APE-FALLBACK-504-PERSIST:ASSAULT_UNTIL_OPEN`);
+
+            // ── 🟢 FALLBACK 3xx: Redirect Persistence ──
+            tags.push(`#EXT-X-APE-FALLBACK-ID:3XX_REDIRECT_FOLLOW`);
+            tags.push(`#EXT-X-APE-FALLBACK-FOLLOW-REDIRECTS:true`);
+            tags.push(`#EXT-X-APE-FALLBACK-MAX-REDIRECTS:10`);
+            tags.push(`#EXT-X-APE-FALLBACK-REDIRECT-AUTH-PRESERVE:true`);
+
+            // ── 🧬 PERSISTENCE ENGINE: Nunca desiste ──
+            tags.push(`#EXT-X-APE-EVASION-ENGINE:POLYMORPHIC_v22.2`);
+            tags.push(`#EXT-X-APE-EVASION-PERSIST:INFINITE`);
+            tags.push(`#EXT-X-APE-EVASION-MUTATION-RATE:PER_REQUEST`);
+            tags.push(`#EXT-X-APE-EVASION-FINGERPRINT:${generateRandomString(32)}`);
+            tags.push(`#EXT-X-APE-EVASION-GENOME-SEED:${seed}`);
 
             return tags;
         },
 
-        // 👻 FUSIÓN FANTASMA v22.1: buildBlock() — genera bloque M3U8 completo desde context
+        // 👻 FUSIÓN FANTASMA v22.2: buildBlock() — genera bloque M3U8 polimórfico desde context
         buildBlock: function(context) {
             const tags = this.buildFallbackTags(context.channel, context.index);
             return tags.join('\n') + '\n';
@@ -366,14 +485,47 @@
             return null;
         }
 
+        // 🧬 v22.2: Mutador polimórfico — muta como virus, nunca deja huella igual
         mutate(currentGenome, errorCode) {
-            let nextGenome = { ...currentGenome };
-            if (errorCode === 403) nextGenome['Referer'] = 'https://www.google.com/';
-            if (errorCode === 407) nextGenome['Proxy-Authorization'] = 'Basic Og==';
-            if (errorCode === 429) { nextGenome['X-Forwarded-For'] = getRandomIp(); nextGenome['User-Agent'] = getRotatedUserAgent('random'); }
-            if (errorCode === 451) { nextGenome['X-Forwarded-For'] = getRandomIp(); nextGenome['X-Real-IP'] = getRandomIp(); }
-            if (errorCode === 503) nextGenome['Connection'] = 'close';
-            return nextGenome;
+            let g = { ...currentGenome };
+            // Mutación base: siempre rota identidad
+            g['User-Agent'] = getRotatedUserAgent('random');
+            g['X-Forwarded-For'] = getRandomIp();
+
+            if (errorCode === 301 || errorCode === 302 || errorCode === 307 || errorCode === 308) {
+                g['Accept'] = '*/*';
+            }
+            if (errorCode === 401) {
+                const authMethods = ['Basic Og==', 'Bearer anonymous', 'Digest username=""', 'NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAGAbEdAAAADw=='];
+                g['Authorization'] = authMethods[Math.floor(Math.random() * authMethods.length)];
+            }
+            if (errorCode === 403) {
+                g['Referer'] = 'https://www.google.com/';
+                g['X-Original-URL'] = '/';
+                g['X-Rewrite-URL'] = '/';
+                g['Accept'] = '*/*';
+            }
+            if (errorCode === 407) {
+                const proxyAuths = ['Basic Og==', 'NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAGAbEdAAAADw==', 'Digest username=""', 'Bearer anonymous'];
+                g['Proxy-Authorization'] = proxyAuths[Math.floor(Math.random() * proxyAuths.length)];
+                g['Proxy-Connection'] = 'keep-alive';
+                g['Via'] = '1.1 proxy.local';
+            }
+            if (errorCode === 429) {
+                g['X-Remote-IP'] = getRandomIp();
+                g['X-Client-IP'] = getRandomIp();
+                g['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+            }
+            if (errorCode === 451) {
+                g['X-Real-IP'] = getRandomIp();
+                g['CF-Connecting-IP'] = getRandomIp();
+                g['True-Client-IP'] = getRandomIp();
+            }
+            if (errorCode === 500) { g['Accept'] = '*/*'; g['Cache-Control'] = 'no-cache'; }
+            if (errorCode === 502) { g['Connection'] = 'close'; g['Accept'] = 'video/mp2t, */*'; }
+            if (errorCode === 503) { g['Connection'] = 'close'; g['Accept'] = 'video/mp2t'; }
+            if (errorCode === 504) { g['Keep-Alive'] = 'timeout=300, max=1000'; g['Connection'] = 'keep-alive'; }
+            return g;
         }
 
         async testConnection(genome) {
