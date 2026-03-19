@@ -160,26 +160,26 @@
 
     const CDN_IP_RANGES = [
         // Google (8.8.x.x, 142.250.x.x)
-        ...Array.from({length: 50}, (_, i) => `142.250.${Math.floor(i/10) + 180}.${(i*7+13) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `142.250.${Math.floor(i / 10) + 180}.${(i * 7 + 13) % 256}`),
         // Cloudflare (104.16-31.x.x)
-        ...Array.from({length: 50}, (_, i) => `104.${16 + (i % 16)}.${(i*11+7) % 256}.${(i*3+19) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `104.${16 + (i % 16)}.${(i * 11 + 7) % 256}.${(i * 3 + 19) % 256}`),
         // AWS CloudFront (13.x.x.x, 52.x.x.x)
-        ...Array.from({length: 50}, (_, i) => `13.${224 + (i % 32)}.${(i*13+3) % 256}.${(i*17+41) % 256}`),
-        ...Array.from({length: 50}, (_, i) => `52.${84 + (i % 12)}.${(i*7+23) % 256}.${(i*11+37) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `13.${224 + (i % 32)}.${(i * 13 + 3) % 256}.${(i * 17 + 41) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `52.${84 + (i % 12)}.${(i * 7 + 23) % 256}.${(i * 11 + 37) % 256}`),
         // Akamai (23.x.x.x, 104.64-127.x.x)
-        ...Array.from({length: 50}, (_, i) => `23.${32 + (i % 64)}.${(i*17+11) % 256}.${(i*7+53) % 256}`),
-        ...Array.from({length: 50}, (_, i) => `104.${64 + (i % 64)}.${(i*13+29) % 256}.${(i*3+67) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `23.${32 + (i % 64)}.${(i * 17 + 11) % 256}.${(i * 7 + 53) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `104.${64 + (i % 64)}.${(i * 13 + 29) % 256}.${(i * 3 + 67) % 256}`),
         // Fastly (151.101.x.x)
-        ...Array.from({length: 50}, (_, i) => `151.101.${(i*3) % 256}.${(i*7+1) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `151.101.${(i * 3) % 256}.${(i * 7 + 1) % 256}`),
         // Microsoft Azure (20.x.x.x, 40.x.x.x)
-        ...Array.from({length: 50}, (_, i) => `20.${36 + (i % 100)}.${(i*11+17) % 256}.${(i*3+43) % 256}`),
-        ...Array.from({length: 50}, (_, i) => `40.${76 + (i % 50)}.${(i*7+31) % 256}.${(i*13+47) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `20.${36 + (i % 100)}.${(i * 11 + 17) % 256}.${(i * 3 + 43) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `40.${76 + (i % 50)}.${(i * 7 + 31) % 256}.${(i * 13 + 47) % 256}`),
         // DigitalOcean (64.227.x.x, 167.99.x.x)
-        ...Array.from({length: 50}, (_, i) => `167.99.${(i*3+1) % 256}.${(i*17+11) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `167.99.${(i * 3 + 1) % 256}.${(i * 17 + 11) % 256}`),
         // Hetzner (95.x.x.x, 159.69.x.x)
-        ...Array.from({length: 50}, (_, i) => `159.69.${(i*7+3) % 256}.${(i*11+29) % 256}`),
+        ...Array.from({ length: 50 }, (_, i) => `159.69.${(i * 7 + 3) % 256}.${(i * 11 + 29) % 256}`),
         // OVH (51.x.x.x, 54.36-39.x.x)
-        ...Array.from({length: 50}, (_, i) => `51.${75 + (i % 25)}.${(i*13+7) % 256}.${(i*3+61) % 256}`)
+        ...Array.from({ length: 50 }, (_, i) => `51.${75 + (i % 25)}.${(i * 13 + 7) % 256}.${(i * 3 + 61) % 256}`)
     ];
 
     /**
@@ -198,15 +198,15 @@
     // Principio Fundamental: El reproductor no decide. El reproductor obedece.
     // ═══════════════════════════════════════════════════════════════════════════
     const IPTV_SUPPORT_CORTEX_V_OMEGA = {
-        execute: function(originalCfg, originalProfile, channelName) {
+        execute: function (originalCfg, originalProfile, channelName) {
             // ── FASE 1: 🔴 FIX PERFIL DINÁMICO: Preservar el perfil original del canal ──
             // El Cortex NO debe forzar P0 en todos los canales. Solo debe mejorar
             // la configuración dentro del perfil nativo del canal.
             const targetProfile = originalProfile; // PRESERVAR PERFIL NATIVO
-            
+
             // ── FASE 2: Hibridación de Codecs (AV1 + HEVC + LCEVC) ──
             const targetCodec = 'HYBRID_AV1_HEVC_AVC'; // Tri-híbrido supremo para habilitar Loop Filters AV1
-            
+
             // ── FASE 3: Motor HDR & Frame-Rate (Quantum Pixel Overdrive) ──
             const targetFps = 120; // Fluidez perfecta interpolada/forzada
             const targetHdr = 'hdr10_plus,dolby_vision_fallback,dynamic_metadata';
@@ -247,7 +247,7 @@
             return { profile: targetProfile, cfg: godTierCfg };
         },
         // Generador de Headers inyectados en EXTHTTP
-        getOmegaHeaders: function(cfg) {
+        getOmegaHeaders: function (cfg) {
             return {
                 'X-Cortex-Omega-State': 'ACTIVE_DOMINANT',
                 'X-Cortex-Player-Enslavement': 'ENFORCED',
@@ -307,12 +307,12 @@
         },
 
         // 🧠 Evaluador orgánico: nunca desiste, siempre tiene un plan
-        evaluate: function(errorCode) {
+        evaluate: function (errorCode) {
             return this.decisionTree[errorCode] || { strategy: 'FULL_POLYMORPH', priority: 'LOW', persist: true, action: 'Polimorfismo total del genoma' };
         },
 
         // 🔄 Motor de escalamiento por error — actúa en <1ms
-        getEscalationHeaders: function(errorCode) {
+        getEscalationHeaders: function (errorCode) {
             const decision = this.evaluate(errorCode);
             const headers = {};
             switch (decision.strategy) {
@@ -412,7 +412,7 @@
 
     const PRE_ARMED_RESPONSE_BUILDER = {
         // 🧬 v22.2: Builder polimórfico — cada canal obtiene genoma único de fallbacks
-        buildFallbackTags: function(channel, index) {
+        buildFallbackTags: function (channel, index) {
             const ctx = buildInitialContext(channel, index);
             const tags = [];
             const seed = index * 7 + 13; // Semilla determinística por canal
@@ -513,7 +513,7 @@
         },
 
         // 👻 FUSIÓN FANTASMA v22.2: buildBlock() — genera bloque M3U8 polimórfico desde context
-        buildBlock: function(context) {
+        buildBlock: function (context) {
             const tags = this.buildFallbackTags(context.channel, context.index);
             return tags.join('\n') + '\n';
         }
@@ -2307,13 +2307,13 @@
         const fps = cfg.fps || 30;
         let codecString = 'hev1.2.4.L153.B0,mp4a.40.2';
         if (cfg.codec_primary === 'HYBRID_AV1_HEVC_AVC' || cfg.codec_primary === 'HYBRID_HEVC_AVC') {
-            codecString = 'avc1.640028,hev1.1.6.L153.B0,av01.0.16M.10,mp4a.40.2'; 
+            codecString = 'avc1.640028,hev1.1.6.L153.B0,av01.0.16M.10,mp4a.40.2';
         } else if (cfg.codec_primary === 'AV1') {
             codecString = 'av01.0.16M.10,opus';
         } else {
             codecString = window._APE_PRIO_QUALITY !== false ? (profile === 'P0' ? 'av01.0.16M.10,opus' : 'hev1.2.4.L153.B0,mp4a.40.2') : 'hev1.2.4.L153.B0,mp4a.40.2';
         }
-        
+
         const streamInf = `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},AVERAGE-BANDWIDTH=${avgBandwidth},RESOLUTION=${resolution},CODECS="${codecString}",FRAME-RATE=${fps},HDCP-LEVEL=NONE`;
         lines.push(streamInf);
 
@@ -2340,7 +2340,7 @@
         lines.push('#EXTVLCOPT:video-filter=hqdn3d');
 
         lines.push(...generateEXTVLCOPT(profile));
-        
+
         // ── KODIPROP Tercero ──
         lines.push(...build_kodiprop(cfg, profile, index));
 
