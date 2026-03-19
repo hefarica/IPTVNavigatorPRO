@@ -887,7 +887,7 @@
             bandwidth_guarantee: 500,
             codec_primary: 'AV1',
             codec_fallback: 'HEVC',
-            codec_priority: 'av1,hevc,h265,H265,h.265,h264',
+            codec_priority: 'av1,hevc,hev1,hvc1,h265,H265,h.265,H.265,h264',
             hdr_support: ['hdr10', 'dolby_vision', 'hlg'],
             color_depth: 12,
             audio_channels: 8,
@@ -937,7 +937,7 @@
             bandwidth_guarantee: 400,
             codec_primary: 'HEVC',
             codec_fallback: 'H264',
-            codec_priority: 'hevc,h265,h.265,av1,vp9,h264,mpeg2',
+            codec_priority: 'hevc,hev1,hvc1,h265,H265,h.265,H.265,av1,vp9,h264,mpeg2',
             hdr_support: ['hdr10', 'hlg'],
             color_depth: 10,
             audio_channels: 6,
@@ -983,7 +983,7 @@
             bandwidth_guarantee: 350,
             codec_primary: 'HEVC',
             codec_fallback: 'H264',
-            codec_priority: 'hevc,h265,h.265,av1,vp9,h264,mpeg2',
+            codec_priority: 'hevc,hev1,hvc1,h265,H265,h.265,H.265,av1,vp9,h264,mpeg2',
             hdr_support: ['hdr10'],
             color_depth: 10,
             audio_channels: 6,
@@ -1029,7 +1029,7 @@
             bandwidth_guarantee: 300,
             codec_primary: 'HEVC',
             codec_fallback: 'H264',
-            codec_priority: 'hevc,h265,h.265,av1,vp9,h264,mpeg2',
+            codec_priority: 'hevc,hev1,hvc1,h265,H265,h.265,H.265,av1,vp9,h264,mpeg2',
             hdr_support: ['hdr10', 'hlg'],
             color_depth: 10,
             audio_channels: 2,
@@ -1075,7 +1075,7 @@
             bandwidth_guarantee: 250,
             codec_primary: 'HEVC',
             codec_fallback: 'H264',
-            codec_priority: 'hevc,h265,h.265,av1,vp9,h264,mpeg2',
+            codec_priority: 'hevc,hev1,hvc1,h265,H265,h.265,H.265,av1,vp9,h264,mpeg2',
             hdr_support: ['hdr10', 'hlg'],
             color_depth: 10,
             audio_channels: 2,
@@ -1121,7 +1121,7 @@
             bandwidth_guarantee: 200,
             codec_primary: 'HEVC',
             codec_fallback: 'H264',
-            codec_priority: 'hevc,h265,h.265,av1,vp9,h264,mpeg2',
+            codec_priority: 'hevc,hev1,hvc1,h265,H265,h.265,H.265,av1,vp9,h264,mpeg2',
             hdr_support: ['hdr10', 'hlg'],
             color_depth: 10,
             audio_channels: 2,
@@ -1357,7 +1357,9 @@
             `#EXTVLCOPT:video-title-show=0`,
             `#EXTVLCOPT:fullscreen=1`,
             `#EXTVLCOPT:no-video-title-show`,
-            `#EXTVLCOPT:hue=0`
+            `#EXTVLCOPT:hue=0`,
+            `#EXTVLCOPT:codec-priority=hevc,hev1,hvc1,h265,av1,vp9,h264`,
+            `#EXTVLCOPT:preferred-codec=hevc`
         ];
     }
 
@@ -1376,9 +1378,10 @@
             "X-ISP-TCP-Window": "4194304"
         });
         return [
-            '#KODIPROP:inputstream=inputstream.adaptive',
             '#KODIPROP:inputstream.adaptive.manifest_type=hls',
             '#KODIPROP:inputstream.adaptive.stream_selection_type=adaptive',
+            '#KODIPROP:inputstream.adaptive.chooser_bandwidth_type=BANDWIDTH_AVERAGE',
+            '#KODIPROP:inputstream.adaptive.preferred_codec=hevc,hev1,hvc1,h265',
             `#KODIPROP:inputstream.adaptive.stream_headers=${streamHeaders}`,
             `#KODIPROP:inputstream.adaptive.live_delay=${Math.floor(GLOBAL_CACHING.file / 1000)}`,
             `#KODIPROP:inputstream.adaptive.buffer_duration=${Math.floor(GLOBAL_CACHING.network / 1000)}`
@@ -1904,7 +1907,7 @@
 
             // 3. HEVC Level Supremacy (La Cascada) & LCEVC Dynamic Base
             `#EXT-X-APE-HEVC-LEVEL-CASCADE:6.1,5.1,5.0,4.1,4.0,3.1`,
-            `#EXT-X-APE-CODEC-PRIORITY:hevc,av1,h264`,
+            `#EXT-X-APE-CODEC-PRIORITY:hevc,hev1,hvc1,h265,H265,h.265,H.265,av1,h264`,
             `#EXT-X-APE-LCEVC-BASE-POLICY:${lcevcBaseCodec}`, // Dinámico derivado de config
             `#EXT-X-APE-LCEVC-TRANSPORT:CMAF_LAYER_OR_SEI_EMBED`,   // Instruye cómo buscar la capa L1+L2
 
@@ -2363,6 +2366,7 @@
         // ── SKILL: EXTATTRFROMURL — Maximum Image Quality Enforcer ──
         // Capa extra de forzamiento de calidad para OTT Navigator y forks compatibles
         lines.push('#EXTATTRFROMURL:quality=top,resolution=highest,bitrate=max');
+        lines.push('#EXTATTRFROMURL:preferred-codec=hevc,hev1,hvc1,h265,H265,h.265,H.265');
         lines.push('#EXTATTRFROMURL:upscale-algorithm=lanczos,upscale-factor=auto');
         lines.push('#EXTATTRFROMURL:color-depth=10bit,color-space=bt2020,color-range=full');
         lines.push('#EXTATTRFROMURL:pixel-format=yuv420p10le,chroma-subsampling=4:4:4');
