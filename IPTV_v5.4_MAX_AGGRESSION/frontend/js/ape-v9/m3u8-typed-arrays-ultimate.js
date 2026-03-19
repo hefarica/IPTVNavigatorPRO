@@ -2356,6 +2356,17 @@
         lines.push(...generateEXTVLCOPT(profile));
         lines.push(...build_kodiprop(cfg, profile, index));
 
+        // ── SKILL: EXTATTRFROMURL — Maximum Image Quality Enforcer ──
+        // Capa extra de forzamiento de calidad para OTT Navigator y forks compatibles
+        lines.push('#EXTATTRFROMURL:quality=top,resolution=highest,bitrate=max');
+        lines.push('#EXTATTRFROMURL:upscale-algorithm=lanczos,upscale-factor=auto');
+        lines.push('#EXTATTRFROMURL:color-depth=10bit,color-space=bt2020,color-range=full');
+        lines.push('#EXTATTRFROMURL:pixel-format=yuv420p10le,chroma-subsampling=4:4:4');
+        lines.push('#EXTATTRFROMURL:hdr-mode=auto,tone-mapping=reinhard-adaptive');
+        lines.push('#EXTATTRFROMURL:deinterlace=auto,deblock=maximum,denoise=film-grain-preserve');
+        lines.push('#EXTATTRFROMURL:sharpening=adaptive-unsharp,sharpening-strength=7');
+        lines.push('#EXTATTRFROMURL:video-output=best,hw-decode=force,gpu-scaling=high-quality');
+
         // ═══════════════════════════════════════════════════════════════
         // BLOQUE 3: APE TAGS (build_ape_block con LCEVC-BASE-CODEC fix)
         // ═══════════════════════════════════════════════════════════════
