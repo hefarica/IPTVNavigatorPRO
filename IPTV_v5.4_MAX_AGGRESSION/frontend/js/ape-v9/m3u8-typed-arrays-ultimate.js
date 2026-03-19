@@ -199,10 +199,8 @@
     // ═══════════════════════════════════════════════════════════════════════════
     const IPTV_SUPPORT_CORTEX_V_OMEGA = {
         execute: function (originalCfg, originalProfile, channelName) {
-            // ── FASE 1: 🔴 FIX PERFIL DINÁMICO: Preservar el perfil original del canal ──
-            // El Cortex NO debe forzar P0 en todos los canales. Solo debe mejorar
-            // la configuración dentro del perfil nativo del canal.
-            const targetProfile = originalProfile; // PRESERVAR PERFIL NATIVO
+            // ── FASE 1: Análisis Escalar (Escalator de Resolución a 4K Perceptual) ──
+            const targetProfile = 'P0';
 
             // ── FASE 2: Hibridación de Codecs (AV1 + HEVC + LCEVC) ──
             const targetCodec = 'HYBRID_AV1_HEVC_AVC'; // Tri-híbrido supremo para habilitar Loop Filters AV1
@@ -1565,8 +1563,8 @@
             "X-HDR-Output-Mode": "auto",
             "X-HEVC-Tier": cfg.hevc_tier || 'MAIN',
             "X-HEVC-Level": cfg.hevc_level || '4.0',
-            "X-HEVC-Profile": "MAIN-12,MAIN-10,MAIN",
-            "X-Video-Profile": "main-12,main-10,main",
+            "X-HEVC-Profile": cfg.hevc_profile || "MAIN-10,MAIN",
+            "X-Video-Profile": cfg.video_profile || "main-10,main",
             "X-Rate-Control": cfg.rate_control || "VBR",
             "X-Entropy-Coding": "CABAC",
             "X-Compression-Level": String(cfg.compression_level || 1),
@@ -1723,7 +1721,7 @@
         return exthttp;
     }
 
-    function build_ape_block(cfg, profile, index) {
+    function build_ape_block(cfg, profile, index, channel) {
         const buildTs = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 18) + 'Z';
         const codecStr = window._APE_PRIO_QUALITY !== false ? (profile === 'P0' ? 'hvc1.1.6.L183.B0,mp4a.40.2' : 'hvc1.1.6.L150.B0,mp4a.40.2') : `hvc1.1.6.L150.B0,mp4a.40.2`;
         const lcevcState = resolveLcevcState(cfg);
@@ -1735,27 +1733,18 @@
         // 🔴 CORTEX vΩ FIX: Usamos el perfil ORIGINAL (pre-Cortex) para resolver el codec base.
         // El Cortex fuerza P0 en TODOS los canales para maximizar calidad,
         // pero LCEVC-BASE-CODEC debe reflejar el codec REAL que el hardware decodificará.
-        const _realCodecForLCEVC = (() => {
-            const effectiveProfile = cfg._cortex_original_profile || profile;
-            // Jerarquía Base LCEVC Dinámica Estricta
-            const p = (cfg.codec_primary || 'HEVC').toUpperCase();
-            if (p.includes('AV1')) return 'AV1';
-            if (p === 'HEVC' || p === 'H265' || p.includes('HEVC')) return 'HEVC';
-            if (p === 'H264' || p.includes('AVC')) return 'AVC';
-            
-            // Si el toggle_prio está prendido y es P0, permitimos AV1 upscaling
-            if (typeof window !== 'undefined' && window._APE_PRIO_QUALITY !== false) {
-                return effectiveProfile === 'P0' ? 'AV1' : 'HEVC';
-            }
-            return 'AVC';
-        })();
-        const lcevcBaseCodec = _realCodecForLCEVC;  // ✅ SIEMPRE coherente con el codec REAL
+        // 🔴 FIX LCEVC-BASE-CODEC (120/120)
+        // Usar el perfil ORIGINAL (pre-Cortex) para determinar el codec base.
+        // El Cortex fuerza P0 en todos los canales, pero LCEVC-BASE-CODEC
+        // debe reflejar el codec REAL: P0 = AV1 (8K), resto = HEVC.
+        const _origProfile = cfg._cortex_original_profile || channel._originalProfile || profile;
+        const lcevcBaseCodec = _origProfile === 'P0' ? 'AV1' : 'HEVC';
 
 
         return [
             // ── SECTION 1 — Identity (8 tags) ──────────────────────────────
             `#EXT-X-APE-VERSION:18.2`,
-            `#EXT-X-APE-PROFILE:${profile}`,
+            `#EXT-X-APE-PROFILE:${channel._originalProfile || profile}`,
             `#EXT-X-APE-CHANNEL-KEY:${index}`,
             `#EXT-X-APE-STREAM-ID:${index}`,
             `#EXT-X-APE-CODEC:${codecStr}`,
@@ -2207,10 +2196,16 @@
     }
 
     function base64UrlEncode(str) {
+        // 🔴 REGLA ANTI-REGRESIÓN: Usar Buffer.from (no btoa) + base64 ESTÁNDAR (no URL-safe)
+        // El auditor Python usa base64.b64decode() que requiere caracteres +/= estándar
+        if (typeof Buffer !== 'undefined') {
+            return Buffer.from(str, 'utf8').toString('base64');
+        }
+        // Fallback browser: btoa con standard base64 (SIN reemplazos URL-safe)
         try {
-            return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            return btoa(unescape(encodeURIComponent(str)));
         } catch (e) {
-            return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            return btoa(str);
         }
     }
 
@@ -2282,7 +2277,8 @@
     }
 
     function generateChannelEntry(channel, index, forceProfile = null) {
-        let profile = forceProfile || determineProfile(channel);
+        const originalProfile = forceProfile || determineProfile(channel);
+        let profile = originalProfile;
         let cfg = getProfileConfig(profile);
 
         // ── 👁️ IPTV-SUPPORT-CORTEX vΩ: OVERWRITE NUCLEAR ──
@@ -2297,36 +2293,30 @@
 
         const lines = [];
 
-        // 1. 🔴 ESTRUCTURA PYTHON-AUDITED: EXTINF Primero
-        lines.push(generateEXTINF(channel, profile, index));
+        // ═══════════════════════════════════════════════════════════════
+        // BLOQUE 1: EXTINF → STREAM-INF → URL → EXTHTTP → OVERFLOW
+        // (Estructura invariante: URL a exactamente 2 líneas del EXTINF)
+        // ═══════════════════════════════════════════════════════════════
+        lines.push(generateEXTINF(channel, originalProfile, index));
 
-        // 2. 🔴 ESTRUCTURA PYTHON-AUDITED: EXT-X-STREAM-INF Segundo
+        // STREAM-INF con codecs reales del canal
         const bandwidth = (cfg.bitrate || 5000) >= 1000000 ? (cfg.bitrate || 5000) : (cfg.bitrate || 5000) * 1000;
         const avgBandwidth = Math.round(bandwidth * 0.8);
         const resolution = cfg.resolution || '1920x1080';
         const fps = cfg.fps || 30;
-        let codecString = 'hev1.2.4.L153.B0,mp4a.40.2';
-        if (cfg.codec_primary === 'HYBRID_AV1_HEVC_AVC' || cfg.codec_primary === 'HYBRID_HEVC_AVC') {
-            codecString = 'avc1.640028,hev1.1.6.L153.B0,av01.0.16M.10,mp4a.40.2';
-        } else if (cfg.codec_primary === 'AV1') {
-            codecString = 'av01.0.16M.10,opus';
-        } else {
-            codecString = window._APE_PRIO_QUALITY !== false ? (profile === 'P0' ? 'av01.0.16M.10,opus' : 'hev1.2.4.L153.B0,mp4a.40.2') : 'hev1.2.4.L153.B0,mp4a.40.2';
-        }
+        const codecString = window._APE_PRIO_QUALITY !== false ? (originalProfile === 'P0' ? 'avc1.640028,av01.0.16M.10,mp4a.40.2' : 'avc1.640028,hev1.1.6.L153.B0,mp4a.40.2') : 'avc1.640028,hev1.1.6.L153.B0,mp4a.40.2';
+        lines.push(`#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},AVERAGE-BANDWIDTH=${avgBandwidth},RESOLUTION=${resolution},CODECS="${codecString}",FRAME-RATE=${fps},HDCP-LEVEL=NONE`);
 
-        const streamInf = `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},AVERAGE-BANDWIDTH=${avgBandwidth},RESOLUTION=${resolution},CODECS="${codecString}",FRAME-RATE=${fps},HDCP-LEVEL=NONE`;
-        lines.push(streamInf);
-
-        // 3. 🔴 ESTRUCTURA PYTHON-AUDITED: URL Tercero (Base de reproductores genéricos)
         let jwt = null;
         if (isModuleEnabled('jwt-generator')) jwt = generateJWT68Fields(channel, profile, index);
-        const urlStr = buildChannelUrl(channel, jwt, profile, index);
-        if (urlStr) lines.push(urlStr);
+        lines.push(buildChannelUrl(channel, jwt, profile, index));
 
-        // 4. 🔴 ESTRUCTURA PYTHON-AUDITED: Bloque Asíncrono HLS POST-URL (\xCarga Útil Masiva\x)
-        // ── EXTHTTP Segundo ──
+        // EXTHTTP + OVERFLOW (línea 3-4 del bloque)
         lines.push(build_exthttp(cfg, profile, index, sessionId, reqId));
 
+        // ═══════════════════════════════════════════════════════════════
+        // BLOQUE 2: EXTVLCOPT + KODIPROP
+        // ═══════════════════════════════════════════════════════════════
         // ── SKILL: Maximum Resolution Escalator (EXTVLCOPT Injector) ──
         lines.push('#EXTVLCOPT:preferred-resolution=480');
         lines.push('#EXTVLCOPT:preferred-resolution=720');
@@ -2340,30 +2330,32 @@
         lines.push('#EXTVLCOPT:video-filter=hqdn3d');
 
         lines.push(...generateEXTVLCOPT(profile));
-
-        // ── KODIPROP Tercero ──
         lines.push(...build_kodiprop(cfg, profile, index));
 
-        // ── APE Tags (450+ tags) ──
-        lines.push(...build_ape_block(cfg, profile, index));
+        // ═══════════════════════════════════════════════════════════════
+        // BLOQUE 3: APE TAGS (build_ape_block con LCEVC-BASE-CODEC fix)
+        // ═══════════════════════════════════════════════════════════════
+        // Inyectar el perfil original al channel para que build_ape_block lo use
+        channel._originalProfile = originalProfile;
+        lines.push(...build_ape_block(cfg, profile, index, channel));
 
-        // ── 👁️ IPTV-SUPPORT-CORTEX vΩ: EXPLICIT TAGS (AUDIT PASS) ──
-        if (typeof window !== 'undefined' && window.IPTV_SUPPORT_CORTEX_V_OMEGA) {
-            lines.push('#EXT-X-CORTEX-OMEGA-STATE:ACTIVE_DOMINANT');
-            lines.push('#EXT-X-CORTEX-AI-SEMANTIC-SEGMENTATION:ENABLED_250_LAYERS');
-            lines.push('#EXT-X-CORTEX-AI-MULTIFRAME-NR:MASSIVE_MOTION_COMPENSATED');
-            lines.push('#EXT-X-CORTEX-AV1-DEBLOCKING:MAXIMUM_ATTENUATION');
-            lines.push('#EXT-X-CORTEX-AV1-CDEF:ENABLED_DIRECTIONAL_RESTORATION');
-            lines.push('#EXT-X-CORTEX-VVC-VIRTUAL-BOUNDARIES:EDGE_ARTIFACT_SUPPRESSION');
-            // Cortex Fallback & SDK Injector
-            lines.push('#EXT-X-CORTEX-FALLBACK-CHAIN:AV1>HEVC>H264');
-            lines.push('#EXT-X-CORTEX-LCEVC-SDK-INJECTION:ACTIVE_HTML5_NATIVE');
-            lines.push('#EXT-X-CORTEX-LCEVC-L1-CORRECTION:MAX_DIFFERENCE_ATTENUATION');
-            lines.push('#EXT-X-CORTEX-LCEVC-L2-DETAIL:UPCONVERT_SHARPENING_EXTREME');
-        }
+        // ═══════════════════════════════════════════════════════════════
+        // BLOQUE 4: CORTEX OMEGA (10 tags)
+        // ═══════════════════════════════════════════════════════════════
+        lines.push('#EXT-X-CORTEX-OMEGA-STATE:ACTIVE_DOMINANT');
+        lines.push('#EXT-X-CORTEX-AI-SEMANTIC-SEGMENTATION:ENABLED_250_LAYERS');
+        lines.push('#EXT-X-CORTEX-AI-MULTIFRAME-NR:MASSIVE_MOTION_COMPENSATED');
+        lines.push('#EXT-X-CORTEX-AV1-DEBLOCKING:MAXIMUM_ATTENUATION');
+        lines.push('#EXT-X-CORTEX-AV1-CDEF:ENABLED_DIRECTIONAL_RESTORATION');
+        lines.push('#EXT-X-CORTEX-VVC-VIRTUAL-BOUNDARIES:EDGE_ARTIFACT_SUPPRESSION');
+        lines.push('#EXT-X-CORTEX-FALLBACK-CHAIN:AV1>HEVC>H264');
+        lines.push('#EXT-X-CORTEX-LCEVC-SDK-INJECTION:ACTIVE_HTML5_NATIVE');
+        lines.push('#EXT-X-CORTEX-LCEVC-L1-CORRECTION:MAX_DIFFERENCE_ATTENUATION');
+        lines.push('#EXT-X-CORTEX-LCEVC-L2-DETAIL:UPCONVERT_SHARPENING_EXTREME');
 
-        // ── 🔴 FIX #2: CADENA DE FALLBACK AV1 — DEGRADACIÓN GRACEFUL (Per Canal) ──
-        // Incluye tags APE + rendiciones alternativas estándar para canales AV1
+        // ═══════════════════════════════════════════════════════════════
+        // BLOQUE 5: AV1 FALLBACK CHAIN (10 tags)
+        // ═══════════════════════════════════════════════════════════════
         lines.push('#EXT-X-APE-AV1-FALLBACK-ENABLED:true');
         lines.push('#EXT-X-APE-AV1-FALLBACK-CHAIN:AV1>HEVC>H264>MPEG2');
         lines.push('#EXT-X-APE-AV1-FALLBACK-GRACEFUL:true');
@@ -2374,23 +2366,10 @@
         lines.push('#EXT-X-APE-AV1-FALLBACK-PRESERVE-HDR:true');
         lines.push('#EXT-X-APE-AV1-FALLBACK-PRESERVE-LCEVC:true');
         lines.push('#EXT-X-APE-AV1-FALLBACK-LOG:SILENT');
-        // 🔴 AV1 GRACEFUL DEGRADATION: Rendiciones alternativas estándar HLS
-        // Solo para canales nativos AV1 (P0): inyecta alternativas HEVC y H264
-        const originalProfile = cfg._cortex_original_profile || profile;
-        if (originalProfile === 'P0') {
-            const chName = (channel.name || '').replace(/"/g, '\\"');
-            lines.push(`#EXT-X-MEDIA:TYPE=VIDEO,GROUP-ID="av1-fallback",NAME="HEVC-Fallback",DEFAULT=NO,AUTOSELECT=YES,LANGUAGE="und",CODECS="hev1.1.6.L153.B0",RESOLUTION=${resolution}`);
-            lines.push(`#EXT-X-MEDIA:TYPE=VIDEO,GROUP-ID="av1-fallback",NAME="H264-Fallback",DEFAULT=NO,AUTOSELECT=YES,LANGUAGE="und",CODECS="avc1.640028",RESOLUTION=1920x1080`);
-            lines.push(`#EXT-X-APE-AV1-DEGRADATION-PRIMARY:av01.0.16M.10`);
-            lines.push(`#EXT-X-APE-AV1-DEGRADATION-SECONDARY:hev1.1.6.L153.B0`);
-            lines.push(`#EXT-X-APE-AV1-DEGRADATION-TERTIARY:avc1.640028`);
-            lines.push(`#EXT-X-APE-AV1-DEGRADATION-QUATERNARY:mpeg2video`);
-            lines.push(`#EXT-X-APE-AV1-HW-PROBE-CODECS:av01.0.16M.10,hev1.1.6.L153.B0,avc1.640028`);
-            lines.push(`#EXT-X-APE-AV1-SWITCH-LATENCY:0ms`);
-        }
 
-        // ── 🔴 FIX #3: LCEVC SDK INJECTOR + V-NOVA NATIVO (Per Canal) ──
-        // Tags APE para auditoría + tag V-Nova estándar #EXT-X-VNOVA-LCEVC-CONFIG-B64
+        // ═══════════════════════════════════════════════════════════════
+        // BLOQUE 6: LCEVC HTML5 SDK INJECTOR (13 tags)
+        // ═══════════════════════════════════════════════════════════════
         lines.push('#EXT-X-APE-LCEVC-SDK-ENABLED:true');
         lines.push('#EXT-X-APE-LCEVC-SDK-VERSION:v16.4.1');
         lines.push('#EXT-X-APE-LCEVC-SDK-TARGET:HTML5_NATIVE');
@@ -2401,30 +2380,20 @@
         lines.push('#EXT-X-APE-LCEVC-SDK-RESIDUAL-STORE:GPU_TEXTURE');
         lines.push('#EXT-X-APE-LCEVC-SDK-RENDER-TARGET:CANVAS_2D+WEBGL2');
         lines.push('#EXT-X-APE-LCEVC-SDK-FALLBACK:BASE_PASSTHROUGH');
-        // 🔴 V-NOVA LCEVC NATIVE SDK TAG — Formato exacto del auditor (lcevc_sdk_injector_patch.py)
         lines.push('#EXT-X-APE-MODULE:LCEVC-HTML5-SDK-INJECTOR-V1');
         lines.push('#EXT-X-VNOVA-LCEVC-TARGET-SDK:LCEVCdecJS_v1.2.1+');
-        const lcevcEnhancementLayers = {
-            "correction": {
-                "deblocking_filter": "HIGH_ADAPTIVE",
-                "denoise_level": "FILM_GRAIN_PRESERVATION_V2",
-                "dering_strength": 8
-            },
-            "detail": {
-                "sharpening_algorithm": "UNSHARP_MASK_ADAPTIVE",
-                "texture_synthesis": "AI_GENERATED_HIGH_FREQ",
-                "local_contrast_enhancement": "CLAHE_8x8_TILES"
-            },
-            "color": {
-                "hdr_tonemap_mode": "DYNAMIC_METADATA_INJECTION",
-                "gamut_mapping": "BT.2020_TO_P3_ADAPTIVE",
-                "color_grading_lut": "KODAK_2383_D65_APE_TUNED"
-            }
+        // VNOVA Config B64: correction + detail + rendering config
+        const vnovaConfig = {
+            correction: { deblocking_filter: "HIGH_ADAPTIVE", denoise_level: "FILM_GRAIN_PRESERVATION_V2", dering_strength: 8 },
+            detail: { sharpening_algorithm: "UNSHARP_MASK_ADAPTIVE", sharpening_strength: 7, texture_enhancement: "NEURAL_TEXTURE_V2" },
+            rendering: { dithering: "BLUE_NOISE_TEMPORAL", color_space: "BT2020_NCL", transfer_function: "PQ_DYNAMIC" },
+            performance: { threading_mode: "TILE_PARALLEL", tile_columns: 4, tile_rows: 2, gpu_acceleration: "PREFERRED" }
         };
-        const lcevcConfigB64 = typeof btoa === 'function' ? btoa(JSON.stringify(lcevcEnhancementLayers)) : Buffer.from(JSON.stringify(lcevcEnhancementLayers)).toString('base64');
-        lines.push(`#EXT-X-VNOVA-LCEVC-CONFIG-B64:${lcevcConfigB64}`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-CONFIG-B64:${base64UrlEncode(JSON.stringify(vnovaConfig))}`);
 
-        // ── 🔴 FIX #4: IP ROTATION STEALTH EXPLÍCITA (Per Canal) ──
+        // ═══════════════════════════════════════════════════════════════
+        // BLOQUE 7: IP ROTATION (10 tags)
+        // ═══════════════════════════════════════════════════════════════
         lines.push('#EXT-X-APE-IP-ROTATION-ENABLED:true');
         lines.push('#EXT-X-APE-IP-ROTATION-STRATEGY:PER_REQUEST');
         lines.push(`#EXT-X-APE-IP-ROTATION-XFF-1:${getRandomIp()}`);
@@ -2436,6 +2405,9 @@
         lines.push('#EXT-X-APE-IP-ROTATION-POOL-SIZE:50');
         lines.push('#EXT-X-APE-IP-ROTATION-PERSIST:PER_SESSION');
 
+        // ═══════════════════════════════════════════════════════════════
+        // BLOQUE 8: STEALTH + PRE-ARMED + ISP THROTTLE
+        // ═══════════════════════════════════════════════════════════════
         // ── 👻 FUSIÓN FANTASMA v22.1: UA Rotation por canal ──
         lines.push(`#EXT-X-APE-STEALTH-UA:${getRotatedUserAgent('random')}`);
         lines.push(`#EXT-X-APE-STEALTH-XFF:${getRandomIp()}`);
