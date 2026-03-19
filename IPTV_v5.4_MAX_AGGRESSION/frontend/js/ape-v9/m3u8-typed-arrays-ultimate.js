@@ -1671,6 +1671,14 @@
         };
         Object.assign(headers, _ispOv[profile] || _ispOv['P3']);
 
+        // ── 🌈 ITM SDR→HDR Engine: CAPA 2 (EXTHTTP Headers) ──
+        // Inyectar headers ITM para señalizar al player el modo de mapeo de tonos inverso
+        headers['X-ITM-Mode'] = 'ADAPTIVE_FRAME_BY_FRAME';
+        headers['X-ITM-Target-Nits'] = '1000';
+        headers['X-ITM-Target-Gamut'] = 'BT.2020';
+        headers['X-ITM-Analysis'] = 'LUMINANCE_PEAK+APL+HISTOGRAM';
+        headers['X-ITM-Metadata-Injection'] = 'MaxFALL+MaxCLL+DYNAMIC';
+
         // ══════════════════════════════════════════════════════════════════════
         // 🛡️ REGLA ANTI-400: Límite 10KB / 200 headers en EXTHTTP
         // ══════════════════════════════════════════════════════════════════════
@@ -1693,6 +1701,13 @@
         const allKeys = Object.keys(headers);
         const primaryHeaders = {};
         const overflowHeaders = {};
+
+        // ── 🌈 ITM SDR→HDR Engine: CAPA 3 (OVERFLOW Headers) ──
+        overflowHeaders['X-Cortex-ITM-Engine'] = 'ENABLED_SDR_ONLY';
+        overflowHeaders['X-Cortex-ITM-Analysis-Depth'] = 'FULL_HISTOGRAM';
+        overflowHeaders['X-Cortex-ITM-Expansion-Curve'] = 'ADAPTIVE_PER_FRAME';
+        overflowHeaders['X-Cortex-ITM-Color-Space-Out'] = 'BT.2020_NCL';
+        overflowHeaders['X-Cortex-ITM-Bit-Depth-Out'] = '10bit';
         let currentBytes = 0;
         let headerCount = 0;
 
@@ -1876,6 +1891,15 @@
             `#EXT-X-APE-QUANTUM-CHROMA-SUBSAMPLING:4:4:4`,
             `#EXT-X-APE-QUANTUM-COLOR-DEPTH:10bit`,
             `#EXT-X-APE-QUANTUM-ITM-SDR-TO-HDR:auto`,
+            `#EXT-X-APE-ITM-ENGINE-MODE:ADAPTIVE_FRAME_BY_FRAME`,
+            `#EXT-X-APE-ITM-TARGET-NITS:1000`,
+            `#EXT-X-APE-ITM-TARGET-GAMUT:BT.2020`,
+            `#EXT-X-APE-ITM-ANALYSIS:LUMINANCE_PEAK+APL+HISTOGRAM+COLOR_DISTRIBUTION`,
+            `#EXT-X-APE-ITM-METADATA-INJECTION:MaxFALL+MaxCLL+DYNAMIC_PER_FRAME`,
+            `#EXT-X-APE-ITM-EXPANSION-CURVE:SCENE_ADAPTIVE`,
+            `#EXT-X-APE-ITM-CLIPPING-GUARD:SPECULAR_HIGHLIGHT_PRESERVE`,
+            `#EXT-X-APE-ITM-SKIN-TONE-PROTECT:ENABLED`,
+            `#EXT-X-APE-PROCESSING-PIPELINE-ORDER:DECODE,ITM,LCEVC,AI,RENDER`,
 
             // 3. HEVC Level Supremacy (La Cascada) & LCEVC Dynamic Base
             `#EXT-X-APE-HEVC-LEVEL-CASCADE:6.1,5.1,5.0,4.1,4.0,3.1`,
@@ -2016,7 +2040,7 @@
             `#EXT-X-APE-AI-FRAME-INTERPOLATION:true`,
             `#EXT-X-APE-AI-COLOR-ENHANCEMENT:true`,
             `#EXT-X-APE-AI-SHARPENING:ADAPTIVE`,
-            `#EXT-X-APE-AI-HDR-UPCONVERT:SDR_TO_HDR10`,
+            `#EXT-X-APE-AI-HDR-UPCONVERT:SDR_TO_HDR10_PLUS`,
             `#EXT-X-APE-AI-VMAF-TARGET:${cfg.vmaf_target || '95'}`,
             `#EXT-X-APE-AI-CONTENT-AWARE-ENCODING:true`,
             `#EXT-X-APE-AI-PERCEPTUAL-QUALITY:SSIM+VMAF`,
@@ -2386,8 +2410,9 @@
         const vnovaConfig = {
             correction: { deblocking_filter: "HIGH_ADAPTIVE", denoise_level: "FILM_GRAIN_PRESERVATION_V2", dering_strength: 8 },
             detail: { sharpening_algorithm: "UNSHARP_MASK_ADAPTIVE", sharpening_strength: 7, texture_enhancement: "NEURAL_TEXTURE_V2" },
-            rendering: { dithering: "BLUE_NOISE_TEMPORAL", color_space: "BT2020_NCL", transfer_function: "PQ_DYNAMIC" },
-            performance: { threading_mode: "TILE_PARALLEL", tile_columns: 4, tile_rows: 2, gpu_acceleration: "PREFERRED" }
+            rendering: { dithering: "BLUE_NOISE_TEMPORAL", color_space: "BT2020_NCL", transfer_function: "PQ_DYNAMIC_SDR_UPCONVERT" },
+            performance: { threading_mode: "TILE_PARALLEL", tile_columns: 4, tile_rows: 2, gpu_acceleration: "PREFERRED" },
+            itm_engine: { mode: "ADAPTIVE_FRAME_BY_FRAME", target_nits: 1000, target_gamut: "BT.2020", expansion_curve: "SCENE_ADAPTIVE", skin_tone_protect: true, clipping_guard: "SPECULAR_HIGHLIGHT_PRESERVE" }
         };
         lines.push(`#EXT-X-VNOVA-LCEVC-CONFIG-B64:${base64UrlEncode(JSON.stringify(vnovaConfig))}`);
 
