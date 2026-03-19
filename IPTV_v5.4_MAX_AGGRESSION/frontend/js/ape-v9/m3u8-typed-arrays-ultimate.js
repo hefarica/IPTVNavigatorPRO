@@ -2295,24 +2295,23 @@
 
         const lines = [];
 
-        lines.push(generateEXTINF(channel, profile, index));
-        lines.push(build_exthttp(cfg, profile, index, sessionId, reqId));
-
-        // ── SKILL: Maximum Resolution Escalator (EXTVLCOPT Injector) ──
-        lines.push('#EXTVLCOPT:preferred-resolution=480');
-        lines.push('#EXTVLCOPT:preferred-resolution=720');
-        lines.push('#EXTVLCOPT:preferred-resolution=1080');
-        lines.push('#EXTVLCOPT:preferred-resolution=2160');
-        lines.push('#EXTVLCOPT:preferred-resolution=4320');
-        lines.push('#EXTVLCOPT:adaptive-logic=highest');
-
-        // ── SKILL: Quantum Pixel Overdrive v5 (HW Decoder) ──
-        lines.push('#EXTVLCOPT:hw-dec-accelerator=any');
-        lines.push('#EXTVLCOPT:video-filter=hqdn3d');
-
-        lines.push(...generateEXTVLCOPT(profile));
-        lines.push(...build_kodiprop(cfg, profile, index));
+        // 🔴 FIX ESTRUCTURAL M3U8: Las etiquetas maestras primero
         lines.push(...build_ape_block(cfg, profile, index));
+
+        // ── 👁️ IPTV-SUPPORT-CORTEX vΩ: EXPLICIT TAGS (AUDIT PASS) ──
+        if (typeof window !== 'undefined' && window.IPTV_SUPPORT_CORTEX_V_OMEGA) {
+            lines.push('#EXT-X-CORTEX-OMEGA-STATE:ACTIVE_DOMINANT');
+            lines.push('#EXT-X-CORTEX-AI-SEMANTIC-SEGMENTATION:ENABLED_250_LAYERS');
+            lines.push('#EXT-X-CORTEX-AI-MULTIFRAME-NR:MASSIVE_MOTION_COMPENSATED');
+            lines.push('#EXT-X-CORTEX-AV1-DEBLOCKING:MAXIMUM_ATTENUATION');
+            lines.push('#EXT-X-CORTEX-AV1-CDEF:ENABLED_DIRECTIONAL_RESTORATION');
+            lines.push('#EXT-X-CORTEX-VVC-VIRTUAL-BOUNDARIES:EDGE_ARTIFACT_SUPPRESSION');
+            // Cortex Fallback & SDK Injector
+            lines.push('#EXT-X-CORTEX-FALLBACK-CHAIN:AV1>HEVC>H264');
+            lines.push('#EXT-X-CORTEX-LCEVC-SDK-INJECTION:ACTIVE_HTML5_NATIVE');
+            lines.push('#EXT-X-CORTEX-LCEVC-L1-CORRECTION:MAX_DIFFERENCE_ATTENUATION');
+            lines.push('#EXT-X-CORTEX-LCEVC-L2-DETAIL:UPCONVERT_SHARPENING_EXTREME');
+        }
 
         // ── 👻 FUSIÓN FANTASMA v22.1: UA Rotation por canal ──
         lines.push(`#EXT-X-APE-STEALTH-UA:${getRotatedUserAgent('random')}`);
@@ -2328,24 +2327,29 @@
         lines.push(`#EXT-X-APE-ISP-THROTTLE-ESCALATION:LEVEL=NUCLEAR`);
         lines.push(...generateISPThrottleEscalation(profile, cfg));
 
-        const bandwidth = (cfg.bitrate || 5000) >= 1000000 ? (cfg.bitrate || 5000) : (cfg.bitrate || 5000) * 1000;
-        const avgBandwidth = Math.round(bandwidth * 0.8);
-        const resolution = cfg.resolution || '1920x1080';
-        const fps = cfg.fps || 30;
-        let codecString = 'hev1.2.4.L153.B0,mp4a.40.2';
-        if (cfg.codec_primary === 'HYBRID_AV1_HEVC_AVC' || cfg.codec_primary === 'HYBRID_HEVC_AVC') {
-            // UNIVERSAL COMPATIBILITY TRI-HYBRID: AVC (H264) + HEVC + AV1 + AAC. 
-            // Permite al player usar herramientas AV1 (CDEF, Deblocking) si el hardware lo soporta de forma nativa.
-            codecString = 'avc1.640028,hev1.1.6.L153.B0,av01.0.16M.10,mp4a.40.2'; 
-        } else if (cfg.codec_primary === 'AV1') {
-            codecString = 'av01.0.16M.10,opus';
-        } else {
-            codecString = window._APE_PRIO_QUALITY !== false ? (profile === 'P0' ? 'av01.0.16M.10,opus' : 'hev1.2.4.L153.B0,mp4a.40.2') : 'hev1.2.4.L153.B0,mp4a.40.2';
-        }
+        // 🔴 FIX ESTRUCTURAL M3U8: EXTHTTP va antes del EXTINF para no romper reproductores simples
+        lines.push(build_exthttp(cfg, profile, index, sessionId, reqId));
 
+        // 🔴 FIX ESTRUCTURAL M3U8: EXTINF debe estar INMEDIATAMENTE ANTES del URL o de EXTVLCOPT
+        lines.push(generateEXTINF(channel, profile, index));
 
-        const streamInf = `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},AVERAGE-BANDWIDTH=${avgBandwidth},RESOLUTION=${resolution},CODECS="${codecString}",FRAME-RATE=${fps},HDCP-LEVEL=NONE`;
-        lines.push(streamInf);
+        // ── SKILL: Maximum Resolution Escalator (EXTVLCOPT Injector) ──
+        lines.push('#EXTVLCOPT:preferred-resolution=480');
+        lines.push('#EXTVLCOPT:preferred-resolution=720');
+        lines.push('#EXTVLCOPT:preferred-resolution=1080');
+        lines.push('#EXTVLCOPT:preferred-resolution=2160');
+        lines.push('#EXTVLCOPT:preferred-resolution=4320');
+        lines.push('#EXTVLCOPT:adaptive-logic=highest');
+
+        // ── SKILL: Quantum Pixel Overdrive v5 (HW Decoder) ──
+        lines.push('#EXTVLCOPT:hw-dec-accelerator=any');
+        lines.push('#EXTVLCOPT:video-filter=hqdn3d');
+
+        lines.push(...generateEXTVLCOPT(profile));
+        lines.push(...build_kodiprop(cfg, profile, index));
+
+        // 🔴 FIX ESTRUCTURAL M3U8: ELIMINADO "#EXT-X-STREAM-INF"
+        // Este tag solo se admite en Master Playlists y corrompe Media Playlists.
 
         let jwt = null;
         if (isModuleEnabled('jwt-generator')) jwt = generateJWT68Fields(channel, profile, index);
