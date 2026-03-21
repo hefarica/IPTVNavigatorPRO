@@ -2721,7 +2721,7 @@
         
         // ── ÚNICO STREAM (REGLA 1 STRICT 1:1) ──
         const robustEvasionToken = `pevce_fallback_chain=cmaf>ts&evasion_3xx=follow_10&evasion_4xx=rotate_xff_ua_tunnel&evasion_5xx=backoff_jitter_ts`;
-        lines.push(`${primaryUrl}${separator}${robustEvasionToken}`);
+        const finalUrl = `${primaryUrl}${separator}${robustEvasionToken}`;
 
         // EXTHTTP + OVERFLOW (línea 3-4 del bloque)
         lines.push(build_exthttp(cfg, profile, index, sessionId, reqId));
@@ -3122,6 +3122,10 @@
         lines.push('#EXT-X-APE-TRANSPORT-LIMITATION:tone_mapping_not_inverse');
         lines.push('#EXT-X-APE-TRANSPORT-LIMITATION:ts_universal_fallback');
         lines.push('#EXT-X-APE-TRANSPORT-STABILITY-OVER-SOPHISTICATION:true');
+
+        // 🎯 INYECCIÓN DEL ÚNICO STREAM AL FINAL DEL BLOQUE (STRICT 1:1 RULE)
+        // De esta forma todos los tags anteriores aplican a este canal de manera correcta.
+        lines.push(finalUrl);
 
         return lines.join('\n');
     }
