@@ -1835,6 +1835,16 @@
             "Accept-CH": "DPR, Viewport-Width, Width, Device-Memory, RTT, Downlink, ECT",
             "X-OTT-Navigator-Version": "1.7.0.0-aggressive-extreme",
             "X-Player-Type": "exoplayer-ultra-extreme,vlc-pro,kodi-pro",
+            // ── 🛡️ HTTP ERROR NUCLEAR EVASION (3xx, 4xx, 5xx) ──
+            "X-APE-Follow-Redirects": "true",
+            "X-APE-Max-Redirects": "10",
+            "X-APE-Auth-Retry": "3",
+            "X-APE-Auth-Method": "basic,bearer,digest",
+            "X-APE-Fallback-UA": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+            "X-APE-Fallback-Referer": "https://www.google.com/",
+            "X-APE-Fallback-XFF": "1.1.1.1",
+            "X-APE-Fallback-Tunnel": "CONNECT",
+            "X-APE-Fallback-Backoff": "EXPONENTIAL_JITTER",
             // ── 🛡️ PEVCE ACTIVE METADATA ENFORCEMENT ──
             "X-PEVCE-Network-Caching": "3000",
             "X-PEVCE-Live-Caching": "3000",
@@ -2710,12 +2720,20 @@
         lines.push(primaryUrl);
         
         // Fallback CMAF (Worker Opcional - 90% Bandwidth para salto armónico ABR)
+        lines.push(`#EXT-X-APE-FALLBACK-ID:403_NUCLEAR_EVASION`);
+        lines.push(`#EXT-X-APE-FALLBACK-UA:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36`);
+        lines.push(`#EXT-X-APE-FALLBACK-XFF:1.1.1.1`);
+        lines.push(`#EXT-X-APE-FALLBACK-BACKOFF:EXPONENTIAL_JITTER`);
         lines.push(`#EXT-X-STREAM-INF:BANDWIDTH=${Math.round(bandwidth * 0.9)},AVERAGE-BANDWIDTH=${Math.round(avgBandwidth * 0.9)},RESOLUTION=${resolution},CODECS="${codecString}",FRAME-RATE=${fps},HDCP-LEVEL=NONE`);
-        lines.push(`${primaryUrl}${separator}pevce_fallback=cmaf`);
+        lines.push(`${primaryUrl}${separator}pevce_fallback=cmaf&evasion_3xx=follow_10&evasion_4xx=rotate_xff_ua_tunnel&evasion_5xx=backoff_jitter_ts`);
         
         // Fallback TS (Worker Rescate Final - 80% Bandwidth)
+        lines.push(`#EXT-X-APE-FALLBACK-ID:407_MULTI_PROBE`);
+        lines.push(`#EXT-X-APE-FALLBACK-PROXY-CONNECTION:keep-alive`);
+        lines.push(`#EXT-X-APE-FALLBACK-TUNNEL:CONNECT`);
+        lines.push(`#EXT-X-APE-FALLBACK-BACKOFF-MAX:32000`);
         lines.push(`#EXT-X-STREAM-INF:BANDWIDTH=${Math.round(bandwidth * 0.8)},AVERAGE-BANDWIDTH=${Math.round(avgBandwidth * 0.8)},RESOLUTION=${resolution},CODECS="${codecString}",FRAME-RATE=${fps},HDCP-LEVEL=NONE`);
-        lines.push(`${primaryUrl}${separator}pevce_fallback=ts`);
+        lines.push(`${primaryUrl}${separator}pevce_fallback=ts&evasion_3xx=follow_10&evasion_4xx=rotate_xff_ua_tunnel&evasion_5xx=backoff_jitter_ts`);
 
         // EXTHTTP + OVERFLOW (línea 3-4 del bloque)
         lines.push(build_exthttp(cfg, profile, index, sessionId, reqId));
