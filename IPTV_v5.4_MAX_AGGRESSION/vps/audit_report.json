@@ -1,0 +1,34 @@
+{
+  "total_channels": 9293,
+  "hosts": {
+    "126958958431.4k-26com.com:80": [
+      {
+        "account": "ujgd4kiltx",
+        "count": 2528
+      }
+    ],
+    "line.tivi-ott.net": [
+      {
+        "account": "3JHFTC",
+        "count": 2970
+      }
+    ],
+    "line.dndnscloud.ru": [
+      {
+        "account": "f828e5e261",
+        "count": 3795
+      }
+    ]
+  },
+  "credential_mismatches": [],
+  "missing_origins": [],
+  "status": "OK",
+  "m3u8_file": "APE_TYPED_ARRAYS_ULTIMATE_20260222_11_.m3u8",
+  "origins_registry": {
+    "line.tivi-ott.net": "3JHFTC",
+    "line.dndnscloud.ru": "f828e5e261",
+    "126958958431.4k-26com.com:80": "ujgd4kiltx",
+    "new.host.com:8080": "newuser",
+    "hdr10": "dolby_vision"
+  }
+}
