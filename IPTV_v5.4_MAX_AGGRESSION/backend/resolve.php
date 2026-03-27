@@ -343,7 +343,7 @@ $map = loadChannelMap($listId !== '' ? $listId : null);
 $decision = mapDecision($ch, $map);
 
 // ── CMAF Interception Point (APE CMAF Engine v2.0) ───────────────────────────
-if (class_exists(\'CmafIntegrationShim\')) {
+if (class_exists('CmafIntegrationShim')) {
     $cmafResult = CmafIntegrationShim::intercept($ch, $decision ?? []);
     if ($cmafResult !== null) { echo $cmafResult; exit; }
 }
@@ -675,9 +675,9 @@ $vlcopt[] = "#EXTVLCOPT:http-max-connections=3";
 // SECCIÓN 3: DECODIFICACIÓN Y HARDWARE (13 líneas)
 $vlcopt[] = "#EXTVLCOPT:avcodec-hw=any";
 $vlcopt[] = "#EXTVLCOPT:avcodec-threads=0";
-$vlcopt[] = "#EXTVLCOPT:avcodec-fast=1";
-$vlcopt[] = "#EXTVLCOPT:avcodec-skiploopfilter=4";
-$vlcopt[] = "#EXTVLCOPT:avcodec-hurry-up=1";
+$vlcopt[] = "#EXTVLCOPT:avcodec-fast=0";              // Quality over speed
+$vlcopt[] = "#EXTVLCOPT:avcodec-skiploopfilter=0";    // Never skip loop filter
+$vlcopt[] = "#EXTVLCOPT:avcodec-hurry-up=0";          // Never rush decode
 $vlcopt[] = "#EXTVLCOPT:avcodec-skip-frame=0";
 $vlcopt[] = "#EXTVLCOPT:avcodec-skip-idct=0";
 $vlcopt[] = "#EXTVLCOPT:sout-avcodec-strict=-2";
@@ -690,55 +690,93 @@ $vlcopt[] = "#EXTVLCOPT:adaptive-maxbw=" . $cfg['max_bw'];
 $vlcopt[] = "#EXTVLCOPT:http-max-retries=" . $cfg['recon_max'];
 $vlcopt[] = "#EXTVLCOPT:http-timeout=6000";
 
-// SECCIÓN 4: CALIDAD DE VIDEO (9 líneas)
-// JERARQUÍA RESOLUCIÓN INFINITA (Fallback 5-Tier)
-$vlcopt[] = "#EXTVLCOPT:preferred-resolution=480";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxwidth=854";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxheight=480";
-$vlcopt[] = "#EXTVLCOPT:preferred-resolution=720";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxwidth=1280";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxheight=720";
-$vlcopt[] = "#EXTVLCOPT:preferred-resolution=1080";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxwidth=1920";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxheight=1080";
-$vlcopt[] = "#EXTVLCOPT:preferred-resolution=2160";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxwidth=3840";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxheight=2160";
-$vlcopt[] = "#EXTVLCOPT:preferred-resolution=4320";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxwidth=7680";
-$vlcopt[] = "#EXTVLCOPT:adaptive-maxheight=4320";
-$vlcopt[] = "#EXTVLCOPT:adaptive-logic=highest";
+// SECCIÓN 4: CALIDAD DE VIDEO — FORCE HIGHEST RESOLUTION
+// ⚠️ FIX v6.4: NEVER cap resolution. Force maximum always.
+$vlcopt[] = "#EXTVLCOPT:preferred-resolution=-1";    // -1 = ALWAYS HIGHEST AVAILABLE
+$vlcopt[] = "#EXTVLCOPT:adaptive-maxwidth=3840";      // Force 4K width
+$vlcopt[] = "#EXTVLCOPT:adaptive-maxheight=2160";     // Force 4K height
+$vlcopt[] = "#EXTVLCOPT:adaptive-logic=highest";      // Always select highest bitrate variant
+$vlcopt[] = "#EXTVLCOPT:adaptive-minbw=5000000";      // Minimum 5Mbps (reject potato quality)
+
+// DEINTERLACE — Post-Production Grade
 $vlcopt[] = "#EXTVLCOPT:video-filter=deinterlace";
-$vlcopt[] = "#EXTVLCOPT:deinterlace-mode=yadif"; // 🥉 Fallback Supervivencia (30fps)
-$vlcopt[] = "#EXTVLCOPT:deinterlace-mode=yadif2x"; // 🥈 Fallback Fluido (60fps)
-$vlcopt[] = "#EXTVLCOPT:deinterlace-mode=bwdif"; // 🥇 Target Post-Producción Max Calidad
-$vlcopt[] = "#EXTVLCOPT:postproc-q=6";
+$vlcopt[] = "#EXTVLCOPT:deinterlace-mode=bwdif";      // Best quality deinterlace
+
+// IMAGE SHARPENING & ENHANCEMENT — Maximum Visual Fidelity
+$vlcopt[] = "#EXTVLCOPT:postproc-q=6";                // Max postprocessing quality
+$vlcopt[] = "#EXTVLCOPT:sharpen-sigma=0.06";           // Aggressive edge sharpening
+$vlcopt[] = "#EXTVLCOPT:contrast=1.08";                // Slight contrast boost
+$vlcopt[] = "#EXTVLCOPT:saturation=1.12";              // Richer colors
+$vlcopt[] = "#EXTVLCOPT:gamma=0.96";                   // Slightly brighter midtones
+$vlcopt[] = "#EXTVLCOPT:swscale-mode=9";               // Lanczos (highest quality scaler)
 $vlcopt[] = "#EXTVLCOPT:aspect-ratio=16:9";
+
+// CODEC QUALITY — No shortcuts, maximum detail
+$vlcopt[] = "#EXTVLCOPT:avcodec-skip-frame=0";         // Never skip frames
+$vlcopt[] = "#EXTVLCOPT:avcodec-skip-idct=0";          // Never skip IDCT
+$vlcopt[] = "#EXTVLCOPT:avcodec-dr=1";                 // Direct rendering
 $vlcopt[] = "#EXTVLCOPT:video-on-top=0";
 $vlcopt[] = "#EXTVLCOPT:video-deco=1";
 
-// SECCIÓN 4B: HDR COLORIMETRÍA
-if ($hdrEnabled) {
-    $vlcopt[] = "#EXTVLCOPT:video-color-space=" . $cfg['color_space'];
-    $vlcopt[] = "#EXTVLCOPT:video-transfer-function=" . $cfg['transfer'];
-    $vlcopt[] = "#EXTVLCOPT:video-color-primaries=" . ($cfg['color_space'] === 'BT2020' ? 'BT2020' : 'BT709');
-    $vlcopt[] = "#EXTVLCOPT:video-color-range=limited";
-    $vlcopt[] = "#EXTVLCOPT:tone-mapping=auto";
-    $vlcopt[] = "#EXTVLCOPT:hdr-output-mode=auto";
-    $vlcopt[] = "#EXTVLCOPT:video-chroma-subsampling=" . $cfg['chroma'];
-    $vlcopt[] = "#EXTVLCOPT:avcodec-options={color_depth=" . $cfg['color_depth'] . "}";
-} else {
-    $vlcopt[] = "#EXTVLCOPT:tone-mapping=disabled";
-    $vlcopt[] = "#EXTVLCOPT:hdr-output-mode=sdr";
-}
+// SECCIÓN 4B: HDR/SDR COLORIMETRÍA — ALWAYS ACTIVE (v4.1)
+// ⚠️ FIX: Previously conditional. Now HDR is FORCED for ALL content.
 
-// SECCIÓN 5: POST-PROCESAMIENTO (6 líneas)
-$vlcopt[] = "#EXTVLCOPT:video-filter=adjust:sharpen";
-$vlcopt[] = "#EXTVLCOPT:sharpen-sigma=" . $cfg['sharpen'];
-$vlcopt[] = "#EXTVLCOPT:contrast=1.0";
-$vlcopt[] = "#EXTVLCOPT:brightness=1.0";
-$vlcopt[] = "#EXTVLCOPT:saturation=1.0";
-$vlcopt[] = "#EXTVLCOPT:gamma=1.0";
+// ── Core Color Space: BT.2020 for ALL content ──
+$vlcopt[] = "#EXTVLCOPT:video-color-space=BT2020";
+$vlcopt[] = "#EXTVLCOPT:video-transfer-function=" . ($hdrEnabled ? $cfg['transfer'] : 'PQ');
+$vlcopt[] = "#EXTVLCOPT:video-color-primaries=BT2020";
+$vlcopt[] = "#EXTVLCOPT:video-color-range=full";
+$vlcopt[] = "#EXTVLCOPT:video-chroma-subsampling=" . ($hdrEnabled ? $cfg['chroma'] : '4:2:0');
+$vlcopt[] = "#EXTVLCOPT:avcodec-options={color_depth=" . ($hdrEnabled ? $cfg['color_depth'] : '10') . "}";
+
+// ── HDR Output: ALWAYS ON ──
+$vlcopt[] = "#EXTVLCOPT:hdr-output-mode=always_hdr";
+$vlcopt[] = "#EXTVLCOPT:tone-mapping=hdr";
+
+// ── Tone Mapping Algorithm ──
+$vlcopt[] = "#EXTVLCOPT:tone-mapping-algorithm=reinhard";
+$vlcopt[] = "#EXTVLCOPT:tone-mapping-param=0.7";
+$vlcopt[] = "#EXTVLCOPT:tone-mapping-desat=2.0";
+$vlcopt[] = "#EXTVLCOPT:peak-detect=1";
+
+// ── HDR10/HDR10+ Metadata ──
+$vlcopt[] = "#EXTVLCOPT:hdr10-maxcll=5000";
+$vlcopt[] = "#EXTVLCOPT:hdr10-maxfall=1500";
+$vlcopt[] = "#EXTVLCOPT:hdr10-mastering-max-lum=5000";
+$vlcopt[] = "#EXTVLCOPT:hdr10-mastering-min-lum=1";
+
+// ── Color Matrix and Rendering ──
+$vlcopt[] = "#EXTVLCOPT:video-color-matrix=BT2020_NCL";
+$vlcopt[] = "#EXTVLCOPT:video-chroma-location=left";
+$vlcopt[] = "#EXTVLCOPT:render-intent=perceptual";
+$vlcopt[] = "#EXTVLCOPT:gamut-mapping=perceptual";
+$vlcopt[] = "#EXTVLCOPT:target-peak=5000";
+
+// ── D3D11/OpenGL HDR Rendering ──
+$vlcopt[] = "#EXTVLCOPT:d3d11-hdr-mode=always";
+$vlcopt[] = "#EXTVLCOPT:opengl-hdr=1";
+$vlcopt[] = "#EXTVLCOPT:gl-tone-mapping=reinhard";
+$vlcopt[] = "#EXTVLCOPT:gl-target-peak=5000";
+
+// ── Deband Filter ──
+$vlcopt[] = "#EXTVLCOPT:deband=1";
+$vlcopt[] = "#EXTVLCOPT:deband-iterations=4";
+$vlcopt[] = "#EXTVLCOPT:deband-threshold=64";
+$vlcopt[] = "#EXTVLCOPT:deband-radius=16";
+$vlcopt[] = "#EXTVLCOPT:deband-grain=32";
+
+// ── ICC Color Management ──
+$vlcopt[] = "#EXTVLCOPT:icc-profile=auto";
+$vlcopt[] = "#EXTVLCOPT:icc-contrast=1";
+
+// ── Dithering ──
+$vlcopt[] = "#EXTVLCOPT:dither-algo=fruit";
+$vlcopt[] = "#EXTVLCOPT:dither-depth=auto";
+
+// SECCIÓN 5: POST-PROCESAMIENTO — REMOVED (v4.1)
+// ⚠️ BUG FIX: This section reset sharpen/contrast/saturation to 1.0
+// DESTROYING the AI engine's polymorphic adaptive values.
+$vlcopt[] = "#EXTVLCOPT:video-filter=adjust:sharpen:deinterlace";
 
 // SECCIÓN 6: CONEXIÓN ESTABLE (6 líneas)
 $vlcopt[] = "#EXTVLCOPT:http-reconnect=true";
@@ -780,8 +818,8 @@ $vlcopt[] = "#EXTVLCOPT:force-dolby-surround=0";
 $labelFinal = (is_string($labelOverride) && $labelOverride !== '') ? $labelOverride : $cfg['label'];
 
 header('Content-Type: application/x-mpegURL; charset=utf-8');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-// header('Pragma: no-cache');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=3');
+header('X-APE-Refresh-Interval: 3');
 
 // NO #EXTM3U header for patch fragments (fixes OTT Navigator 512)
 echo '#EXTINF:-1 '
