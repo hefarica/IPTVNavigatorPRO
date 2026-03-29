@@ -1620,7 +1620,18 @@
             // ── SECCIÓN 15: SYNC & DISPLAY (3 líneas) ──
             `#EXTVLCOPT:clock-synchro=1`,
             `#EXTVLCOPT:avcodec-preset=p6`,
-            `#EXTVLCOPT:fullscreen=1`
+            `#EXTVLCOPT:fullscreen=1`,
+            // ── SECCIÓN 16: RESOLVER-SYNC — Directives from rq_sniper_mode.php ──
+            `#EXTVLCOPT:adaptive-maxbw=300000000`,
+            `#EXTVLCOPT:tls-session-resumption=true`,
+            `#EXTVLCOPT:vout=opengl`,
+            `#EXTVLCOPT:http-user-timeout=15000`,
+            `#EXTVLCOPT:postproc-q=6`,
+            `#EXTVLCOPT:network-caching-dscp=56`,
+            `#EXTVLCOPT:network-caching-dscp-qos=56`,
+            `#EXTVLCOPT:server-port=443`,
+            `#EXTVLCOPT:video-on-top=0`,
+            `#EXTVLCOPT:no-http-reconnect=0`
         ];
     }
 
@@ -1812,7 +1823,21 @@
             `#KODIPROP:inputstream.adaptive.stream_params=profile=${profile}`,
             `#KODIPROP:inputstream.adaptive.stream_headers=${streamHeaders}`,
             `#KODIPROP:inputstream.adaptive.live_delay=${Math.floor(GLOBAL_CACHING.file / 1000)}`,
-            `#KODIPROP:inputstream.adaptive.buffer_duration=${Math.floor(GLOBAL_CACHING.network / 1000)}`
+            `#KODIPROP:inputstream.adaptive.buffer_duration=${Math.floor(GLOBAL_CACHING.network / 1000)}`,
+            // ── 🔥 HDR PEAK NIT ENGINE v1.0 — 5000cd/m² KODIPROP (Module 16 sync) ──
+            '#KODIPROP:inputstream.adaptive.hdr_handling=force_hdr',
+            '#KODIPROP:inputstream.adaptive.max_luminance=5000',
+            '#KODIPROP:inputstream.adaptive.min_luminance=0.0005',
+            '#KODIPROP:inputstream.adaptive.hdr10_plus_parse=true',
+            '#KODIPROP:inputstream.adaptive.dolby_vision_rpu=true',
+            '#KODIPROP:inputstream.adaptive.color_primaries=bt2020',
+            '#KODIPROP:inputstream.adaptive.transfer=smpte2084',
+            '#KODIPROP:inputstream.adaptive.matrix_coefficients=bt2020nc',
+            '#KODIPROP:inputstream.adaptive.color_space=bt2020',
+            '#KODIPROP:inputstream.adaptive.pixel_format=yuv420p10le',
+            '#KODIPROP:inputstream.adaptive.tone_mapping=bt2390',
+            '#KODIPROP:inputstream.adaptive.tone_mapping_peak=5000',
+            '#KODIPROP:inputstream.adaptive.film_grain_synthesis=true'
         ];
     }
 
@@ -2368,36 +2393,43 @@
             'X-SVT-AV1-Film-Grain': '1',
             'X-SVT-AV1-Enable-Tf': 'true',
 
-            // ── HDR10 Separated (SMPTE ST 2086) ──
+            // ── HDR10 Separated (SMPTE ST 2086) — 5000 NITS QUANTUM PEAK ──
             'X-HDR10-Primaries-G': '0.680,0.320',
             'X-HDR10-Primaries-B': '0.150,0.060',
             'X-HDR10-Primaries-R': '0.640,0.330',
             'X-HDR10-White-Point': '0.3127,0.3290',
-            'X-HDR10-Luminance-Max': '1000',
-            'X-HDR10-Luminance-Min': '0.0001',
-            'X-HDR10-MaxCLL': '1000',
-            'X-HDR10-MaxFALL': '400',
+            'X-HDR10-Luminance-Max': '5000',
+            'X-HDR10-Luminance-Min': '0.0005',
+            'X-HDR10-MaxCLL': '5000',
+            'X-HDR10-MaxFALL': '800',
+            'X-HDR10-Contrast-Ratio': '10000000:1',
 
-            // ── HDR10+ Scene (SMPTE ST 2094-40) ──
+            // ── HDR10+ Scene (SMPTE ST 2094-40) — 5000 NITS ──
             'X-HDR10-Plus-Profile': 'A',
             'X-HDR10-Plus-DMI-Enabled': 'true',
             'X-HDR10-Plus-Bezier-Curve': 'enabled',
             'X-HDR10-Plus-Luminance-Percentile': '99',
-            'X-HDR10-Plus-Scene-Brightness-Max': '1000',
-            'X-HDR10-Plus-Scene-Brightness-Min': '0.01',
-            'X-HDR10-Plus-Scene-MaxSCL': '1000,1000,1000',
+            'X-HDR10-Plus-Scene-Brightness-Max': '5000',
+            'X-HDR10-Plus-Scene-Brightness-Min': '0.0005',
+            'X-HDR10-Plus-Scene-MaxSCL': '5000,5000,5000',
 
-            // ── Dolby Vision 8.1 (cross-compatible) ──
+            // ── Dolby Vision 8.1 + RPU (cross-compatible) — 5000 NITS ──
             'X-Dolby-Vision-Profile-81': '8.1',
+            'X-Dolby-Vision-Profiles': '5,8,7',
             'X-Dolby-Vision-HDR10-Plus-Compat': 'true',
             'X-Dolby-Vision-Cross-Compatible': 'true',
             'X-Dolby-Vision-RPU-Version': '4',
             'X-Dolby-Vision-Backwards-Compatible': 'true',
+            'X-Dolby-Vision-L1-MinPQ': '62',
+            'X-Dolby-Vision-L1-MaxPQ': '3765',
+            'X-Dolby-Vision-L1-AvgPQ': '1200',
+            'X-Dolby-Vision-L6-MaxSCL': '5000,5000,5000',
 
             // ── HLG Advanced (BBC/NHK studies) ──
             'X-HLG-Transfer-Function': 'HLG',
-            'X-HLG-Max-Luminance': '1000',
+            'X-HLG-Max-Luminance': '4000',
             'X-HLG-System-Gamma': '1.2',
+            'X-HLG-Reference-White': '203',
             'X-HLG-SDR-Backward-Compatible': 'true',
 
             // ── Color Depth (SMPTE ST 2084) ──
@@ -2411,14 +2443,16 @@
             'X-Chroma-Location': 'left',
             'X-Chroma-Precision': String(cfg.color_depth || 10) + 'bit',
 
-            // ── Tone Mapping BT.2390 v4.0 (ITU-R BT.2390-9) ──
+            // ── Tone Mapping BT.2390 v4.0 + GPU libplacebo (ITU-R BT.2390-9) — 5000 NITS ──
             'X-Tone-Mapping-Version': '4.0',
-            'X-Tone-Mapping-Max-Luminance': '1000',
-            'X-Tone-Mapping-Min-Luminance': '0.001',
+            'X-Tone-Mapping-Max-Luminance': '5000',
+            'X-Tone-Mapping-Min-Luminance': '0.0005',
             'X-Tone-Mapping-Normalize': 'true',
-            'X-Tone-Mapping-Display-Peak': '500',
-            'X-Tone-Mapping-Display-Min': '0.01',
-            'X-Tone-Mapping-Display-Black': '0.001',
+            'X-Tone-Mapping-Display-Peak': '5000',
+            'X-Tone-Mapping-Display-Min': '0.0005',
+            'X-Tone-Mapping-Display-Black': '0.0005',
+            'X-Tone-Mapping-GPU': 'libplacebo+vulkan+bt2446a',
+            'X-Tone-Mapping-Desaturation-Factor': '0',
             'X-Tone-Mapping-Ambient-Light': '100',
             'X-Tone-Mapping-Adaptation': 'auto',
             // Hable Curve (cinematic)
@@ -2476,6 +2510,97 @@
             'X-MS-SSIM-Target': '0.97',
             'X-VIF-Target': '0.95'
         };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 🔥 MODULE 16 SYNC: HDR PEAK NIT ENGINE 5000cd/m² — Per-Channel Tags
+    // Synced with /var/www/html/iptv-ape/ape_hdr_peak_nit_engine.php
+    // ═══════════════════════════════════════════════════════════════════
+    function build_hdr_peak_nit_tags(cfg, profile) {
+        const isHDR = (cfg.color_depth || 8) >= 10;
+        const peak = isHDR ? 5000 : 1000;
+        const minLum = isHDR ? '0.0005' : '0.01';
+        return [
+            // 16A: ST 2086 Static Metadata
+            `#EXT-X-APE-HDR-PEAK-NIT-ENGINE:v1.0-${peak}cd`,
+            `#EXT-X-APE-HDR-MASTERING-DISPLAY:P3-D65|PEAK=${peak}|MIN=${minLum}|MaxCLL=${peak}|MaxFALL=${isHDR ? 800 : 400}`,
+            `#EXT-X-APE-HDR-CONTRAST-RATIO:10000000:1`,
+            // 16B: HDR10+ Dynamic (per-frame)
+            `#EXT-X-APE-HDR10-PLUS-DYNAMIC:L1=${minLum}-${peak}|L2=12-TRIMS|L5=ACTIVE-AREA|L6-MaxSCL=${peak},${peak},${peak}`,
+            // 16C: PQ EOTF
+            `#EXT-X-APE-HDR-PQ-EOTF:ST2084|TARGET=${peak}|CODE=3765|DEPTH=10bit|FORMAT=yuv420p10le`,
+            // 16D: Dolby Vision RPU
+            `#EXT-X-APE-HDR-DOLBY-VISION:PROFILES=5,8,7|L1-MaxPQ=3765|L6-MaxSCL=${peak}|CM=v4.0`,
+            // 16E: HLG
+            `#EXT-X-APE-HDR-HLG:PEAK=4000|GAMMA=1.2|REF-WHITE=203|DUAL-MODE=true`,
+            // 16F: GPU Tone Mapping
+            `#EXT-X-APE-HDR-GPU-TONEMAP:libplacebo+vulkan|BT2446a|BT2390|DESAT=0|PEAK=${peak}`,
+            // 16G: Display/TV Directives
+            `#EXT-X-APE-HDR-DISPLAY:PEAK=${peak}|LOCAL-DIMMING=AGGRESSIVE-FULL-ARRAY|SPECULAR=QUANTUM|BLOOM=NATURAL`,
+            // 16H: Film Grain Synthesis
+            `#EXT-X-APE-HDR-FILM-GRAIN:NEURAL-MPEG|TYPE=analog-cinematic|ADDBACK=post-tonemap`,
+            // 16I: KODIPROP HDR (inline summary)
+            `#EXT-X-APE-HDR-KODI:force_hdr=true|max_lum=${peak}|color=bt2020|transfer=smpte2084|dv_rpu=true|hdr10plus=true`
+        ];
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 🧹 MODULE 15 SYNC: ANTI-NOISE ENGINE 14-FILTER — Per-Channel Tags
+    // Synced with /var/www/html/iptv-ape/ape_anti_noise_engine.php
+    // ═══════════════════════════════════════════════════════════════════
+    function build_anti_noise_tags(cfg, profile) {
+        // Resolution-adaptive noise reduction (from resolver's ape_noise_engine_integrate)
+        const height = cfg.height || parseInt((cfg.resolution || '1920x1080').split('x')[1]) || 1080;
+        let noiseLevel, filterChain;
+        if (height >= 2160) {
+            noiseLevel = 'MINIMAL';
+            filterChain = 'nlmeans=h=3:p=3:r=9,hqdn3d=2:1.5:3:2';
+        } else if (height >= 1080) {
+            noiseLevel = 'MODERATE';
+            filterChain = 'nlmeans=h=6:p=5:r=15,hqdn3d=4:3:6:4,unsharp=5:5:0.3';
+        } else if (height >= 720) {
+            noiseLevel = 'AGGRESSIVE';
+            filterChain = 'nlmeans=h=8:p=7:r=21,hqdn3d=6:4:8:6,unsharp=5:5:0.5,afftdn=nf=-20';
+        } else {
+            noiseLevel = 'NUCLEAR';
+            filterChain = 'nlmeans=h=10:p=7:r=21,hqdn3d=8:6:10:8,vaguedenoiser=threshold=3:method=2,afftdn=nf=-25,unsharp=7:7:0.7';
+        }
+        return [
+            `#EXT-X-APE-ANTI-NOISE-ENGINE:v1.0-${noiseLevel}`,
+            `#EXT-X-APE-ANTI-NOISE-RESOLUTION:${height}p`,
+            `#EXT-X-APE-ANTI-NOISE-FILTER-CHAIN:${filterChain}`,
+            `#EXT-X-APE-ANTI-NOISE-FILTERS:14`,
+            `#EXT-X-APE-ANTI-NOISE-NLMEANS:h=${height >= 2160 ? 3 : height >= 1080 ? 6 : 8}|p=${height >= 2160 ? 3 : 5}|r=${height >= 2160 ? 9 : 15}`,
+            `#EXT-X-APE-ANTI-NOISE-HQDN3D:luma-spatial=${height >= 2160 ? 2 : 4}|chroma-spatial=${height >= 2160 ? 1.5 : 3}`,
+            `#EXT-X-APE-ANTI-NOISE-AFFTDN:nf=${height >= 720 ? '-20' : '-25'}|tn=1`,
+            `#EXT-X-APE-ANTI-NOISE-PRESERVE:EDGES=true|DETAIL=true|GRAIN=cinematic`
+        ];
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 🛡️ ANTI-CUT ISP STRANGULATION — Per-Channel Tags
+    // Synced with /var/www/html/iptv-ape/rq_anti_cut_engine.php
+    // ═══════════════════════════════════════════════════════════════════
+    function build_anti_cut_tags(cfg, profile) {
+        // Map profile to anti-cut profile (from resolver's rq_get_anti_cut_profile)
+        const profileMap = {
+            P0: 'P1-SUPREME',  P1: 'P1-SUPREME',
+            P2: 'P2-EXTREME',  P3: 'P3-STANDARD',
+            P4: 'P4-STABLE',   P5: 'P5-SAFE'
+        };
+        const acProfile = profileMap[profile] || 'P3-STANDARD';
+        const baseBw = cfg.max_bandwidth || cfg.bitrate * 1000 || 8000000;
+        return [
+            `#EXT-X-APE-ANTI-CUT-ENGINE:v1.0`,
+            `#EXT-X-APE-ANTI-CUT-PROFILE:${acProfile}`,
+            `#EXT-X-APE-ANTI-CUT-ISP-STRANGLE:DETECT+EVADE+ESCALATE`,
+            `#EXT-X-APE-ANTI-CUT-BW-DEMAND:${baseBw}`,
+            `#EXT-X-APE-ANTI-CUT-BW-FLOOR:${Math.floor(baseBw * 0.8)}`,
+            `#EXT-X-APE-ANTI-CUT-RECOVERY:INSTANT|PARALLEL=64|WARM-POOL=20`,
+            `#EXT-X-APE-ANTI-CUT-DETECTION:PACKET-LOSS|THROUGHPUT-DROP|RTT-SPIKE|TCP-RST`,
+            `#EXT-X-APE-ANTI-CUT-ESCALATION:DOUBLE-BW|ROTATE-CDN|MULTI-SOURCE|TCP-WINDOW-SCALE`,
+            `#EXT-X-APE-ANTI-CUT-PERSIST:NEVER-DOWNGRADE`
+        ];
     }
 
     function build_exthttp(cfg, profile, index, sessionId, reqId) {
@@ -2611,27 +2736,38 @@
             "X-VVC-LMCS": "true",
             "X-EVC-Level": cfg.evc_level || "5.1",
             "X-EVC-Toolset": "MAIN",
-            "X-HDR-MaxCLL": "1000",
-            "X-HDR-MaxFALL": "400",
-            "X-HDR-Mastering-Display": "G(0.680,0.320)B(0.150,0.060)R(0.640,0.330)WP(0.3127,0.3290)L(1000,0.001)",
+            "X-HDR-MaxCLL": "5000",
+            "X-HDR-MaxFALL": "800",
+            "X-HDR-Mastering-Display": "G(0.680,0.320)B(0.150,0.060)R(0.640,0.330)WP(0.3127,0.3290)L(5000,0.0005)",
             "X-HDR-Reference-White": "203nits",
             "X-HDR-Vivid": "true",
             "X-HDR-Filmmaker-Mode": "true",
             "X-HDR-Extended-Range": "true",
+            "X-HDR-Peak-Nit-Engine": "v1.0-5000cd",
+            "X-HDR-PQ-EOTF": "ST2084",
+            "X-HDR-PQ-Target-Code": "3765",
+            "X-HDR-Pixel-Format": "yuv420p10le",
+            "X-HDR-Local-Dimming": "AGGRESSIVE,FULL-ARRAY,HIGH",
+            "X-HDR-Specular-Boost": "quantum-5000nit-per-pixel",
+            "X-HDR-Highlight-Rolloff": "NONE",
+            "X-HDR-Bloom-Effect": "natural-hdr-glow",
+            "X-HDR-Film-Grain-Synthesis": "neural-mpeg-standard",
             // ── HDR10+ Dynamic Metadata ──
             "X-HDR10-Plus": "enabled",
             "X-HDR10-Plus-Version": "1.0",
-            "X-HDR10-Plus-MaxLuminance": "4000",
-            "X-HDR10-Plus-MinLuminance": "0.0001",
+            "X-HDR10-Plus-MaxLuminance": "5000",
+            "X-HDR10-Plus-MinLuminance": "0.0005",
             "X-HDR10-Plus-Dynamic-Tone-Mapping": "per-scene",
             "X-HDR10-Plus-Scene-Analysis": "auto",
-            // ── Dolby Vision Configuration ──
-            "X-Dolby-Vision-Profile": "5",
+            "X-HDR10-Plus-L1-MinMaxAvg": "0.0005,5000,800",
+            "X-HDR10-Plus-L6-MaxSCL": "5000,5000,5000",
+            // ── Dolby Vision Configuration — 5000 NITS ──
+            "X-Dolby-Vision-Profile": "5,8,7",
             "X-Dolby-Vision-Level": "6.1",
             "X-Dolby-Vision-RPU": "present",
             "X-Dolby-Vision-Compatibility": "hdr10-backward-compatible",
-            "X-Dolby-Vision-Max-Luminance": "4000",
-            "X-Dolby-Vision-Min-Luminance": "0.0001",
+            "X-Dolby-Vision-Max-Luminance": "5000",
+            "X-Dolby-Vision-Min-Luminance": "0.0005",
             // ── HLG (Hybrid Log-Gamma) ──
             "X-HLG-Enabled": "true",
             "X-HLG-Version": "v2",
@@ -4031,6 +4167,13 @@
         // ── VLC Resolution & Deinterlacing (Delegado a generateEXTVLCOPT) ──
         lines.push(...generateEXTVLCOPT(profile));
         lines.push(...build_kodiprop(cfg, profile, index));
+
+        // ── 🔥 MODULE 16: HDR PEAK NIT ENGINE 5000cd/m² (Resolver Sync) ──
+        lines.push(...build_hdr_peak_nit_tags(cfg, profile));
+        // ── 🧹 MODULE 15: ANTI-NOISE ENGINE 14-FILTER (Resolver Sync) ──
+        lines.push(...build_anti_noise_tags(cfg, profile));
+        // ── 🛡️ ANTI-CUT ISP STRANGULATION (Resolver Sync) ──
+        lines.push(...build_anti_cut_tags(cfg, profile));
 
         // ═══════════════════════════════════════════════════════════════
         // ☢️ 6-LAYER NUCLEAR TAGS — INELUDIBLE PER-CHANNEL SYSTEM

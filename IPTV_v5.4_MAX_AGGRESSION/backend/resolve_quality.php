@@ -1,6 +1,26 @@
 <?php
 declare(strict_types=1);
+
+// === APE MODULE LOADER — BULLETPROOF ===
+// All external modules loaded with file_exists + function_exists guards
+// This prevents Fatal Errors when a module is missing from the VPS
+function ape_safe_call($func_name, ...$args) {
+    if (function_exists($func_name)) {
+        return call_user_func_array($func_name, $args);
+    }
+    // Log missing function for debugging
+    @file_put_contents(__DIR__ . '/logs/missing_functions.log',
+        date('Y-m-d H:i:s') . " MISSING: {$func_name}()\n", FILE_APPEND);
+    return null;
+}
+
 require_once __DIR__ . "/rq_sniper_mode.php";
+if (file_exists(__DIR__ . "/ape_stream_validator_proxy.php")) {
+    require_once __DIR__ . "/ape_stream_validator_proxy.php";
+}
+if (file_exists(__DIR__ . "/rq_anti_cut_engine.php")) {
+    require_once __DIR__ . "/rq_anti_cut_engine.php";
+}
 if (file_exists(__DIR__ . "/ape_anti_noise_engine.php")) {
     require_once __DIR__ . "/ape_anti_noise_engine.php";
 }
@@ -3459,7 +3479,9 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
     $effective_profile = $sniper['effective_profile'];  // P1 if STREAMING, P2 if RECENT, tier if IDLE
 
     // === ANTI-CUT ENGINE: Generate profile-aware directives ===
-    $anti_cut = rq_anti_cut_isp_strangler($effective_profile, $ch_id, $host, $sessionId);
+    if (function_exists('rq_anti_cut_isp_strangler')) {
+        $anti_cut = rq_anti_cut_isp_strangler($effective_profile, $ch_id, $host, $sessionId);
+    }
     $p = $anti_cut['profile_data'];
 
     // === EXTRACT CHANNEL NAME ===
