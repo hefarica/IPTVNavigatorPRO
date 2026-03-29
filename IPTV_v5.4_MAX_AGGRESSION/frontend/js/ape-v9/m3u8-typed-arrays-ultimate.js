@@ -779,19 +779,119 @@
      * @returns {Object} Configuración del perfil
      */
     function getProfileConfig(profileId) {
-        // ✅ PRIORIDAD 1: Bridge desde Frontend (ProfileManagerV9)
-        if (window.APE_PROFILE_BRIDGE?.isActive?.() && window.APE_PROFILE_BRIDGE?.getProfile) {
-            const bridged = window.APE_PROFILE_BRIDGE.getProfile(profileId);
-            if (bridged && bridged._bridged) {
-                console.log(`🔗 [BRIDGE] Usando perfil ${profileId} desde Frontend`);
-                return bridged;
+        // ═══════════════════════════════════════════════════════════════
+        // 🔗 DYNAMIC BRIDGE v2.0 — Profile Manager → Generator Sync
+        // PRIORIDAD 1: Lee del Profile Manager en runtime (UI values)
+        // PRIORIDAD 2: Fallback a PROFILES hardcoded (offline safety)
+        // Garantía: NUNCA undefined — siempre hay valores sanos
+        // ═══════════════════════════════════════════════════════════════
+        const hardcoded = PROFILES[profileId] || PROFILES['P3'];
+
+        // ── Intento 1: APE_PROFILES_CONFIG (Profile Manager v9.0) ──
+        try {
+            if (typeof window !== 'undefined' && window.APE_PROFILES_CONFIG && typeof window.APE_PROFILES_CONFIG.getProfile === 'function') {
+                const pmProfile = window.APE_PROFILES_CONFIG.getProfile(profileId);
+                if (pmProfile && pmProfile.settings) {
+                    const s = pmProfile.settings;
+                    const pf = (typeof window.APE_PROFILES_CONFIG.getPrefetchConfig === 'function')
+                        ? window.APE_PROFILES_CONFIG.getPrefetchConfig(profileId) : null;
+
+                    // Map PM fields → Generator fields, using hardcoded as fallback per-field
+                    const bridged = {
+                        // ── Identity ──
+                        name:                   pmProfile.name || hardcoded.name,
+                        resolution:             s.resolution || hardcoded.resolution,
+                        width:                  parseInt((s.resolution || hardcoded.resolution).split('x')[0]) || hardcoded.width,
+                        height:                 parseInt((s.resolution || hardcoded.resolution).split('x')[1]) || hardcoded.height,
+                        fps:                    s.fps || hardcoded.fps,
+                        // ── Bitrate (PM stores Mbps as float like 26.9, generator uses kbps int) ──
+                        bitrate:                s.bitrate ? Math.round(s.bitrate * 1000) : hardcoded.bitrate,
+                        // ── Buffers (PM stores ms) ──
+                        buffer_ms:              s.buffer || hardcoded.buffer_ms,
+                        network_cache_ms:       s.buffer || hardcoded.network_cache_ms,
+                        live_cache_ms:          s.buffer || hardcoded.live_cache_ms,
+                        file_cache_ms:          s.playerBuffer || hardcoded.file_cache_ms,
+                        player_buffer_ms:       s.playerBuffer || hardcoded.player_buffer_ms,
+                        // ── Bandwidth (PM bitrate Mbps → max_bandwidth bps) ──
+                        max_bandwidth:          s.bitrate ? Math.round(s.bitrate * 1000000 * 2) : hardcoded.max_bandwidth,
+                        min_bandwidth:          s.bitrate ? Math.round(s.bitrate * 1000000 * 0.75) : hardcoded.min_bandwidth,
+                        // ── Throughput ──
+                        throughput_t1:          s.t1 || hardcoded.throughput_t1,
+                        throughput_t2:          s.t2 || hardcoded.throughput_t2,
+                        // ── Prefetch (from PM's prefetch config or hardcoded) ──
+                        prefetch_segments:      pf?.segments || hardcoded.prefetch_segments,
+                        prefetch_parallel:      pf?.parallelDownloads || hardcoded.prefetch_parallel,
+                        prefetch_buffer_target: pf?.bufferTarget ? pf.bufferTarget * 1000 : hardcoded.prefetch_buffer_target,
+                        prefetch_min_bandwidth: pf?.minBandwidth ? pf.minBandwidth * 1000000 : hardcoded.prefetch_min_bandwidth,
+                        // ── Codec ──
+                        codec_primary:          _mapCodecPM(s.codec) || hardcoded.codec_primary,
+                        codec_fallback:         hardcoded.codec_fallback,
+                        codec_priority:         hardcoded.codec_priority,
+                        // ── HDR / Color ──
+                        hdr_support:            hardcoded.hdr_support,
+                        color_depth:            hardcoded.color_depth,
+                        audio_channels:         hardcoded.audio_channels,
+                        audio_codec:            hardcoded.audio_codec,
+                        device_class:           hardcoded.device_class,
+                        // ── Reconnection ──
+                        reconnect_timeout_ms:   hardcoded.reconnect_timeout_ms,
+                        reconnect_max_attempts: hardcoded.reconnect_max_attempts,
+                        reconnect_delay_ms:     hardcoded.reconnect_delay_ms,
+                        availability_target:    hardcoded.availability_target,
+                        // ── HEVC / encoding ──
+                        hevc_tier:              hardcoded.hevc_tier,
+                        hevc_level:             hardcoded.hevc_level,
+                        hevc_profile:           hardcoded.hevc_profile,
+                        color_space:            hardcoded.color_space,
+                        chroma_subsampling:     hardcoded.chroma_subsampling,
+                        transfer_function:      hardcoded.transfer_function,
+                        matrix_coefficients:    hardcoded.matrix_coefficients,
+                        compression_level:      hardcoded.compression_level,
+                        rate_control:           hardcoded.rate_control,
+                        entropy_coding:         hardcoded.entropy_coding,
+                        video_profile:          hardcoded.video_profile,
+                        pixel_format:           hardcoded.pixel_format,
+                        // ── Segment / BW guarantee ──
+                        segment_duration:       hardcoded.segment_duration,
+                        bandwidth_guarantee:    hardcoded.bandwidth_guarantee,
+                        // ── Bridge metadata ──
+                        _bridged: true,
+                        _source: 'ProfileManagerV9'
+                    };
+
+                    if (typeof console !== 'undefined') {
+                        console.log(`🔗 [BRIDGE v2.0] ${profileId}: PM→Gen sync OK | ${s.codec}/${bridged.width}x${bridged.height}@${s.fps}fps | ${s.bitrate}Mbps | buf=${s.buffer}/${s.playerBuffer}ms | T1=${s.t1}/T2=${s.t2}`);
+                    }
+                    return bridged;
+                }
+            }
+        } catch (e) {
+            if (typeof console !== 'undefined') {
+                console.warn(`⚠️ [BRIDGE] Error leyendo Profile Manager para ${profileId}:`, e.message);
             }
         }
 
-        // ✅ PRIORIDAD 2: Fallback a perfiles hardcoded
-        const fallback = PROFILES[profileId] || PROFILES['P3'];
+        // ── Intento 2 (legacy): APE_PROFILE_BRIDGE ──
+        try {
+            if (window.APE_PROFILE_BRIDGE?.isActive?.() && window.APE_PROFILE_BRIDGE?.getProfile) {
+                const bridged = window.APE_PROFILE_BRIDGE.getProfile(profileId);
+                if (bridged && bridged._bridged) {
+                    console.log(`🔗 [BRIDGE-LEGACY] Usando perfil ${profileId} desde Frontend`);
+                    return bridged;
+                }
+            }
+        } catch (e) { /* silent */ }
+
+        // ── Fallback: PROFILES hardcoded (always works) ──
         console.log(`📦 [FALLBACK] Usando perfil ${profileId} hardcoded`);
-        return fallback;
+        return hardcoded;
+    }
+
+    // Helper: Map PM codec names → generator codec names
+    function _mapCodecPM(pmCodec) {
+        if (!pmCodec) return null;
+        const map = { 'AV1': 'AV1', 'H265': 'HEVC', 'HEVC': 'HEVC', 'VP9': 'VP9', 'H264': 'H264', 'AVC': 'H264', 'MPEG2': 'MPEG2' };
+        return map[pmCodec.toUpperCase()] || pmCodec;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
