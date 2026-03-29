@@ -2703,6 +2703,84 @@
         ];
     }
 
+    // ═══════════════════════════════════════════════════════════════════
+    // 📊 QoS / QoE / PREFETCH / PERFORMANCE — Per-Channel Tags v2.0
+    // Synced with Profile Manager v9.0 metrics (screenshots P2-4K_EXTREME)
+    // Provides ISP bandwidth reference, streaming health targets, and
+    // prefetch intelligence directives usable by resolver + player
+    // ═══════════════════════════════════════════════════════════════════
+    function build_qos_performance_tags(cfg, profile) {
+        // ── Computed metrics (same formulas as Profile Manager UI) ──
+        const bufferC1 = cfg.network_cache_ms || cfg.buffer_ms || 15000;
+        const bufferC2 = cfg.live_cache_ms || cfg.buffer_ms || 15000;
+        const playerBuf = cfg.player_buffer_ms || cfg.file_cache_ms || 51000;
+        const bufferTotal = bufferC1 + bufferC2 + playerBuf;
+        const bitrateKbps = cfg.bitrate || 18000;
+        const bitrateMbps = bitrateKbps / 1000;
+        const t1 = cfg.throughput_t1 || (bitrateMbps * 1.3);
+        const t2 = cfg.throughput_t2 || (bitrateMbps * 1.6);
+        const jitterMaxSupported = Math.floor(playerBuf * 0.8);
+        const ramReal = ((bufferTotal / 1000) * bitrateMbps / 8);
+        const ramPure = (((bufferC1 * 2 + (bufferC1 / 5)) / 1000) * bitrateMbps / 8);
+        const overheadMs = playerBuf - Math.floor(bufferC1 / 5);
+        const maxBw = cfg.max_bandwidth || (bitrateKbps * 1000 * 2);
+
+        // ── Prefetch computed ──
+        const pfSegments = cfg.prefetch_segments || 90;
+        const pfParallel = cfg.prefetch_parallel || 40;
+        const pfBufTarget = cfg.prefetch_buffer_target ? (cfg.prefetch_buffer_target / 1000) : Math.ceil(bufferTotal / 1000);
+        const pfBwMin = cfg.prefetch_min_bandwidth ? (cfg.prefetch_min_bandwidth / 1000000) : (bitrateMbps * 3);
+        const segDuration = cfg.segment_duration || 2;
+        const fillTime = Math.ceil((pfSegments * segDuration) / Math.max(pfParallel, 1) * (bitrateMbps / Math.max(pfBwMin, 1)) * 2);
+        const bwPeak = +(pfBwMin * 1.2).toFixed(1);
+        const bwAvg = +bitrateMbps.toFixed(1);
+        const burstFactor = +(bwPeak / Math.max(bwAvg, 1)).toFixed(2);
+        const ramSteady = Math.ceil(pfBufTarget * bitrateMbps / 8);
+        const ramPeak = Math.ceil(ramSteady * 1.12);
+
+        // ── Stall & Risk estimation ──
+        const headroom = Math.round((t2 / Math.max(bitrateMbps, 1)) * 100);
+        const stallFloor = headroom > 150 ? 0.07 : headroom > 100 ? 0.5 : headroom > 60 ? 2.0 : 5.0;
+        const riskScore = headroom > 200 ? 10 : headroom > 150 ? 15 : headroom > 100 ? 30 : headroom > 60 ? 50 : 75;
+        const healthLabel = riskScore <= 20 ? 'EXCELLENT' : riskScore <= 40 ? 'GOOD' : riskScore <= 60 ? 'FAIR' : 'POOR';
+
+        // ── Profile level mapping ──
+        const levelMap = { P0: 5, P1: 5, P2: 4, P3: 3, P4: 2, P5: 1 };
+        const level = levelMap[profile] || 3;
+
+        return [
+            // ── SECTION 16 — Streaming Health & QoS Targets (10 tags) ──
+            `#EXT-X-APE-STREAMING-HEALTH:${healthLabel}`,
+            `#EXT-X-APE-STALL-RATE-TARGET:${stallFloor}`,
+            `#EXT-X-APE-STALL-TARGET-THRESHOLD:1.67`,
+            `#EXT-X-APE-RISK-SCORE:${riskScore}/100`,
+            `#EXT-X-APE-HEADROOM:${headroom}%`,
+            `#EXT-X-APE-JITTER-MAX-SUPPORTED:${jitterMaxSupported}ms`,
+            `#EXT-X-APE-BUFFER-TOTAL-C1C2C3:${bufferTotal}ms`,
+            `#EXT-X-APE-ISP-BW-MIN-TARGET:${t1}Mbps`,
+            `#EXT-X-APE-ISP-BW-OPT-TARGET:${t2}Mbps`,
+            `#EXT-X-APE-PROFILE-LEVEL:${level}`,
+
+            // ── SECTION 17 — Prefetch Intelligence (8 tags) ──
+            `#EXT-X-APE-PREFETCH-STRATEGY:ultra-aggressive`,
+            `#EXT-X-APE-PREFETCH-SEGMENTS-PRELOAD:${pfSegments}`,
+            `#EXT-X-APE-PREFETCH-PARALLEL-DOWNLOADS:${pfParallel}`,
+            `#EXT-X-APE-PREFETCH-BUFFER-TARGET:${pfBufTarget}s`,
+            `#EXT-X-APE-PREFETCH-BW-MIN:${pfBwMin}Mbps`,
+            `#EXT-X-APE-PREFETCH-ADAPTIVE-INTELLIGENCE:enabled`,
+            `#EXT-X-APE-PREFETCH-AI-PREDICTION:enabled`,
+            `#EXT-X-APE-PREFETCH-FILL-TIME:${fillTime}s`,
+
+            // ── SECTION 18 — Performance Estimation / RAM / Overhead (6 tags) ──
+            `#EXT-X-APE-BW-PEAK-AVG:${bwPeak}/${bwAvg}Mbps`,
+            `#EXT-X-APE-RAM-STEADY-PEAK:${ramSteady}/${ramPeak}MB`,
+            `#EXT-X-APE-RAM-REAL-PURE:${ramReal.toFixed(1)}/${ramPure.toFixed(1)}MB`,
+            `#EXT-X-APE-BURST-FACTOR:${burstFactor}x`,
+            `#EXT-X-APE-STALL-FLOOR:${stallFloor}%`,
+            `#EXT-X-APE-OVERHEAD-SECURITY:${overheadMs}ms`
+        ];
+    }
+
     function build_exthttp(cfg, profile, index, sessionId, reqId) {
         const timestamp = Math.floor(Date.now() / 1000);
         const nowDate = new Date(Date.now() - 86400000).toUTCString();
@@ -4274,6 +4352,8 @@
         lines.push(...build_anti_noise_tags(cfg, profile));
         // ── 🛡️ ANTI-CUT ISP STRANGULATION (Resolver Sync) ──
         lines.push(...build_anti_cut_tags(cfg, profile));
+        // ── 📊 QoS / QoE / PREFETCH / PERFORMANCE (Profile Manager Sync) ──
+        lines.push(...build_qos_performance_tags(cfg, profile));
 
         // ═══════════════════════════════════════════════════════════════
         // ☢️ 6-LAYER NUCLEAR TAGS — INELUDIBLE PER-CHANNEL SYSTEM
