@@ -663,26 +663,28 @@
             this._logEvent(`Archivo ${filename} descargado`, 'success');
         }
 
-        _downloadCSV() {
-            const now = new Date();
-            const timestamp = now.toISOString().replace(/[:.]/g, '-').substring(0, 19);
-            const filename = `telemetry_${timestamp}.csv`;
-
-            let content = `timestamp,session_id,player_type,profile,bandwidth_mbps,latency_ms,errors,status\n`;
-
-            this.sessions.forEach(session => {
-                content += `${now.toISOString()},`;
-                content += `${session.session_id || ''},`;
-                content += `${session.player_type || ''},`;
-                content += `${session.profile || ''},`;
-                content += `${session.bandwidth || 0},`;
-                content += `${session.latency || 0},`;
-                content += `${session.errors || 0},`;
-                content += `${session.status || 'UNKNOWN'}\n`;
-            });
-
-            this._downloadFile(filename, content, 'text/csv');
-            this._logEvent(`Archivo ${filename} descargado`, 'success');
+        async _downloadCSV() {
+            this._logEvent('Descargando logs Resolve v3.0 desde VPS...', 'info');
+            try {
+                const csvUrl = 'https://iptv-ape.duckdns.org/iptv-ape/resolve_logs_csv.php';
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const now = new Date();
+                const ts = now.toISOString().replace(/[:.]/g, '-').substring(0, 19);
+                a.download = `APE_Resolve_v3_Logs_${ts}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                this._logEvent(`CSV Resolve v3.0 descargado (${(blob.size / 1024).toFixed(1)} KB)`, 'success');
+            } catch (err) {
+                this._logEvent(`Error descargando CSV: ${err.message}`, 'error');
+                console.error('CSV download error:', err);
+            }
         }
 
         _downloadFile(filename, content, mimeType) {

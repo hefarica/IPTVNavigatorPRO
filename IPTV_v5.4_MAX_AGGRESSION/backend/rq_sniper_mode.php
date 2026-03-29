@@ -27,7 +27,10 @@ define('APE_SNIPER_STREAMING_WINDOW', 10);    // Segundos: si el canal tuvo requ
 define('APE_SNIPER_RECENT_WINDOW', 45);       // Segundos: si tuvo request en los últimos 45s = fue recientemente activo
 define('APE_SNIPER_STALE_TTL', 300);          // Segundos: tiempo de vida de los archivos de estado antes de cleanup
 define('APE_SNIPER_RECOVERY_URL', '');        // URL de fallback (vacía = usa la misma URL del request)
-define('APE_SNIPER_MAX_ACTIVE_CHANNELS', 3);  // Máximo de canales "streaming" simultáneos (multi-room)
+define('APE_SNIPER_MAX_ACTIVE_CHANNELS', 3);
+define('APE_SNIPER_CUT_WINDOW', 2);           // 2s gap = cut detected (CDP)
+define('APE_SNIPER_COOLDOWN_LOCK', 900);       // 900s quality lock post-cut (ACRP)
+define('APE_SNIPER_STABLE_THRESHOLD', 900);    // 15min no cuts = STABLE (ACRP)  // Máximo de canales "streaming" simultáneos (multi-room)
 
 // ============================================================================
 // ASEGURAR DIRECTORIO DE ESTADO
@@ -110,6 +113,7 @@ function rq_sniper_classify($ch_id, $ip = '') {
             'buffer_mult'   => 1.2,
             'parallel_mult' => 1,
             'label'         => 'SNIPER-STANDBY',
+            'acrp_state'    => 'IDLE',
         ];
     }
 
@@ -542,6 +546,7 @@ function rq_sniper_integrate($ch_id, $profile, $origin = '', $session = '') {
     return [
         'effective_profile' => $effective_profile,
         'sniper'             => $sniper,
+        'kodiprop'           => $kodiprop,
         'json_command'       => $json_cmd,
         'http_headers'       => $http_hdrs,
     ];
