@@ -154,6 +154,12 @@ if (file_exists($_ape_stream_validator_path)) {
     require_once $_ape_stream_validator_path;
 }
 
+// --- Module 15: Anti-Noise Engine (backward-compatible) ---
+$__ape_noise_engine_path = __DIR__ . '/ape_anti_noise_engine.php';
+if (file_exists($__ape_noise_engine_path)) {
+    require_once $__ape_noise_engine_path;
+}
+
 // ============================================================================
 // MÓDULO 1: FAST START ENGINE
 // ============================================================================
@@ -1578,6 +1584,14 @@ function rq_sniper_integrate($ch_id, $profile, $origin = '', $session = '') {
     // === MÓDULO 8: FFmpeg Pipeline Engine (con resolución adaptativa v3.1) ===
     $ffmpeg_pipeline = rq_sniper_ffmpeg_pipeline($sniper, $acrp_state, $res_hint);
 
+    // === MÓDULO 15: ANTI-NOISE ENGINE (v1.0) ===
+    // Clasifica la fuente (CLEAN/DIRTY/CRUSHED) y genera filtros anti-ruido
+    // Solo activo para STREAMING/RECENT. IDLE = 0 directivas.
+    $noise_engine = ['ext_vlcopt' => [], 'ext_http' => [], 'metadata' => ['active' => false]];
+    if (function_exists('ape_noise_engine_integrate')) {
+        $noise_engine = ape_noise_engine_integrate($sniper, $acrp_state, $effective_profile);
+    }
+
     // === MÓDULO 10: KODIPROP Engine ===
     $kodiprop = rq_sniper_kodiprop_directives($sniper, $ua);
 
@@ -1623,6 +1637,7 @@ function rq_sniper_integrate($ch_id, $profile, $origin = '', $session = '') {
         $ffmpeg_pipeline['ext_http'] ?? [],
         $gpu['ext_http'] ?? [],
         $race['ext_http'] ?? [],
+        $noise_engine['ext_http'] ?? [],
         $resources['ext_http'] ?? [],
         $guard_ext_http,
         $stream_guard_result['ext_http'] ?? []
@@ -1632,6 +1647,7 @@ function rq_sniper_integrate($ch_id, $profile, $origin = '', $session = '') {
         $image_enhance['ext_vlcopt'] ?? [],
         $ffmpeg_pipeline['ext_vlcopt'] ?? [],
         $gpu['ext_vlcopt'] ?? [],
+        $noise_engine['ext_vlcopt'] ?? [],
         $resources['ext_vlcopt'] ?? []
     );
 
@@ -1717,6 +1733,12 @@ function rq_sniper_integrate($ch_id, $profile, $origin = '', $session = '') {
     if (!empty($stream_guard_result) && ($stream_guard_result['status'] ?? 'OK') !== 'OK') {
         $http_headers[] = "X-APE-Stream-Guard: " . $stream_guard_result['status'];
         $http_headers[] = "X-APE-Stream-Guard-Method: " . ($stream_guard_result['method'] ?? 'direct');
+    }
+    // Anti-Noise Engine HTTP headers
+    if (!empty($noise_engine['metadata']['active']) && $noise_engine['metadata']['active']) {
+        $http_headers[] = "X-APE-AntiNoise-Pipeline: " . ($noise_engine['metadata']['pipeline'] ?? 'A');
+        $http_headers[] = "X-APE-AntiNoise-Score: " . ($noise_engine['metadata']['noise_score'] ?? 0);
+        $http_headers[] = "X-APE-AntiNoise-Class: " . ($noise_engine['metadata']['classification'] ?? 'UNKNOWN');
     }
 
     if ($sniper['sniper']) {
