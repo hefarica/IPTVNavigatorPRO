@@ -429,7 +429,7 @@
             description: 'EXTATTRFROMURL resolver + 22 headers W3C (Client Hints, Sec-Fetch, HLS Accept). OTT→resolver, TiviMate→URL limpia',
             file: null,
             globalVar: null,
-            defaultEnabled: false,
+            defaultEnabled: true,
             category: 'architecture',
             onEnable: function () {
                 window._APE_DUAL_CLIENT_RUNTIME = true;
