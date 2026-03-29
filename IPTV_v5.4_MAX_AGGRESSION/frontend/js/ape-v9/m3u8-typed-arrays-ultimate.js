@@ -3282,6 +3282,30 @@
         headers['X-Telchemy-GoP-Size-Max'] = '120';
         headers['X-Telchemy-Buffer-Underrun-Action'] = 'EXPAND_NETWORK_CACHING';
 
+        // ── 📊 QoS / ISP Bandwidth Targets / Streaming Health (EXTHTTP) ──
+        const _bpsKbps = cfg.bitrate || 18000;
+        const _bpsMbps = _bpsKbps / 1000;
+        const _t1 = cfg.throughput_t1 || (_bpsMbps * 1.3);
+        const _t2 = cfg.throughput_t2 || (_bpsMbps * 1.6);
+        const _bufC1 = cfg.network_cache_ms || cfg.buffer_ms || 15000;
+        const _bufC2 = cfg.live_cache_ms || cfg.buffer_ms || 15000;
+        const _playerBuf = cfg.player_buffer_ms || cfg.file_cache_ms || 51000;
+        const _bufTotal = _bufC1 + _bufC2 + _playerBuf;
+        const _headroom = Math.round((_t2 / Math.max(_bpsMbps, 1)) * 100);
+        const _risk = _headroom > 200 ? 10 : _headroom > 150 ? 15 : _headroom > 100 ? 30 : _headroom > 60 ? 50 : 75;
+        headers['X-APE-ISP-BW-Min-Target'] = `${_t1}`;
+        headers['X-APE-ISP-BW-Opt-Target'] = `${_t2}`;
+        headers['X-APE-Buffer-Total-C1C2C3'] = `${_bufTotal}`;
+        headers['X-APE-Jitter-Max-Supported'] = `${Math.floor(_playerBuf * 0.8)}`;
+        headers['X-APE-Streaming-Health'] = _risk <= 20 ? 'EXCELLENT' : _risk <= 40 ? 'GOOD' : _risk <= 60 ? 'FAIR' : 'POOR';
+        headers['X-APE-Risk-Score'] = `${_risk}`;
+        headers['X-APE-Headroom'] = `${_headroom}`;
+        headers['X-APE-Stall-Rate-Target'] = _headroom > 150 ? '0.07' : _headroom > 100 ? '0.5' : '2.0';
+        headers['X-APE-Prefetch-Segments'] = `${cfg.prefetch_segments || 90}`;
+        headers['X-APE-Prefetch-Parallel'] = `${cfg.prefetch_parallel || 40}`;
+        headers['X-APE-RAM-Estimate'] = `${((_bufTotal / 1000) * _bpsMbps / 8).toFixed(0)}MB`;
+        headers['X-APE-Overhead-Security'] = `${_playerBuf - Math.floor(_bufC1 / 5)}ms`;
+
         // ══════════════════════════════════════════════════════════════════════
         // 🛡️ REGLA ANTI-400: Límite 10KB / 200 headers en EXTHTTP
         // ══════════════════════════════════════════════════════════════════════
