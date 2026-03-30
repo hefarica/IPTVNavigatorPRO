@@ -2081,46 +2081,82 @@
         const name = channel.tvgName || channel.name || '';
         const gt = channel.groupTitle || channel.category_name || '';
 
+        // ═══════════════════════════════════════════════════════════════════
+        // ⚡ BRIDGE v3.0: Delegar al APEChannelClassifier v3.0 externo
+        // El v3.0 es la ÚNICA fuente de verdad. Este clasificador interno
+        // actúa como BRIDGE/ADAPTER que mapea el output v3.0 al contrato
+        // GroupTitleBuilder (.region.group, .category.group, etc).
+        // La lista M3U8 bake estos datos → resolver y channel maps los
+        // heredan en CASCADA sin consultar el clasificador directamente.
+        // ═══════════════════════════════════════════════════════════════════
+        if (typeof window !== 'undefined' && window.APEChannelClassifier && typeof window.APEChannelClassifier.classify === 'function') {
+          const v3 = window.APEChannelClassifier.classify(channel);
+
+          // Mapear v3.0 output → GroupTitleBuilder contract
+          const regionGroup  = v3.region?.group || 'RESTO DEL MUNDO';
+          const langGroup    = v3.language?.language || 'ORIGINAL / MIXTO';
+          const langCode     = v3.language?.code || 'und';
+          const catGroup     = v3.category?.category || 'GENERALISTA';
+          const catEmoji     = v3.category?.emoji || '📡';
+          const qualGroup    = v3.quality?.quality || 'FULL HD';
+          const confidence   = (v3.confidence || 50) / 100; // v3 returns 0-100, internal uses 0-1
+          const confLevel    = confidence >= 0.9 ? 'VERY_HIGH' : confidence >= 0.75 ? 'HIGH' : confidence >= 0.6 ? 'MEDIUM' : confidence >= 0.4 ? 'LOW' : 'VERY_LOW';
+
+          // Cross-category y sport subcategory del engine interno (v3.0 no tiene esto)
+          const contentFallback = { _rawType: catGroup, confidence: v3.category?.confidence ? v3.category.confidence / 100 : 0.5, flag: catEmoji, alternatives: [] };
+          const crossCategory = this._crossCategorySports(name, gt, contentFallback);
+          let sportSubcategory = null;
+          if (catGroup === 'DEPORTES' || (crossCategory && crossCategory.action)) {
+            sportSubcategory = this._sportSubcat(name);
+          }
+
+          // Construir output con contrato GroupTitleBuilder EXACTO
+          return {
+            original: { name, groupTitle: gt },
+            region:   { group: regionGroup, code: langCode, country: regionGroup, language: langGroup, confidence: confidence, alternatives: v3.region?.signals || [] },
+            category: { group: catGroup, category: catGroup, confidence: v3.category?.confidence ? v3.category.confidence / 100 : 0.5, flag: catEmoji, alternatives: [] },
+            quality:  { group: qualGroup, quality: qualGroup },
+            language: { group: langGroup, code: langCode, confidence: v3.language?.confidence ? v3.language.confidence / 100 : 0.5 },
+            country:  { group: regionGroup, code: langCode },
+            confidence,
+            confidenceLevel: confLevel,
+            crossCategory,
+            sportSubcategory,
+            contentType: { type: catGroup, confidence: v3.category?.confidence ? v3.category.confidence / 100 : 0.5, flag: catEmoji, alternatives: [] },
+            _v3Source: true // Marker: data proviene del v3.0 Netflix-grade
+          };
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // FALLBACK: Si v3.0 externo NO está cargado, usar engine interno
+        // ═══════════════════════════════════════════════════════════════════
         const regionResult = this._region(name, gt);
         const contentResult = this._content(name, gt);
         const langResult = this._lang(name, gt);
         const qualityResult = this._quality(name);
 
-        // Weighted confidence
         const confidence = regionResult.confidence * 0.4 + contentResult.confidence * 0.4 + langResult.confidence * 0.2;
-        // 5-level confidence
         const confidenceLevel = confidence >= 0.9 ? 'VERY_HIGH' : confidence >= 0.75 ? 'HIGH' : confidence >= 0.6 ? 'MEDIUM' : confidence >= 0.4 ? 'LOW' : 'VERY_LOW';
 
-        // Cross-category detection
         const crossCategory = this._crossCategorySports(name, gt, contentResult);
-        // Sports subcategory
         let sportSubcategory = null;
         if (contentResult._rawType === 'DEPORTES' || (crossCategory && crossCategory.action)) {
           sportSubcategory = this._sportSubcat(name);
         }
 
-        // ── Build GroupTitleBuilder-compatible output ──
-        // Each field has .group (what GroupTitleBuilder.extract reads)
-        // plus extra metadata for headers
         return {
           original: { name, groupTitle: gt },
-          // GroupTitleBuilder reads: extract('region') → _classification.region.group
           region: { group: regionResult.region, code: regionResult.code, country: regionResult.country, language: regionResult.language, confidence: regionResult.confidence, alternatives: regionResult.alternatives },
-          // GroupTitleBuilder reads: extract('category') → _classification.category.group
           category: { group: contentResult._rawType, category: contentResult._rawType, confidence: contentResult.confidence, flag: contentResult.flag, alternatives: contentResult.alternatives },
-          // GroupTitleBuilder reads: extract('quality') → _classification.quality.group
           quality: { group: qualityResult, quality: qualityResult },
-          // GroupTitleBuilder reads: extract('language') → _classification.language.group
           language: { group: langResult.name, code: langResult.code, confidence: langResult.confidence },
-          // GroupTitleBuilder reads: extract('country') → _classification.country.group
           country: { group: regionResult.country, code: regionResult.code },
-          // Overall classification metadata
           confidence,
           confidenceLevel,
           crossCategory,
           sportSubcategory,
-          // Legacy compat: contentType alias for EXTHTTP headers
-          contentType: { type: contentResult._rawType, confidence: contentResult.confidence, flag: contentResult.flag, alternatives: contentResult.alternatives }
+          contentType: { type: contentResult._rawType, confidence: contentResult.confidence, flag: contentResult.flag, alternatives: contentResult.alternatives },
+          _v3Source: false // Marker: data proviene del fallback interno
         };
       }
 
@@ -2969,7 +3005,7 @@
             "X-SCTE35-Segmentation-Type": "PROGRAM_START",
             "X-SCTE35-Blackout-Override": "true",
             "X-Video-Codecs": "av1,hevc,vp9,h264,mpeg2",
-            "X-Audio-Codecs": "opus,aac,eac3,ac3,dolby,mp3",
+            "X-Audio-Codecs": "aac,ac3,eac3,mp3",
             "X-DRM-Support": "widevine,playready,fairplay",
             "X-Codec-Support": "av1",
             "X-CDN-Provider": "auto",
@@ -3032,7 +3068,7 @@
             "X-Max-Reconnect-Attempts": String(cfg.reconnect_max_attempts || 999999),
             "X-Reconnect-Delay-Ms": "50,100,200",
             "X-Seamless-Failover": "true-ultra",
-            "X-Country-Code": "US",
+            "X-Country-Code": (cfg._classification?.country?.code || cfg._classification?.country?.group || 'US').substring(0, 2).toUpperCase(),
             "X-HDR-Support": (cfg.hdr_support || []).join(',') || 'none',
             "X-Color-Depth": `${cfg.color_depth || 8}bit`,
             "X-Color-Space": "bt2020",
@@ -3097,12 +3133,12 @@
             "X-Frame-Rates": `${fps},${fps > 30 ? '50,30,25,24' : '25,24'}`,
             "X-Aspect-Ratio": "16:9,21:9",
             "X-Pixel-Aspect-Ratio": "1:1",
-            "X-Dolby-Atmos": String(cfg.audio_channels >= 8),
+            "X-Dolby-Atmos": "false",
             "X-Audio-Channels": String(cfg.audio_channels || 2),
-            "X-Audio-Sample-Rate": "96000",
-            "X-Audio-Bit-Depth": "24bit",
-            "X-Spatial-Audio": String(cfg.audio_channels >= 6),
-            "X-Audio-Passthrough": String(cfg.audio_channels >= 6),
+            "X-Audio-Sample-Rate": "48000",
+            "X-Audio-Bit-Depth": "16bit,24bit",
+            "X-Spatial-Audio": "false",
+            "X-Audio-Passthrough": "false",
             "X-Parallel-Segments": String(cfg.prefetch_parallel || 100),
             "X-Prefetch-Segments": String(cfg.prefetch_segments || 15),
             "X-Segment-Preload": "true",
@@ -3353,6 +3389,11 @@
                 headers['X-APE-CL-Sport-Subcat'] = cl.sportSubcategory;
             }
         }
+
+        // ── 📡 TELEMETRY: Channel Identification Headers ──
+        // Viajan con cada request al resolver para lookup instantáneo sin API
+        if (cfg._channelName) headers['X-APE-Channel-Name'] = cfg._channelName;
+        if (cfg._channelId) headers['X-APE-Channel-ID'] = cfg._channelId;
 
         // ── 👁️ IPTV-SUPPORT-CORTEX vΩ: INYECCIÓN DE HEADERS DOMINANTES ──
         if (typeof window !== 'undefined' && window.IPTV_SUPPORT_CORTEX_V_OMEGA) {
@@ -3994,6 +4035,19 @@
         return Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
     }
 
+    // ═
+    //  CREDENTIAL GUARDIAN v2.0  PRESERVACIÓN EXACTA
+    // Solo elimina caracteres INVISIBLES que corrompen encoding.
+    // NUNCA altera caracteres visibles. Las credenciales validadas
+    // por connectServer() SON SAGRADAS e INMUTABLES.
+    // 
+    function sanitizeCredential(value) {
+        if (!value || typeof value !== 'string') return value || '';
+        let clean = value.trim();
+        clean = clean.replace(/[\u200B\u200C\u200D\uFEFF\u00A0]/g, '');
+        return clean;
+    }
+
     function base64UrlEncode(str) {
         // 🔴 REGLA ANTI-REGRESIÓN: Usar Buffer.from (no btoa) + base64 ESTÁNDAR (no URL-safe)
         // El auditor Python usa base64.b64decode() que requiere caracteres +/= estándar
@@ -4019,18 +4073,156 @@
         return "JWT_STUB";
     }
 
-    function determineProfile(channel) {
-        const name = (channel.name || '').toUpperCase();
-        const resolution = channel.resolution || channel.heuristics?.resolution || '';
+    // ═══════════════════════════════════════════════════════════════════════
+    // ⚡ QUANTUM PROFILE CLASSIFIER v5.0 — MULTI-SIGNAL WEIGHTED SCORING
+    // 5 capas independientes de señales. La que más puntos acumule gana.
+    // Nunca se equivoca por depender de una sola fuente.
+    // ═══════════════════════════════════════════════════════════════════════
 
-        if (name.includes('8K') || resolution.includes('7680')) return 'P0';
-        if (name.includes('4K') || name.includes('UHD') || resolution.includes('3840')) {
-            if (name.includes('60FPS') || name.includes('SPORTS')) return 'P1';
-            return 'P2';
+    // Capa 0: Base de datos de marcas IPTV conocidas → resolución real verificada
+    const KNOWN_BRANDS = {
+        P0: [],
+        P1: ['4K','UHD','ULTRA HD','2160'],
+        P3: [
+            // Deportes internacionales (siempre 1080p)
+            'ESPN','FOX SPORTS','BEIN SPORTS','BEINSPORT','DIRECTV SPORTS','DSports',
+            'SKY SPORTS','BT SPORT','DAZN','EUROSPORT','SPORT TV','SPORTV',
+            'GOLF CHANNEL','NBA TV','NFL NETWORK','MLB NETWORK','NHL NETWORK',
+            // Noticias (siempre 1080p)
+            'CNN','BBC','BBC ONE','BBC TWO','AL JAZEERA','DW NEWS','FRANCE 24',
+            'EURONEWS','BLOOMBERG','CNBC','FOX NEWS','MSNBC','SKY NEWS',
+            // Entretenimiento premium (1080p)
+            'HBO','SHOWTIME','STARZ','AMC','FX','TNT','TBS','USA NETWORK',
+            'DISCOVERY','NATIONAL GEOGRAPHIC','NATGEO','HISTORY','ANIMAL PLANET',
+            'TRAVEL CHANNEL','FOOD NETWORK','HGTV','BRAVO','LIFETIME',
+            // Films premium (1080p)
+            'CINEMAX','TCM','SUNDANCE','IFC','CRITERION',
+            // Latinoamérica HD (1080p)
+            'CANAL SUR','TELECINCO','ANTENA 3','LA1','LA2','CUATRO',
+            'CARACOL','RCN','TELEAMAZONAS','ECUAVISA','TC TELEVISION',
+            'CANAL 13','MEGA','CHILEVISION','TVN','T13',
+            'TV AZTECA','TELEVISA','CANAL DE LAS ESTRELLAS',
+            'GLOBO','SBT','RECORD','REDE BAND',
+            'TLN','CNN EN ESPANOL','NTN24','TELEMUNDO','UNIVISION',
+        ],
+        P4: [
+            // Canales infantiles (generalmente 720p)
+            'CARTOON NETWORK','NICKELODEON','NICK JR','DISNEY JR','BOOMERANG',
+            'DISNEY CHANNEL','DISNEY XD','BABY TV','BABY FIRST',
+            // Canales básicos de cable (720p)
+            'COMEDY CENTRAL','MTV','VH1','BET','SYFY','E!','OXYGEN',
+            // Deportes básicos (720p en muchos proveedores)
+            'ESPN2','ESPN3','FOX SPORTS 2','FOX SPORTS 3',
+        ],
+        P5: [
+            // Canales locales sin calidad garantizada (SD)
+            'TELESUR','TELE 1','LOCAL TV','CANAL LOCAL',
+        ]
+    };
+
+    function determineProfile(channel) {
+        const name    = (channel.name || '').toUpperCase().trim();
+        const group   = (channel.category_name || channel.group || channel.group_title || '').toUpperCase().trim();
+        const resMeta = (channel.resolution || channel.heuristics?.resolution || '').toString().toLowerCase();
+        const bitrate = parseInt(channel.bitrate || channel.heuristics?.bitrate || 0, 10); // kbps
+
+        // Scores acumulados por perfil
+        const scores = { P0: 0, P1: 0, P3: 0, P4: 0, P5: 0 };
+        const signals = []; // Debug trace
+
+        // ─────────────────────────────────────────────────────────────────
+        // CAPA 1: RESOLUCIÓN METADATA DEL API (peso 40) — más confiable
+        // ─────────────────────────────────────────────────────────────────
+        if (resMeta) {
+            if (resMeta.includes('7680') || resMeta.includes('8k'))           { scores.P0 += 40; signals.push('RES:8K→P0'); }
+            else if (resMeta.includes('3840') || resMeta.includes('2160') || resMeta.includes('4k')) { scores.P1 += 40; signals.push('RES:4K→P1'); }
+            else if (resMeta.includes('1920') || resMeta.includes('1080'))    { scores.P3 += 40; signals.push('RES:1080p→P3'); }
+            else if (resMeta.includes('1280') || resMeta.includes('720'))     { scores.P4 += 40; signals.push('RES:720p→P4'); }
+            else if (resMeta.includes('854')  || resMeta.includes('480'))     { scores.P5 += 40; signals.push('RES:480p→P5'); }
+            else if (resMeta.includes('640')  || resMeta.includes('360'))     { scores.P5 += 40; signals.push('RES:360p→P5'); }
         }
-        if (name.includes('FHD') || name.includes('1080') || resolution.includes('1920')) return 'P3';
-        if (name.includes('HD') || name.includes('720') || resolution.includes('1280')) return 'P4';
-        return 'P5';
+
+        // ─────────────────────────────────────────────────────────────────
+        // CAPA 2: BITRATE DEL API (peso 30) — evidencia directa de calidad
+        // ─────────────────────────────────────────────────────────────────
+        if (bitrate > 0) {
+            if      (bitrate >= 30000) { scores.P0 += 30; signals.push(`BIT:${bitrate}k→P0`); }
+            else if (bitrate >= 15000) { scores.P1 += 30; signals.push(`BIT:${bitrate}k→P1`); }
+            else if (bitrate >= 6000)  { scores.P3 += 30; signals.push(`BIT:${bitrate}k→P3`); }
+            else if (bitrate >= 2500)  { scores.P4 += 30; signals.push(`BIT:${bitrate}k→P4`); }
+            else                       { scores.P5 += 30; signals.push(`BIT:${bitrate}k→P5`); }
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // CAPA 3: NOMBRE DEL CANAL — keywords explícitos (peso 20)
+        // ─────────────────────────────────────────────────────────────────
+        if (name.includes('8K'))                                  { scores.P0 += 20; signals.push('NAME:8K→P0'); }
+        if (name.includes('4K') || name.includes('UHD'))         { scores.P1 += 20; signals.push('NAME:4K/UHD→P1'); }
+        if (name.includes('FHD') || name.includes('1080'))        { scores.P3 += 20; signals.push('NAME:FHD/1080→P3'); }
+        // HD genérico → P3 (1080p), NO P4
+        if (name.includes('HD') && !name.includes('720') && !name.includes('480') && !name.includes('SD')) {
+            scores.P3 += 15; signals.push('NAME:HD(generic)→P3');
+        }
+        if (name.includes('720'))                                 { scores.P4 += 20; signals.push('NAME:720→P4'); }
+        if (name.includes('SD') || name.includes('480') || name.includes('360')) { scores.P5 += 20; signals.push('NAME:SD/480→P5'); }
+
+        // ─────────────────────────────────────────────────────────────────
+        // CAPA 4: GROUP-TITLE (peso 15) — señal de categoría
+        // ─────────────────────────────────────────────────────────────────
+        if (group.includes('8K'))                                 { scores.P0 += 15; signals.push('GRP:8K→P0'); }
+        if (group.includes('4K') || group.includes('UHD'))        { scores.P1 += 15; signals.push('GRP:4K→P1'); }
+        if (group.includes('FHD') || group.includes('FULL HD') || group.includes('1080')) { scores.P3 += 15; signals.push('GRP:FHD→P3'); }
+        if (group.includes('HD') && !group.includes('720') && !group.includes('FHD') && !group.includes('FULL')) {
+            scores.P3 += 10; signals.push('GRP:HD(generic)→P3');
+        }
+        if (group.includes('720'))                                { scores.P4 += 15; signals.push('GRP:720→P4'); }
+        if (group.includes(' SD') || group.includes('SD ') || group.startsWith('SD')) { scores.P5 += 15; signals.push('GRP:SD→P5'); }
+
+        // ─────────────────────────────────────────────────────────────────
+        // CAPA 5: BASE DE DATOS DE MARCAS CONOCIDAS (peso 10)
+        // ─────────────────────────────────────────────────────────────────
+        for (const [profile, brands] of Object.entries(KNOWN_BRANDS)) {
+            for (const brand of brands) {
+                if (name.includes(brand)) {
+                    scores[profile] += 10;
+                    signals.push(`BRAND:${brand}→${profile}`);
+                    break; // Solo una marca por perfil por canal
+                }
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // DECISIÓN FINAL: Perfil con mayor score acumulado
+        // ─────────────────────────────────────────────────────────────────
+        let bestProfile = 'P3'; // Default conservador: FHD 1080p
+        let bestScore   = 0;
+        let totalScore  = Object.values(scores).reduce((a, b) => a + b, 0);
+
+        for (const [profile, score] of Object.entries(scores)) {
+            if (score > bestScore) {
+                bestScore   = score;
+                bestProfile = profile;
+            }
+        }
+
+        // Si ninguna señal votó (score total = 0) → P3 por defecto (anti-starvation)
+        if (totalScore === 0) {
+            bestProfile = 'P3';
+            signals.push('DEFAULT:no-signal→P3');
+        }
+
+        const confidence = totalScore > 0 ? Math.round((bestScore / totalScore) * 100) : 0;
+
+        // Guardar debug en el canal para telemetría / EPG headers
+        channel._profileDebug = {
+            profile:    bestProfile,
+            confidence: confidence,
+            scores:     scores,
+            signals:    signals,
+            sources:    { name, group, resMeta, bitrate }
+        };
+
+        return bestProfile;
     }
 
     function generateEXTINF(channel, profile, index) {
@@ -4062,8 +4254,12 @@
         const contentType = classification.contentType.type || 'GENERALISTA';
         const langCode = classification.language.code || 'unknown';
         const confPct = Math.round(classification.confidence * 100);
+        const countryName = classification.country?.group || '';
+        const fps = channel.frames || 30;
+        const transport = channel.transport || 'HLS';
+        const codecFam = channel.codecFamily || '';
 
-        return `#EXTINF:-1 tvg-id="${tvgId}" tvg-name="${tvgName}" tvg-logo="${tvgLogo}" group-title="${groupTitle}" ape-profile="${profile}" ape-build="v5.4-MAX-AGGRESSION" ape-region="${regionCode}" ape-content-type="${contentType}" ape-lang="${langCode}" ape-classify-confidence="${confPct}",${tvgName}`;
+        return `#EXTINF:-1 tvg-id="${tvgId}" tvg-name="${tvgName}" tvg-logo="${tvgLogo}" group-title="${groupTitle}" ape-profile="${profile}" ape-build="v5.4-MAX-AGGRESSION" ape-region="${regionCode}" ape-content-type="${contentType}" ape-lang="${langCode}" ape-country="${escapeM3UValue(countryName)}" ape-classify-confidence="${confPct}" ape-fps="${fps}" ape-transport="${transport}" ape-codec-family="${codecFam}",${tvgName}`;
     }
 
     const MAX_URL_LENGTH = 2000;
@@ -4082,8 +4278,8 @@
             if (!s || typeof s !== 'object') return;
             const baseUrl = (s.baseUrl || s.url || s.server_url || s.host || '')
                 .replace(/\/player_api\.php.*$/, '').replace(/\/$/, '');
-            const username = s.username || s.user || '';
-            const password = s.password || s.pass || '';
+            const username = sanitizeCredential(s._lockedUsername || s.username || s.user || '');
+            const password = sanitizeCredential(s._lockedPassword || s.password || s.pass || '');
             if (!baseUrl || !username || !password) {
                 return;
             }
@@ -4244,8 +4440,8 @@
                     const srv = servers.find(s => s.id === sid);
                     if (srv) {
                         const base = (srv.baseUrl || srv.url || '').replace(/\/player_api\.php.*$/, '').replace(/\/$/, '');
-                        const user = srv.username || srv.user || '';
-                        const pass = srv.password || srv.pass || '';
+                        const user = sanitizeCredential(srv._lockedUsername || srv.username || srv.user || '');
+                        const pass = sanitizeCredential(srv._lockedPassword || srv.password || srv.pass || '');
                         if (base && user && pass) {
                             creds = { baseUrl: base.startsWith('http') ? base : `http://${base}`, username: user, password: pass };
                         }
@@ -4265,8 +4461,8 @@
                         const srv = servers.find(s => (s.baseUrl || '').toLowerCase().includes(chHost));
                         if (srv) {
                             const base = (srv.baseUrl || srv.url || '').replace(/\/player_api\.php.*$/, '').replace(/\/$/, '');
-                            const user = srv.username || srv.user || '';
-                            const pass = srv.password || srv.pass || '';
+                            const user = sanitizeCredential(srv._lockedUsername || srv.username || srv.user || '');
+                            const pass = sanitizeCredential(srv._lockedPassword || srv.password || srv.pass || '');
                             if (base && user && pass) {
                                 creds = { baseUrl: base.startsWith('http') ? base : `http://${base}`, username: user, password: pass };
                             }
@@ -4301,6 +4497,30 @@
             cfg = result.cfg;
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // ⚡ CAPACITY OVERDRIVE ENGINE v1.0 — ANTI-STARVATION MULTIPLIER
+        // Multiplica valores de capacidad x2.5 DESPUÉS de la clasificación.
+        // Garantiza que incluso una mala clasificación (ej: 1080p→P4)
+        // tenga suficiente buffer/bitrate/BW para no congelarse.
+        // ISP y ancho de banda NO son restricción → MÁXIMA AGRESIÓN.
+        // ═══════════════════════════════════════════════════════════════════
+        const CAPACITY_MULTIPLIER = 2.5;
+        if (cfg.buffer_ms)              cfg.buffer_ms              = Math.round(cfg.buffer_ms * CAPACITY_MULTIPLIER);
+        if (cfg.network_cache_ms)       cfg.network_cache_ms       = Math.round(cfg.network_cache_ms * CAPACITY_MULTIPLIER);
+        if (cfg.live_cache_ms)          cfg.live_cache_ms          = Math.round(cfg.live_cache_ms * CAPACITY_MULTIPLIER);
+        if (cfg.file_cache_ms)          cfg.file_cache_ms          = Math.round(cfg.file_cache_ms * CAPACITY_MULTIPLIER);
+        if (cfg.player_buffer_ms)       cfg.player_buffer_ms       = Math.round(cfg.player_buffer_ms * CAPACITY_MULTIPLIER);
+        if (cfg.bitrate)                cfg.bitrate                = Math.round(cfg.bitrate * CAPACITY_MULTIPLIER);
+        if (cfg.max_bandwidth)          cfg.max_bandwidth          = Math.round(cfg.max_bandwidth * CAPACITY_MULTIPLIER);
+        if (cfg.min_bandwidth)          cfg.min_bandwidth          = Math.round(cfg.min_bandwidth * CAPACITY_MULTIPLIER);
+        if (cfg.prefetch_segments)      cfg.prefetch_segments      = Math.round(cfg.prefetch_segments * CAPACITY_MULTIPLIER);
+        if (cfg.prefetch_parallel)      cfg.prefetch_parallel      = Math.round(cfg.prefetch_parallel * CAPACITY_MULTIPLIER);
+        if (cfg.prefetch_buffer_target) cfg.prefetch_buffer_target = Math.round(cfg.prefetch_buffer_target * CAPACITY_MULTIPLIER);
+        if (cfg.prefetch_min_bandwidth) cfg.prefetch_min_bandwidth = Math.round(cfg.prefetch_min_bandwidth * CAPACITY_MULTIPLIER);
+        if (cfg.bandwidth_guarantee)    cfg.bandwidth_guarantee    = Math.round(cfg.bandwidth_guarantee * CAPACITY_MULTIPLIER);
+        if (cfg.throughput_t1)          cfg.throughput_t1          = Math.round(cfg.throughput_t1 * CAPACITY_MULTIPLIER * 10) / 10;
+        if (cfg.throughput_t2)          cfg.throughput_t2          = Math.round(cfg.throughput_t2 * CAPACITY_MULTIPLIER * 10) / 10;
+
         const reqId = `REQ_${generateRandomString(16)}`;
         const sessionId = `SES_${generateRandomString(16)}`;
 
@@ -4310,7 +4530,15 @@
         // BLOQUE 1: EXTINF → STREAM-INF → URL → EXTHTTP → OVERFLOW
         // (Estructura invariante: URL a exactamente 2 líneas del EXTINF)
         // ═══════════════════════════════════════════════════════════════
-        lines.push(generateEXTINF(channel, originalProfile, index));
+        let extinfLine = generateEXTINF(channel, originalProfile, index);
+        if (channel.ape_meta) {
+            extinfLine += `\n#EXT-X-APE-META-FPS:${channel.ape_meta.fps || 24}`;
+            extinfLine += `\n#EXT-X-APE-META-SCORE:${channel.ape_meta.stability_score || 50}`;
+            extinfLine += `\n#EXT-X-APE-META-CLASS:${channel.ape_meta.network_class || 'UNKNOWN'}`;
+            extinfLine += `\n#EXT-X-APE-META-CODEC:${channel.ape_meta.codec || 'avc1'}`;
+            extinfLine += `\n#EXT-X-APE-META-ID:${channel.ape_meta.stream_uid || 'unassigned'}`;
+        }
+        lines.push(extinfLine);
 
         // ── 🛡️ PEVCE ACTIVE METADATA ENFORCEMENT & NUCLEAR EVASION ──
         // CUMPLIMIENTO DOCTRINA BULLETPROOF (REGLAS 1 y 3)
@@ -4369,8 +4597,8 @@
                 
                 if (srv) {
                     const base = (srv.baseUrl || srv.url || '').replace(/\/player_api\.php.*$/, '').replace(/\/$/, '');
-                    const user = srv.username || srv.user || '';
-                    const pass = srv.password || srv.pass || '';
+                    const user = sanitizeCredential(srv._lockedUsername || srv.username || srv.user || '');
+                    const pass = sanitizeCredential(srv._lockedPassword || srv.password || srv.pass || '');
                     if (base && user && pass) {
                         const fullBase = base.startsWith('http') ? base : `http://${base}`;
                         primaryUrl = preferHttps(`${fullBase}/live/${user}/${pass}/${sid}.m3u8`);
@@ -4404,6 +4632,12 @@
         // causando que VLC reciba un 400/403 de inmediato y salte al siguiente canal.
         let finalUrl = `${primaryUrl}`;
         // EXTHTTP + OVERFLOW (línea 3-4 del bloque)
+        // ⚡ FIX: build_exthttp lee cfg._classification, pero la clasificación
+        // vive en channel._classification. Sin este bridge, los headers
+        // X-APE-CL-* del EXTHTTP nunca se emitían (cfg es el perfil, no el canal).
+        cfg._classification = channel._classification;
+        cfg._channelName = channel.name || channel.tvg_name || '';
+        cfg._channelId = String(channel.stream_id || channel.id || index);
         lines.push(build_exthttp(cfg, profile, index, sessionId, reqId));
 
         // ── VLC Resolution & Deinterlacing (Delegado a generateEXTVLCOPT) ──
@@ -4561,7 +4795,7 @@
 
                 if (server && server.baseUrl && server.username && server.password) {
                     const cleanHost = (server.baseUrl || '').replace(/\/player_api\.php$/, '').replace(/\/$/, '').replace(/^https?:\/\//, '');
-                    const srvToken = btoa(`${cleanHost}|${server.username}|${server.password}`);
+                    const srvToken = btoa(`${cleanHost}|${sanitizeCredential(server._lockedUsername || server.username)}|${sanitizeCredential(server._lockedPassword || server.password)}`);
                     srvParam = `&srv=${encodeURIComponent(srvToken)}`;
                 }
             } catch (e) { /* silent credential resolution failure */ }
@@ -4573,9 +4807,17 @@
             // Goal: ctx ~160 chars, total URL < 600 chars — ALL players OK.
             // Backend applies MAX(origin[field], local[field]) rule.
             // ═══════════════════════════════════════════════════════════
+            // ⚡ v4.0 CTX v25: UNIFIED INTELLIGENCE — closes 22 data gaps between lanes.
+            // Before: EXTHTTP had 200 headers but CTX only sent 22 to the resolver.
+            // Now: CTX sends 44 fields — HDR, buffer, device, audio, Dolby Vision,
+            // screen resolution, CDN, failover, player type — enabling smarter
+            // Channel Map, Sniper Mode, and QoS decisions on the resolver side.
+            // ═══════════════════════════════════════════════════════════
+            const cl = channel._classification || {};
             const ctxPayload = {
+                // ── PERFIL & CAPACIDAD TÉCNICA (v24 original — 10 campos) ──
                 p:  profile,                                                    // profile ID
-                r:  cfg.res || cfg.resolution || '1920x1080',                  // resolution
+                rs: cfg.res || cfg.resolution || '1920x1080',                  // resolution
                 bw: cfg.max_bw || cfg.max_bandwidth || 20000000,               // max bandwidth
                 br: cfg.bitrate || cfg.bitrate_mbps || 3700,                   // bitrate kbps
                 bf: cfg.buffer_ms || cfg.buffer || 30000,                      // buffer ms
@@ -4583,7 +4825,57 @@
                 hd: (cfg.hdr && cfg.hdr.length > 0) ? 1 : 0,                  // HDR flag (0/1)
                 cs: cfg.color_space || 'BT2020',                               // color space
                 cp: cfg.codec_primary || 'HEVC',                               // primary codec
-                v:  '22'                                                        // generator hint
+                v:  '25',                                                       // CTX version (v25 = unified intelligence)
+                // ── 🌎 CLASIFICACIÓN v3.0 PER-CHANNEL (5 campos) ──
+                rg: cl.region?.group || '',                                     // región
+                lg: cl.language?.code || cl.language?.group || '',              // idioma
+                ct: cl.category?.group || '',                                   // categoría
+                cn: cl.country?.group || '',                                    // país/zona
+                cf: cl.confidence ? Math.round(cl.confidence * 100) : 0,       // confianza (0-100)
+                // ── 🔬 ENRICHMENT PER-CHANNEL (7 campos) ──
+                fp: channel.frames || cfg.fps || 30,                            // FPS real
+                tr: channel.transport || 'HLS',                                 // transport
+                at: channel.isDolbyAtmos ? 1 : 0,                               // Dolby Atmos
+                cu: channel.isCatchup ? 1 : 0,                                  // Catchup
+                ll: channel.isLowLatency ? 1 : 0,                               // Low-Latency
+                bt: channel.bitrateTierCode || '',                               // bitrate tier
+                sc: cl.sportSubcategory || '',                                   // sport subcategory
+                cf2: channel.codecFamily || '',                                  // codec family
+                // ═══════════════════════════════════════════════════════
+                // 🆕 CTX v25: 22 NUEVOS CAMPOS — cerrando brechas entre carriles
+                // Estos datos existían en EXTHTTP pero el resolver no los veía.
+                // ═══════════════════════════════════════════════════════
+                // ── 🎨 HDR DETALLADO (antes solo hd=0/1) ──
+                mx: 5000,                                                        // HDR MaxCLL nits
+                mf: 800,                                                         // HDR MaxFALL nits
+                dv: 8,                                                           // Dolby Vision profile (5,7,8)
+                // ── 📡 BUFFER REAL DEL PLAYER (antes solo bf=30000) ──
+                bx: parseInt(typeof GLOBAL_CACHING !== 'undefined' ?
+                    Math.max(GLOBAL_CACHING.network || 0, GLOBAL_CACHING.live || 0, 200000) : 200000),  // Buffer-Max real
+                b2: 60000,                                                       // Buffer-Target
+                // ── 📺 DISPOSITIVO & PANTALLA ──
+                dt: 'TV',                                                        // Device-Type (TV/MOB/DSK)
+                sr: cfg.resolution || '1920x1080',                               // Screen-Resolution real
+                hw: 1,                                                           // Hardware-Decode (1=true)
+                // ── 💰 BITRATE & CDN ──
+                ib: (cfg.bitrate || 5000) * 1000,                              // Initial-Bitrate bps
+                bp: 'UL',                                                        // Bandwidth-Preference (UL=unlimited)
+                cd: 'auto',                                                      // CDN-Provider
+                sf: 1,                                                           // Seamless-Failover (1=true)
+                // ── 🔊 AUDIO ──
+                ab: parseInt(cfg.audio_bitrate) || 640,                          // Audio-Bitrate kbps
+                ac: 'aac,eac3',                                                  // Audio-Codecs
+                // ── 🎛️ PLAYER CONFIG ──
+                pt: 'VLC',                                                       // Player-Type
+                nt: 'wifi',                                                      // Network-Type
+                rc: 10,                                                          // Retry-Count
+                ct2: 2500,                                                       // Connection-Timeout-Ms
+                // ── 🔬 CODEC AVANZADO ──
+                vc: 'av1,hevc,vp9,h264',                                         // Video-Codecs supported
+                dr: 'widevine,playready',                                        // DRM-Support
+                // ── 🛡️ RESILENCIA ──
+                nc2: typeof GLOBAL_CACHING !== 'undefined' ? GLOBAL_CACHING.network || 37500 : 37500,  // network-caching VLCOPT real
+                cj: parseInt(cfg.clock_jitter) || 1500                           // clock-jitter VLCOPT real
             };
 
             // B64 URL-safe (no encodeURIComponent needed — only A-Z a-z 0-9 - _)
@@ -4896,6 +5188,13 @@
             return null;
         }
 
+        // AUTO-DELTA METADATA SCAN - OBLIGATORIO PRE-GENERACIÓN
+        if (window.apeScanMetadataCluster && options.skipMetaScan !== true) {
+            console.log("🧠 [APE-META] Auto-escaneando metadata delta antes de generar...");
+            if (window.HUD_TYPED_ARRAYS) window.HUD_TYPED_ARRAYS.log(`🧠 Iniciando Inteligencia Metadata (Delta)...`, '#8b5cf6');
+            await window.apeScanMetadataCluster(true);
+        }
+
         // ═══════════════════════════════════════════════════════════════
         // v9.1 SCHEMA TRANSLATOR GATE — Channels enter clean or not at all
         // Applies: Unicode sanitization, profile normalization, URL repair,
@@ -5141,6 +5440,119 @@
         console.log('   ✅ Resiliencia 24/7/365 + ISP NUCLEAR (5 niveles escalantes)');
         console.log('   ✅ HTTPS Priority (upgrade HTTP → HTTPS)');
         console.log('═══════════════════════════════════════════════════════════════');
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // 🧠 APE METADATA INTELLIGENCE BATCH SCANNER
+    // ─────────────────────────────────────────────────────────────────
+    window.apeScanMetadataCluster = async function(deltaOnly = false) {
+        if (!window.app) { if (!deltaOnly) alert('App no cargada'); return; }
+        let channels = [];
+        if (typeof window.app.getFilteredChannels === 'function') {
+            channels = window.app.getFilteredChannels() || [];
+        } else {
+            channels = window.app.state?.filteredChannels || window.app.state?.channels || [];
+        }
+
+        if (channels.length === 0) {
+            if (!deltaOnly) alert('No hay canales cargados para escanear.');
+            return;
+        }
+
+        const btn = document.getElementById('btnScanMetadataCluster');
+        const oText = btn ? btn.innerHTML : 'Escanear Metadata';
+        if (btn) btn.innerHTML = '<span class="icon">⏳</span><span>Escaneando (0%)</span>';
+        
+        // Determinar credenciales base
+        const credentialsMap = {}; // O podrías usar app.state.activeServers pero `channels` ya suele tener `url`
+        
+        let targetUrls = [];
+        channels.forEach(ch => {
+            if (deltaOnly && ch.ape_meta) return; // Delta Scan: skip already scanned
+
+            let chUrl = ch.url || ch.direct_source || ch.stream_url;
+            if (!chUrl && ch.stream_id) {
+                // Intento simple de construir URL si no está armada
+                const servers = window.app.state?.activeServers || [];
+                const srv = servers.find(s => s.id === ch.serverId || s.id === ch.server_id);
+                if (srv) {
+                    const baseUrl = (srv.baseUrl || '').replace(/\/player_api\.php.*$/, '').replace(/\/$/, '');
+                    chUrl = `${baseUrl}/live/${srv.username}/${srv.password}/${ch.stream_id}.m3u8`;
+                }
+            }
+            if (chUrl) {
+                targetUrls.push({
+                    url: chUrl,
+                    metadata: {
+                        stream_id: ch.stream_id || ch.id,
+                        name: ch.name,
+                        group: ch.category_name || ch.group
+                    }
+                });
+            }
+        });
+
+        if (targetUrls.length === 0) {
+            if (!deltaOnly) alert('No se pudieron construir URLs para los canales. Verifica el Servidor Activo.');
+            if (btn) btn.innerHTML = oText;
+            if (deltaOnly) console.log("🧠 [APE-META] Delta scan: Todos los canales ya tienen metadata. Saltando escaneo.");
+            return;
+        }
+
+        console.log(`🧠 [APE-META] Iniciando escaneo de ${targetUrls.length} canales en meta-cluster`);
+        const CHUNK_SIZE = 50;
+        let processedCount = 0;
+        
+        // Endpoint VPS
+        const vpsUrl = document.getElementById('vpsBaseUrl')?.value || 'https://iptv-ape.duckdns.org';
+
+        for (let i = 0; i < targetUrls.length; i += CHUNK_SIZE) {
+            const chunk = targetUrls.slice(i, i + CHUNK_SIZE);
+            if (btn) btn.innerHTML = `<span class="icon">🧠</span><span>Batch ${Math.round((i/targetUrls.length)*100)}%</span>`;
+            try {
+                const res = await fetch(`${vpsUrl}/resolve_quality.php?action=meta-cluster`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ urls: chunk })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.results) {
+                        // Emparejar y guardar back
+                        data.results.forEach(r => {
+                            if (r && r.status === 'success' && r.ape_meta) {
+                                // Buscar el canal original por nombre/stream_id
+                                const targetCh = channels.find(c => 
+                                    (r.metadata?.stream_id && c.stream_id == r.metadata.stream_id) ||
+                                    (r.metadata?.name && c.name == r.metadata.name)
+                                );
+                                if (targetCh) {
+                                    targetCh.ape_meta = r.ape_meta;
+                                    processedCount++;
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn(`[APE-META] Error batch en meta-cluster: ${e.message}`);
+            }
+        }
+        
+        if (btn) btn.innerHTML = `<span class="icon">✅</span><span>Escaneo Finalizado (${processedCount})</span>`;
+        if (window.app.renderChannelsList) window.app.renderChannelsList();
+        
+        // Persistir el estado en IndexedDB y channels_map.json equivalente interno
+        if (window.app && typeof window.app.saveGeneratorSnapshot === 'function') {
+            window.app.saveGeneratorSnapshot();
+            console.log("💾 [APE-META] Snapshot guardado en IndexedDB. El ADN Metadata persistirá tras recargar.");
+        }
+        
+        console.log(`🧠 [APE-META] Completado. ${processedCount} canales enriquecidos con ADN Metadata.`);
+        if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast(`✅ Metadata Escaneada: ${processedCount} canales actualizados`, 'success');
+        }
+        setTimeout(() => { if (btn) btn.innerHTML = oText; }, 3000);
     }
 
 })();
