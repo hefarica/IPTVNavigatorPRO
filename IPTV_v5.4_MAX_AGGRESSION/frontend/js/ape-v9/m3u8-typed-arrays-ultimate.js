@@ -4561,8 +4561,26 @@
             if (index < 5) console.warn(`❌ [buildChannelUrl] No server found for ${channel.name} (sid=${sid}, stream_id=${streamId})`);
             return '';
         }
+        let ext = 'ts';
+        if (typeof window !== 'undefined' && window.app?.state?.activeServers) {
+            const srv = window.app.state.activeServers.find(s => (s.baseUrl || '').includes(creds.baseUrl));
+            if (srv && srv.streamFormat) ext = srv.streamFormat;
+            else if (window.app.state.streamFormat) ext = window.app.state.streamFormat;
+        }
         
-        return preferHttps(`${creds.baseUrl}/live/${creds.username}/${creds.password}/${streamId}.m3u8`);
+        let typePath = 'live';
+        if (channel.type === "movie" || channel.stream_type === "movie") { 
+            typePath = "movie"; 
+            ext = channel.container_extension || "mp4"; 
+        } else if (channel.type === "series" || channel.stream_type === "series") { 
+            typePath = "series"; 
+            ext = channel.container_extension || "mp4"; 
+        } else {
+            if (channel.customFormat) ext = channel.customFormat;
+            if (channel.container_extension && channel.container_extension !== 'mp4') ext = channel.container_extension;
+        }
+        
+        return preferHttps(`${creds.baseUrl}/${typePath}/${creds.username}/${creds.password}/${streamId}.${ext}`);
     }
 
     
