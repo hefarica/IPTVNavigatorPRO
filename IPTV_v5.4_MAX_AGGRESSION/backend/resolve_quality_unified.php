@@ -5145,7 +5145,7 @@ function rq_handle_request(): void
         
         if (class_exists('GuardianTelemetry')) {
             GuardianTelemetry::log(trim($logLine));
-            GuardianTelemetry::sessionPing($latencyMs, false);
+            GuardianTelemetry::sessionPing($latencyMs, false, $ch, "CH: {$ch}");
         }
     }
 
