@@ -10,6 +10,40 @@ header('Access-Control-Allow-Origin: *');
 header('Cache-Control: no-cache, must-revalidate');
 header('Content-type: application/json');
 
+// Parámetro de descarga histórica
+$action = isset($_GET['action']) ? $_GET['action'] : 'rt';
+$date = date('Y-m-d');
+$historicalFile = '/dev/shm/ape_historical_global_' . $date . '.jsonL';
+
+if ($action === 'download') {
+    if (file_exists($historicalFile)) {
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="ape_qos_historical_'.$date.'.jsonl"');
+        readfile($historicalFile);
+        exit;
+    } else {
+        echo "No history found for today.";
+        exit;
+    }
+}
+
+if ($action === 'history_table') {
+    if (!file_exists($historicalFile)) {
+        echo json_encode(['history' => []]);
+        exit;
+    }
+    // Leer últimas 100 líneas rápidamente
+    $lines = file($historicalFile);
+    $last_lines = array_slice($lines, -100);
+    $out = [];
+    foreach($last_lines as $l) {
+        $j = json_decode($l, true);
+        if($j) $out[] = $j;
+    }
+    echo json_encode(['history' => array_reverse($out)]);
+    exit;
+}
+
 $ramFile = '/dev/shm/guardian_exchange.json';
 
 // Si no existe, creamos un payload simulado para el panel v16

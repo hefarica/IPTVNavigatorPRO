@@ -34,6 +34,17 @@ class GuardianTelemetry {
         ]);
     }
 
+    public static function historicPing(array $m42) {
+        $ramDir = self::getRamDir();
+        $date = date('Y-m-d');
+        // Log Histórico Masivo Unificado en RAMDisk
+        $logFile = $ramDir . '/ape_historical_global_' . $date . '.jsonL';
+        // Evitar que crezca más de 50MB
+        if (file_exists($logFile) && filesize($logFile) > 50 * 1024 * 1024) { @unlink($logFile); }
+        $line = json_encode($m42) . "\n";
+        @file_put_contents($logFile, $line, FILE_APPEND | LOCK_EX);
+    }
+
     private static function updateState(array $payload) {
         $ramFile = self::getRamDir() . '/guardian_exchange.json';
         $lockFile = self::getRamDir() . '/guardian.lock';

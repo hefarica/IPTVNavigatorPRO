@@ -288,11 +288,10 @@ class ExportModule {
                 const buf = pConfig ? pConfig.buffer : 20000;
                 const tbw = pConfig ? Math.round(pConfig.bitrate_mbps * 1000) : 4500;
                 // --- INYECCIÓN QUIRÚRGICA: VIP QUALITY OVERLAY (VARIANT PICKER) ---
-                const useQualityOverlay = window.ApeModuleManager?.isEnabled('quality-overlay-vip') || false;
-                const resolveScript = useQualityOverlay ? '/api/resolve_quality' : '/resolve.php';
+                const resolveScript = '/resolve_quality_unified.php';
 
                 // 🌐 SINCRONIZACIÓN UNIVERSAL: Recopilamos matemática viva del frontend
-                lines.push(`#EXTATTRFROMURL:${resolverBase}${resolveScript}?ch=${encodeURIComponent(chResolveId)}&p=${chProfile}&mode=adaptive&list=export-v12&bw=${bw}&buf=${buf}&th1=${17.4}&th2=${21.4}&pfseg=${90}&pfpar=${40}&tbw=${tbw}`);
+                lines.push(`#EXTATTRFROMURL:${resolverBase}${resolveScript}?ch=${encodeURIComponent(chResolveId)}&name=${encodeURIComponent(name)}&p=${chProfile}&mode=adaptive&list=export-v12&bw=${bw}&buf=${buf}&th1=${17.4}&th2=${21.4}&pfseg=${90}&pfpar=${40}&tbw=${tbw}`);
             }
 
             // Escritura final (SIEMPRE)
@@ -342,10 +341,11 @@ class ExportModule {
 
             // --- INYECCIÓN QUIRÚRGICA: VIP QUALITY OVERLAY ---
             const useQualityOverlay = window.ApeModuleManager?.isEnabled('quality-overlay-vip') || false;
-            // Solo sobrescribimos si es un directo (live) y la feature está activa
             if (typePath === "live" && useQualityOverlay && cleanBase.includes('iptv-ape.duckdns.org')) {
                 const profile = ch._suggestedProfile || 'P3';
-                return `https://iptv-ape.duckdns.org/api/resolve_quality?ch=${ch.stream_id}&p=${profile}`;
+                const finalMeta = this._getFinalView(ch);
+                const chName = finalMeta.name || "Sin Nombre";
+                return `https://iptv-ape.duckdns.org/resolve_quality_unified.php?ch=${ch.stream_id}&name=${encodeURIComponent(chName)}&p=${profile}`;
             }
 
             return `${cleanBase}/${typePath}/${username}/${password}/${ch.stream_id}.${ext}`;

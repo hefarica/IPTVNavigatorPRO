@@ -451,9 +451,9 @@
                 return null;
             }
 
-            const profiles = config.getAllProfiles
-                ? Object.values(config.getAllProfiles())
-                : [];
+            const profiles = config.getDegradationHierarchy
+                ? config.getDegradationHierarchy()
+                : (config.getAllProfiles ? Object.values(config.getAllProfiles()) : []);
 
             const manifest = config.getManifestConfig
                 ? config.getManifestConfig()

@@ -1038,6 +1038,113 @@ class IPTVNavigatorPro {
     }
 
     /**
+     * SSOT Whitelist: Modal dinámico para guardar credenciales de servidor
+     */
+    promptWhitelistServer(serverInfo, force = false) {
+        if (!this.state.whitelistPrompted) this.state.whitelistPrompted = new Set();
+        const serverHash = serverInfo.baseUrl || serverInfo.name || serverInfo.id;
+        if (!force && this.state.whitelistPrompted.has(serverHash)) return;
+        this.state.whitelistPrompted.add(serverHash);
+
+        if (document.getElementById('whitelistModalOverlay')) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'whitelistModalOverlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        `;
+
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 16px; width: 90%; max-width: 420px;
+            padding: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95) translateY(20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center; color: #f8fafc; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        `;
+
+        let niceUrl = serverInfo.baseUrl || 'Servidor';
+        try { if(serverInfo.baseUrl) niceUrl = new URL(serverInfo.baseUrl).hostname; } catch(e){}
+
+        modal.innerHTML = `
+            <div style="font-size: 3rem; margin-bottom: 12px; text-shadow: 0 0 15px rgba(56,189,248,0.5);">🛡️</div>
+            <h3 style="margin: 0 0 12px 0; font-size: 1.25rem; font-weight: 600; color: #38bdf8;">¿Blindar en Lista Blanca?</h3>
+            <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 20px; line-height: 1.5;">
+                Nuevo servidor detectado:<br>
+                <strong style="color: #e2e8f0; font-size: 1.05rem;">${serverInfo.name || niceUrl}</strong>
+            </p>
+            <p style="text-align:left; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 24px; background: rgba(56,189,248,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #38bdf8;">
+                ¿Deseas agregarlo al SSOT Backend (Lista Blanca) para que el Resolver unificado extraiga sus credenciales automáticamente y garantice siempre resolución HTTP 200?
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="btnWhitelistCancel" style="flex: 1; padding: 12px; border: 1px solid rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                    NO, IGNORAR
+                </button>
+                <button id="btnWhitelistConfirm" style="flex: 1; padding: 12px; border: none; background: #38bdf8; color: #0f172a; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(56, 189, 248, 0.3);">
+                    SÍ, BLINDAR
+                </button>
+            </div>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+            modal.style.transform = 'scale(1) translateY(0)';
+        });
+
+        const close = () => {
+            overlay.style.opacity = '0';
+            modal.style.transform = 'scale(0.95) translateY(20px)';
+            setTimeout(() => overlay.remove(), 300);
+        };
+
+        const btnCancel = document.getElementById('btnWhitelistCancel');
+        const btnConfirm = document.getElementById('btnWhitelistConfirm');
+
+        btnCancel.addEventListener('mouseenter', () => btnCancel.style.background = 'rgba(239, 68, 68, 0.2)');
+        btnCancel.addEventListener('mouseleave', () => btnCancel.style.background = 'rgba(239, 68, 68, 0.1)');
+        btnCancel.onclick = close;
+        
+        btnConfirm.addEventListener('mouseenter', () => btnConfirm.style.background = '#0ea5e9');
+        btnConfirm.addEventListener('mouseleave', () => btnConfirm.style.background = '#38bdf8');
+        btnConfirm.onclick = async () => {
+            btnConfirm.textContent = 'Guardando...';
+            btnConfirm.style.opacity = '0.7';
+            btnConfirm.disabled = true;
+            try {
+                const srvUser = serverInfo._lockedUsername || serverInfo.username || '';
+                const srvPass = serverInfo._lockedPassword || serverInfo.password || '';
+                const apiUrl = window.location.href.includes('frontend') ? '../backend/api_whitelist.php' : '/backend/api_whitelist.php';
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        host: serverInfo.baseUrl,
+                        user: srvUser,
+                        pass: srvPass
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Error HTTP ' + response.status);
+                
+                alert('🛡️ ¡ÉXITO! Servidor blindado en la Lista Blanca (SSOT). El Resolver ahora posee acceso sin restricciones.');
+            } catch (err) {
+                console.error('Error Whitelist SSOT:', err);
+                alert('❌ Fallo de inserción en SSOT: ' + err.message);
+            }
+            close();
+        };
+    }
+
+
+    /**
      * 🔒 V4.18.3: UPSERT de servidor (INCREMENTAL - NO OVERWRITE)
      * Inserta si no existe, actualiza si existe
      * @param {Object} server - Servidor a guardar
@@ -1072,6 +1179,11 @@ class IPTVNavigatorPro {
             // ➕ NUEVO servidor
             this.state.activeServers.push(server);
             console.log(`➕ [upsertServer] Nuevo: ${server.name} (${server.id})`);
+            
+            // ✅ SSOT Whitelist Trigger
+            if (typeof this.promptWhitelistServer === 'function') {
+                this.promptWhitelistServer(server);
+            }
         } else {
             // 🔄 UPDATE servidor existente (merge seguro)
             this.state.activeServers[idx] = {
@@ -6004,6 +6116,11 @@ El servidor analizará 26,000+ canales en ~10 minutos.
 
         // ✅ CORRECCIÓN: Usar srv.name (servidor clickeado)
         alert(`✅ Servidor "${srv.name}" guardado en biblioteca`);
+        
+        // ✅ SSOT Whitelist Trigger (Force prompt after manual save)
+        if (typeof this.promptWhitelistServer === 'function') {
+            this.promptWhitelistServer(srv, true);
+        }
     }
 
     /**

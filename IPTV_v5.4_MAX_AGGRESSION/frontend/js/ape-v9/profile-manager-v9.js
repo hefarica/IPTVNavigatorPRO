@@ -233,7 +233,7 @@
             // Marcar como expandido
             this.isOpen = true;
 
-            const profiles = this.config.getAllProfiles();
+            const profiles = this.config.getDegradationHierarchy ? this.config.getDegradationHierarchy() : Object.values(this.config.getAllProfiles());
             const activeProfile = this.config.getProfile(this.activeProfileId);
             const activeManifest = this.config.getManifestConfig();
             const categories = this.config.getCategories();
@@ -256,7 +256,7 @@
 
                     <!-- Tabs de Perfiles -->
                     <div class="pm9-tabs">
-                        ${Object.values(profiles).map(p => `
+                        ${profiles.map(p => `
                             <button class="pm9-tab ${p.id === this.activeProfileId ? 'active' : ''}" 
                                     data-profile="${p.id}"
                                     style="--tab-color: ${p.color}"

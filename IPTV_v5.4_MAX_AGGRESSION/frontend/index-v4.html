@@ -1016,6 +1016,77 @@
     #filterBuilderContainer.locked button:not(.btn-apply-filters) {
       display: none !important;
     }
+
+    /* V4.10+ Extracted Inline Styles */
+    .active-servers-grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      max-width: 100%;
+    }
+    .classification-stats-container {
+      margin-top: 12px;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.05));
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Roboto', sans-serif;
+    }
+    .classification-stats-header {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .classification-stats-title {
+      font-size: 0.92rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+    }
+    .classification-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      font-size: 0.75rem;
+    }
+    .class-stat-group-title {
+      color: #38bdf8;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .class-stat-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: #e5e7eb;
+    }
+    #probeStatsContainer {
+      margin-top: 8px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.05));
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .probe-stats-header {
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    .probe-stats-title {
+      color: #bae6fd;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
   </style>
   <link rel="stylesheet" href="css/generator-v41.css">
 </head>
@@ -1046,6 +1117,7 @@
       <button class="tab-button" data-tab="sources"><span>Fuentes</span></button>
       <button class="tab-button" data-tab="servers"><span>Servidores</span></button>
       <button class="tab-button" data-tab="generator"><span>Generador</span></button>
+      <button class="tab-button" data-tab="telemetry"><span>Telemetría</span></button>
       <button class="tab-button" data-tab="export"><span>Exportar</span></button>
       <button class="tab-button" data-tab="share"><span>Compartir</span></button>
     </nav>
@@ -1092,13 +1164,7 @@
             </div>
 
             <!-- Panel de Servidores Conectados (Grid 4x2) -->
-            <div id="activeServersList" style="
-              margin-top:12px;
-              display:grid;
-              grid-template-columns: repeat(4, 1fr);
-              gap:8px;
-              max-width:100%;
-            "></div>
+            <div id="activeServersList" class="active-servers-grid"></div>
 
             <div class="status-line">
               <div id="connectionStatus" class="status-chip"><span class="status-dot"></span><span>Esperando
@@ -1126,41 +1192,27 @@
             </div>
 
             <!-- 🏷️ V4.22: Panel de Estadísticas de Clasificación Jerárquica -->
-            <div id="classificationStatsContainer" class="enrich-mini"
-              style="display:none; margin-top: 12px; padding: 16px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.05)); border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3); font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Roboto', sans-serif;">
-              <div class="enrich-mini-top"
-                style="border-bottom: 1px solid rgba(148, 163, 184, 0.25); padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
-                <img
-                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' width='24' height='24'%3E%3Crect x='8' y='12' width='48' height='32' rx='3' fill='none' stroke='%239ca3af' stroke-width='2'/%3E%3Cpath d='M16 20c2-2 6-2 8 0s6 2 8 0' stroke='%2338bdf8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M16 26c2-2 6-2 8 0s6 2 8 0' stroke='%2338bdf8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Ctext x='40' y='32' font-size='12' font-weight='bold' fill='%2338bdf8'%3ETV%3C/text%3E%3Crect x='28' y='44' width='8' height='6' fill='%239ca3af'/%3E%3Crect x='22' y='50' width='20' height='3' rx='1' fill='%239ca3af'/%3E%3C/svg%3E"
-                  alt="TV" style="opacity: 0.7;">
-                <span class="enrich-mini-text"
-                  style="font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-muted); font-weight: 500; -webkit-font-smoothing: antialiased;">CLASIFICACIÓN
-                  CANALES JERÁRQUICA</span>
+            <div id="classificationStatsContainer" class="enrich-mini classification-stats-container" style="display:none;">
+              <div class="enrich-mini-top classification-stats-header">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' width='24' height='24'%3E%3Crect x='8' y='12' width='48' height='32' rx='3' fill='none' stroke='%239ca3af' stroke-width='2'/%3E%3Cpath d='M16 20c2-2 6-2 8 0s6 2 8 0' stroke='%2338bdf8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M16 26c2-2 6-2 8 0s6 2 8 0' stroke='%2338bdf8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Ctext x='40' y='32' font-size='12' font-weight='bold' fill='%2338bdf8'%3ETV%3C/text%3E%3Crect x='28' y='44' width='8' height='6' fill='%239ca3af'/%3E%3Crect x='22' y='50' width='20' height='3' rx='1' fill='%239ca3af'/%3E%3C/svg%3E" alt="TV" style="opacity: 0.7;">
+                <span class="enrich-mini-text classification-stats-title">CLASIFICACIÓN CANALES JERÁRQUICA</span>
               </div>
-              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; font-size: 0.75rem;">
+              <div class="classification-stats-grid">
                 <div>
-                  <div
-                    style="color: #38bdf8; font-weight: 600; margin-bottom: 6px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                    🌎 REGIÓN</div>
-                  <div id="classStatRegion" style="display: flex; flex-wrap: wrap; gap: 6px; color: #e5e7eb;"></div>
+                  <div class="class-stat-group-title">🌎 REGIÓN</div>
+                  <div id="classStatRegion" class="class-stat-list"></div>
                 </div>
                 <div>
-                  <div
-                    style="color: #38bdf8; font-weight: 600; margin-bottom: 6px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                    🗣️ IDIOMA</div>
-                  <div id="classStatLanguage" style="display: flex; flex-wrap: wrap; gap: 6px; color: #e5e7eb;"></div>
+                  <div class="class-stat-group-title">🗣️ IDIOMA</div>
+                  <div id="classStatLanguage" class="class-stat-list"></div>
                 </div>
                 <div>
-                  <div
-                    style="color: #38bdf8; font-weight: 600; margin-bottom: 6px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                    📂 CATEGORÍA</div>
-                  <div id="classStatCategory" style="display: flex; flex-wrap: wrap; gap: 6px; color: #e5e7eb;"></div>
+                  <div class="class-stat-group-title">📂 CATEGORÍA</div>
+                  <div id="classStatCategory" class="class-stat-list"></div>
                 </div>
                 <div>
-                  <div
-                    style="color: #38bdf8; font-weight: 600; margin-bottom: 6px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                    📺 CALIDAD</div>
-                  <div id="classStatQuality" style="display: flex; flex-wrap: wrap; gap: 6px; color: #e5e7eb;"></div>
+                  <div class="class-stat-group-title">📺 CALIDAD</div>
+                  <div id="classStatQuality" class="class-stat-list"></div>
                 </div>
               </div>
             </div>
@@ -2772,6 +2824,203 @@
                 class="icon">☢️</span><span>Factory Reset</span></button>
           </div>
 
+          <!-- TAB: TELEMETRÍA -->
+          <div id="tab-telemetry" class="tab-content">
+            <div class="panel-header" style="margin-bottom:10px;">
+              <div class="panel-title">APE Guardian Engine v16 - Telemetría Exchange</div>
+            </div>
+            <!-- Panel Interactivo UI Guardian -->
+            <div class="ape-v16-exchange-panel" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 16px; padding: 20px; margin-top: 16px; margin-bottom: 16px;">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 1.5rem;">🛡️</span>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1rem; color: #e2e8f0;">APE Guardian Engine v16 - Telemetría Exchange</h3>
+                            <span style="font-size: 0.75rem; color: #a5b4fc;">Zero-Overhead RAM Monitoring (/dev/shm)</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <span id="ape16-ts-dot" style="width: 10px; height: 10px; background: #fbbf24; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #fbbf24; margin-top: 4px;"></span>
+                        <span id="ape16-ts-text" style="font-size: 0.8rem; color: #fbbf24; font-weight: bold;">Conectando...</span>
+                    </div>
+                </div>
+
+                <!-- Grid de Métricas Principales -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+                    <!-- Activos -->
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; padding: 12px;">
+                        <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">Sesiones Activas</div>
+                        <div id="ape16-ts-sessions" style="font-size: 1.4rem; font-weight: bold; color: #e2e8f0;">0</div>
+                    </div>
+                    <!-- Bandwidth -->
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; padding: 12px;">
+                        <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">Ancho de Banda</div>
+                        <div style="display: flex; align-items: baseline; gap: 4px;">
+                            <div id="ape16-ts-bandwidth" style="font-size: 1.4rem; font-weight: bold; color: #38bdf8;">0.0</div>
+                            <span style="font-size: 0.8rem; color: #64748b;">Mbps</span>
+                        </div>
+                    </div>
+                    <!-- Latencia -->
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; padding: 12px;">
+                        <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">Latencia Promedio</div>
+                        <div style="display: flex; align-items: baseline; gap: 4px;">
+                            <div id="ape16-ts-latency" style="font-size: 1.4rem; font-weight: bold; color: #4ade80;">0</div>
+                            <span style="font-size: 0.8rem; color: #64748b;">ms</span>
+                        </div>
+                    </div>
+                    <!-- Errores -->
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; padding: 12px;">
+                        <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">Errores HLS/500</div>
+                        <div id="ape16-ts-errors" style="font-size: 1.4rem; font-weight: bold; color: #f87171;">0</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <!-- Event Log -->
+                    <div>
+                        <div style="font-size: 0.75rem; color: #c4b5fd; text-transform: uppercase; margin-bottom: 8px; font-weight: bold;">📜 Últimos Eventos</div>
+                        <div id="ape16-ts-log" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 8px; padding: 10px; height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 4px;">
+                            <div style="color: #64748b;">[System] Esperando inicialización del Guardian Engine...</div>
+                        </div>
+                    </div>
+
+                    <!-- Canales Activos -->
+                    <div>
+                        <div style="font-size: 0.75rem; color: #6ee7b7; text-transform: uppercase; margin-bottom: 8px; font-weight: bold;">📺 Canales En Directo</div>
+                        <div id="ape16-ts-channels" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 10px; height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+                            <div style="font-size: 0.75rem; color: #64748b; font-style: italic; text-align: center; margin-top: 20px;">Ningún canal reproduciéndose...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+            let guardianInterval;
+            let lastSnapshot = { channels: {}, metrics: {} };
+            
+            function startGuardianTelemetry() {
+                if (guardianInterval) clearInterval(guardianInterval);
+                fetchGuardianTelemetry();
+                guardianInterval = setInterval(fetchGuardianTelemetry, 800);
+            }
+            
+            function updateMetricExchange(id, val, color) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const oldVal = el.textContent;
+                // Normalizar espacios y saltos de línea para comparación estricta
+                if (oldVal.trim() !== String(val).trim()) {
+                    el.textContent = val;
+                    el.style.transition = 'none';
+                    const origBg = el.style.backgroundColor;
+                    el.style.backgroundColor = color || 'rgba(16, 185, 129, 0.4)';
+                    el.style.borderRadius = '4px';
+                    setTimeout(() => {
+                        el.style.transition = 'background-color 0.8s ease-out';
+                        el.style.backgroundColor = 'transparent';
+                    }, 50);
+                }
+            }
+
+            function fetchGuardianTelemetry() {
+                const proxyUrl = "https://iptv-ape.duckdns.org/guardian.php";
+                
+                fetch(proxyUrl, { cache: 'no-store' })
+                    .then(res => {
+                        if(!res.ok) throw new Error("HTTP " + res.status);
+                        return res.json();
+                    })
+                    .then(data => {
+                        // Header Status
+                        document.getElementById('ape16-ts-dot').style.background = '#4ade80';
+                        document.getElementById('ape16-ts-dot').style.boxShadow = '0 0 8px #4ade80';
+                        document.getElementById('ape16-ts-text').textContent = 'Online / Sync';
+                        document.getElementById('ape16-ts-text').style.color = '#4ade80';
+                        
+                        // Metrics Snapshot Diff
+                        let sess = typeof data.active_sessions === 'number' ? data.active_sessions : (data.active_channels ? Object.keys(data.active_channels).length : 0);
+                        updateMetricExchange('ape16-ts-sessions', sess, 'rgba(148, 163, 184, 0.4)');
+                        updateMetricExchange('ape16-ts-bandwidth', data.avg_bandwidth_mbps || '0.0', 'rgba(56, 189, 248, 0.4)');
+                        updateMetricExchange('ape16-ts-latency', data.avg_latency_ms || '0', 'rgba(74, 222, 128, 0.4)');
+                        updateMetricExchange('ape16-ts-errors', data.total_errors || '0', 'rgba(248, 113, 113, 0.4)');
+                        
+                        // Active Channels Snapshot
+                        const channelsBox = document.getElementById('ape16-ts-channels');
+                        
+                        if (data.active_channels && Object.keys(data.active_channels).length > 0) {
+                            // Limpiar placeholder de 'Ningún canal...'
+                            if(channelsBox.innerHTML.includes('Ningún canal')) channelsBox.innerHTML = '';
+                            
+                            for (const cid in data.active_channels) {
+                                const c = data.active_channels[cid];
+                                let row = document.getElementById('ts-ch-row-' + cid);
+                                
+                                if (!row) {
+                                    // Crear si no existe
+                                    let realName = "";
+                                    if (window.app && window.app.state && window.app.state.channels) {
+                                        let chan = window.app.state.channels.find(ch => String(ch.stream_id) === String(cid) || String(ch.epg_channel_id) === String(cid));
+                                        if(!chan && window.app.state.channelsFilter) {
+                                            chan = window.app.state.channelsFilter.find(ch => String(ch.stream_id) === String(cid) || String(ch.epg_channel_id) === String(cid));
+                                        }
+                                        if (chan) realName = chan.name || chan.tvg_name || "";
+                                    }
+                                    let displayName = realName ? `ID: ${cid} - ${realName.substring(0,40)}` : (c.name || `CH: ${cid}`);
+                                    
+                                    const el = document.createElement('div');
+                                    el.id = 'ts-ch-row-' + cid;
+                                    el.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: rgba(16, 185, 129, 0.05); border-left: 2px solid #4ade80; border-radius: 4px; transition: background 0.3s; margin-bottom: 4px;";
+                                    
+                                    const nameSpan = document.createElement('span');
+                                    nameSpan.style.cssText = "font-size: 0.75rem; color: #a7f3d0; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;";
+                                    nameSpan.textContent = displayName;
+                                    
+                                    const latSpan = document.createElement('span');
+                                    latSpan.id = 'ts-ch-lat-' + cid;
+                                    latSpan.style.cssText = "font-size: 0.7rem; color: " + (c.lat > 500 ? "#fbbf24" : "#4ade80") + "; font-family: monospace; transition: all 0.3s;";
+                                    latSpan.textContent = c.lat + "ms";
+                                    
+                                    el.appendChild(nameSpan);
+                                    el.appendChild(latSpan);
+                                    channelsBox.appendChild(el);
+                                } else {
+                                    // Exchange Diff update: Actualizar solo variaciones de latencia
+                                    const latSpan = document.getElementById('ts-ch-lat-' + cid);
+                                    if (latSpan && latSpan.textContent !== c.lat + "ms") {
+                                        latSpan.textContent = c.lat + "ms";
+                                        latSpan.style.color = c.lat > 500 ? "#fbbf24" : "#4ade80";
+                                        latSpan.style.textShadow = "0 0 5px rgba(255,255,255,0.8)";
+                                        setTimeout(() => { latSpan.style.textShadow = "none"; }, 200);
+                                    }
+                                }
+                            }
+                            
+                            // Remover canales obsoletos
+                            Array.from(channelsBox.children).forEach(child => {
+                                if (child.id && child.id.startsWith('ts-ch-row-')) {
+                                    const cidEx = child.id.replace('ts-ch-row-', '');
+                                    if (!data.active_channels[cidEx]) child.remove();
+                                }
+                            });
+                        } else {
+                            if (typeof data.active_sessions !== 'number' || data.active_sessions === 0) {
+                                channelsBox.innerHTML = '<div style="font-size: 0.75rem; color: #64748b; font-style: italic; text-align: center; margin-top: 20px;">Ningún canal reproduciéndose...</div>';
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        document.getElementById('ape16-ts-dot').style.background = '#f87171';
+                        document.getElementById('ape16-ts-dot').style.boxShadow = '0 0 8px #f87171';
+                        document.getElementById('ape16-ts-text').textContent = 'Proxy Inaccesible / Fallo';
+                        document.getElementById('ape16-ts-text').style.color = '#f87171';
+                    });
+            }
+            
+            document.addEventListener('DOMContentLoaded', () => { setTimeout(startGuardianTelemetry, 800); });
+            </script>
+          </div>
+
           <!-- TAB: COMPARTIR -->
           <div id="tab-share" class="tab-content">
             <div class="panel-header" style="margin-bottom:10px;">
@@ -3429,7 +3678,8 @@
         servers: document.getElementById('tab-servers'),
         generator: document.getElementById('tab-generator'),
         export: document.getElementById('tab-export'),
-        share: document.getElementById('tab-share')
+        share: document.getElementById('tab-share'),
+        telemetry: document.getElementById('tab-telemetry')
       };
 
       // Mapeo de nombres de tab a IDs de sección para TabLifecycleManager
@@ -3442,7 +3692,8 @@
         'servers': 'tab-servers',
         'generator': 'tab-generator',
         'export': 'tab-export',
-        'share': 'tab-share'
+        'share': 'tab-share',
+        'telemetry': 'tab-telemetry'
       };
 
       function showTab(name) {

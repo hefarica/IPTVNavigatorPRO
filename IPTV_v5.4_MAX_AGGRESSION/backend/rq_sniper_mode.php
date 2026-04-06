@@ -765,7 +765,7 @@ function rq_sniper_ffmpeg_pipeline($sniper_status, $acrp_state, $resolution_hint
 
     // --- Combinar todos los filtros en video-filter chain ---
     $filter_chain = implode(',', $filters);
-    $output['ext_vlcopt'][] = 'video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full
+    $output['ext_vlcopt'][] = 'video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full';
 
     // --- Directivas de soporte standalone ---
     $output['ext_vlcopt'][] = 'deinterlace=1';

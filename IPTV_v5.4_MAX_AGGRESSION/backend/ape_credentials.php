@@ -18,15 +18,38 @@ class ApeCredentials
      * Host como llave primaria. Si el host coincide, se imponen estas credenciales maestra.
      */
     private static array $providers = [
+        // Servidor 1: tivi-ott
         'line.tivi-ott.net' => [
             'user' => '3JHFTC',
             'pass' => 'U56BDP'
+        ],
+        // Servidor 2: nov202gg
+        'nov202gg.xyz:80' => [
+            'host' => 'http://nov202gg.xyz:80',
+            'user' => '2bltzll4p2',
+            'pass' => '0qtujkrjal'
+        ],
+        // Servidor 3: ky-tv
+        'ky-tv.cc:80' => [
+            'host' => 'http://ky-tv.cc:80',
+            'user' => 'sjUumYrmCj',
+            'pass' => 'KndjvFyunE'
         ],
         // Soporte para alias cortos de servidor que el frontend pueda enviar en 'srv='
         'tivi_01' => [
             'host' => 'line.tivi-ott.net',
             'user' => '3JHFTC',
             'pass' => 'U56BDP'
+        ],
+        'nova_01' => [
+            'host' => 'http://nov202gg.xyz:80',
+            'user' => '2bltzll4p2',
+            'pass' => '0qtujkrjal'
+        ],
+        'kytv_01' => [
+            'host' => 'http://ky-tv.cc:80',
+            'user' => 'sjUumYrmCj',
+            'pass' => 'KndjvFyunE'
         ]
     ];
 
@@ -41,19 +64,43 @@ class ApeCredentials
     public static function resolve(string $host, ?string $providedUser = null, ?string $providedPass = null): array
     {
         $cleanHost = preg_replace('#^https?://#', '', rtrim($host, '/'));
+        $cleanHostForLookup = $cleanHost; // Lookup against the exact string (which might include :80)
+        $cleanHostStripped = explode(':', $cleanHost)[0]; // Fallback if they didn't include the port
+
+        // --- INYECCIÓN SSOT DINÁMICA ---
+        // Leer la lista blanca alimentada por el UI y fusionar con la memoria en tiempo real
+        $dynamicFile = __DIR__ . '/whitelist_dynamic.json';
+        if (file_exists($dynamicFile)) {
+            $dynContent = file_get_contents($dynamicFile);
+            if ($dynContent) {
+                $decoded = json_decode($dynContent, true);
+                if (is_array($decoded)) {
+                    self::$providers = array_merge(self::$providers, $decoded);
+                }
+            }
+        }
+        // -------------------------------
 
         // 1. Es un Alias Puro? (el Frontend solo envía srv=tivi_01)
-        if (isset(self::$providers[$cleanHost]) && isset(self::$providers[$cleanHost]['host'])) {
+        if (isset(self::$providers[$cleanHostForLookup]) && isset(self::$providers[$cleanHostForLookup]['host'])) {
             return [
-                'host' => self::$providers[$cleanHost]['host'],
-                'user' => self::$providers[$cleanHost]['user'],
-                'pass' => self::$providers[$cleanHost]['pass']
+                'host' => self::$providers[$cleanHostForLookup]['host'],
+                'user' => self::$providers[$cleanHostForLookup]['user'],
+                'pass' => self::$providers[$cleanHostForLookup]['pass']
             ];
         }
 
         // 2. Es un Proveedor Maestreado? (Hard-wire)
-        if (isset(self::$providers[$cleanHost])) {
-            $master = self::$providers[$cleanHost];
+        $matchedKey = null;
+        if (isset(self::$providers[$cleanHostForLookup])) {
+            $master = self::$providers[$cleanHostForLookup];
+            $matchedKey = $cleanHostForLookup;
+        } elseif (isset(self::$providers[$cleanHostStripped])) {
+            $master = self::$providers[$cleanHostStripped];
+            $matchedKey = $cleanHostStripped;
+        }
+
+        if (isset($master)) {
             
             // Auto-Corregir credenciales si están vacías, son 'CRED_MISSING' o tienen typos sospechosos 
             // como 'U56@DP'
@@ -69,8 +116,15 @@ class ApeCredentials
                 $providedPass = $master['pass'];
             }
 
+            // AUTO-RECONSTRUCCIÓN SSOT ABSOLUTA
+            // Si el diccionario maestro NO tiene 'host' declarado explícitamente, pero 
+            // su identificador ($matchedKey) trae un puerto por defecto ('dominio:puerto'), 
+            // forzamos matemáticamente esa URL para blindar CUALQUIER proveedor futuro.
+            $fallbackHost = 'http://' . ltrim($matchedKey, '/');
+            $finalHost = $master['host'] ?? $fallbackHost;
+
             return [
-                'host' => $cleanHost,
+                'host' => $finalHost, // Host blindado del maestro o autoconstruido
                 'user' => $providedUser,
                 'pass' => $providedPass
             ];
@@ -78,7 +132,7 @@ class ApeCredentials
 
         // 3. Proveedor Desconocido (Passthrough)
         return [
-            'host' => $cleanHost,
+            'host' => $host, // Preservar la URL completa original
             'user' => $providedUser ?? 'CRED_MISSING',
             'pass' => $providedPass ?? 'CRED_MISSING'
         ];

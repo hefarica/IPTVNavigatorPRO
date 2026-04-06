@@ -2110,6 +2110,7 @@ const UAPhantomEngine = (function () {
             `#EXTVLCOPT:hw-dec-accelerator=d3d11va,dxva2,vaapi,vdpau,nvdec,cuda,mediacodec,videotoolbox`,
             `#EXTVLCOPT:avcodec-dr=1`,
             `#EXTVLCOPT:avcodec-threads=0`,
+            `#EXTVLCOPT:avcodec-skip-frame=2`,
             `#EXTVLCOPT:ffmpeg-hw`,
             // ── SECCIÓN 5: DEINTERLACE — 1 VALOR DEFINITIVO (2 líneas) ──
             // bwdif = Bob Weaver Deinterlacing Filter (mejor calidad disponible)
@@ -2128,8 +2129,8 @@ const UAPhantomEngine = (function () {
             `#EXTVLCOPT:avcodec-skipframe=0`,
             `#EXTVLCOPT:avcodec-skip-idct=0`,
             `#EXTVLCOPT:avcodec-lowres=0`,
-            `#EXTVLCOPT:no-skip-frames`,
-            `#EXTVLCOPT:no-drop-late-frames`,
+            `#EXTVLCOPT:skip-frames`,
+            `#EXTVLCOPT:drop-late-frames`,
             `#EXTVLCOPT:high-priority=1`,
             // ── SECCIÓN 8: FFMPEG LIBAVCODEC GOD-TIER (8 líneas) ──
             `#EXTVLCOPT:avcodec-error-resilience=1`,
@@ -2183,8 +2184,8 @@ const UAPhantomEngine = (function () {
             `#EXTVLCOPT:avcodec-loop-filter=1`,
             // ── SECCIÓN 14: PLAYBACK CONTROL (6 líneas) ──
             // `// #EXTVLCOPT:repeat=100 (REMOVED: duplicated)`, (REMOVED: duplicated)
-            `#EXTVLCOPT:input-repeat=65535`,
-            `#EXTVLCOPT:loop=1`,
+            `#EXTVLCOPT:input-repeat=0`,
+            `#EXTVLCOPT:loop=0`,
             `#EXTVLCOPT:play-and-exit=0`,
             `#EXTVLCOPT:playlist-autostart=1`,
             `#EXTVLCOPT:live-pause=0`,
@@ -2267,6 +2268,8 @@ const UAPhantomEngine = (function () {
             "X-Scaler-Algorithm": "LANCZOS_HW",
             "X-CMAF-Chunk-Duration": "200ms",
             "X-E2E-Latency-Target": "4000ms",
+            "X-Buffer-Underrun-Action": "jump-to-live",
+            "X-ExoPlayer-Live-Edge-Start": "true",
             "X-GPU-Decode-Engine": "cuvid",
             "X-GPU-Filter-Chain": "VRAM_ONLY",
             // ── 🧠 CORTEX QUALITY ENGINE via EXTHTTP JSON ──
@@ -3196,6 +3199,34 @@ const UAPhantomEngine = (function () {
             `#EXT-X-APE-ANTI-NOISE-HQDN3D:luma-spatial=${height >= 2160 ? 2 : 4}|chroma-spatial=${height >= 2160 ? 1.5 : 3}`,
             `#EXT-X-APE-ANTI-NOISE-AFFTDN:nf=${height >= 720 ? '-20' : '-25'}|tn=1`,
             `#EXT-X-APE-ANTI-NOISE-PRESERVE:EDGES=true|DETAIL=true|GRAIN=cinematic`
+        ];
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 🎯 MODULE 17: QUANTUM SCTE-35 TRACKER ENGINE — Forensic Dynamic Injection
+    // Synced with REGLA 1 (OMEGA Strict / Inyección Cuántica SCTE-35 Cruda L5)
+    // ═══════════════════════════════════════════════════════════════════
+    function build_scte35_tracker_tags(cfg, profile, channelName, channelId) {
+        // Dynamic PID generation based on channelId for forensic tracing
+        let hash = 0;
+        const str = String(channelId || channelName || 'CH_000');
+        for (let i = 0; i < str.length; i++) {
+            hash = (hash << 5) - hash + str.charCodeAt(i);
+            hash |= 0;
+        }
+        const dynamicPID = "0x" + Math.abs(hash).toString(16).padStart(4, '0').substring(0, 4);
+
+        return [
+            `#EXT-X-APE-SCTE35-ENABLED:true`,
+            `#EXT-X-APE-SCTE35-FORMAT:BINARY+BASE64`,
+            `#EXT-X-APE-SCTE35-SIGNAL:CUE-IN+CUE-OUT`,
+            `#EXT-X-APE-SCTE35-PID:${dynamicPID}`,
+            `#EXT-X-APE-SCTE35-DURATION-HINT:30s`,
+            `#EXT-X-APE-SCTE35-SEGMENTATION-TYPE:PROGRAM_START`,
+            `#EXT-X-APE-SCTE35-UPID-TYPE:URI`,
+            `#EXT-X-APE-SCTE35-AVAIL-NUM:1`,
+            `#EXT-X-APE-SCTE35-AVAILS-EXPECTED:1`,
+            `#EXT-X-APE-SCTE35-BLACKOUT-OVERRIDE:true`
         ];
     }
 
@@ -5279,6 +5310,8 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
         lines.push(...build_anti_noise_tags(cfg, profile));
         // ── 🛡️ ANTI-CUT ISP STRANGULATION (Resolver Sync) ──
         lines.push(...build_anti_cut_tags(cfg, profile));
+        // ── 🎯 QUANTUM SCTE-35 TRACKER ENGINE (Forensic Analytics) ──
+        lines.push(...build_scte35_tracker_tags(cfg, profile, channel.name, channel.stream_id || channel.id || index));
         // ── 📊 QoS / QoE / PREFETCH / PERFORMANCE (Profile Manager Sync) ──
         lines.push(...build_qos_performance_tags(cfg, profile));
 
@@ -5471,7 +5504,16 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
 
             // RESOLVER MODIFICADO: Apunta al nuevo resolve_quality_unified.php (Cero 302, 100% 200 OK)
             // Se envía el contexto encriptado ctx encapsulando la directiva Phantom Hydra y el origen blindado.
-            const resolverUrl = `${resolverBase}${resolveScript}?ch=${encodeURIComponent(chId)}&profile=${cl.type || 'DEFAULT'}&mode=200ok&url=${encodeURIComponent(primaryUrl)}${ctxParam}&ext=.m3u8`;
+            // SANITIZACIÓN: Mask the credentials in the URL passed to the proxy to avoid exposing them in the M3U8.
+            let safeMaskedUrl = primaryUrl;
+            if (window.app?.state?.currentServer) {
+                const srvU = window.app.state.currentServer.username || '';
+                const srvP = window.app.state.currentServer.password || '';
+                if (srvU && srvU.length > 2) safeMaskedUrl = safeMaskedUrl.replace(new RegExp(`/${srvU}/`, 'g'), '/APE_SSOT_USER/');
+                if (srvP && srvP.length > 2) safeMaskedUrl = safeMaskedUrl.replace(new RegExp(`/${srvP}/`, 'g'), '/APE_SSOT_PASS/');
+            }
+            // AÑADIDO: srvParam ESTABA OMITIDO ANTERIORMENTE. ¡Esto es CRÍTICO para que el resolver descifre!
+            const resolverUrl = `${resolverBase}${resolveScript}?ch=${encodeURIComponent(chId)}&profile=${cl.type || 'DEFAULT'}&mode=200ok&url=${encodeURIComponent(safeMaskedUrl)}${ctxParam}${srvParam}&ext=.m3u8`;
 
             // 🎯 OPTION B: Replace the primary stream URL with resolve_quality
             // ALL players (VLC, TiviMate, Kodi) will hit the VPS, which returns

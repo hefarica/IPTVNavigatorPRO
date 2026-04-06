@@ -1,653 +1,317 @@
 <?php
+declare(strict_types=1);
+
 /**
- * NeuroBufferController v1.0.0 — APE v18.2 / Resilience v6.0
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * APE OMEGA v7.0 — FASE 3 — SUBSISTEMA 3.1
+ * NeuroBufferController: Pre-carga Predictiva de Segmentos
+ * ═══════════════════════════════════════════════════════════════════════════════
  *
- * Cerebelo del sistema: Control motor de buffer con escalada orgánica.
- * Garantiza calidad visual NATIVA MÁXIMA (4K/8K) al multiplicar
- * la agresividad de descarga en lugar de degradar resolución.
+ * PROPÓSITO:
+ *   Eliminar cortes y stalls mediante pre-carga predictiva de segmentos HLS.
+ *   El buffer deja de ser reactivo (espera a que el reproductor pida) y se
+ *   convierte en predictivo (anticipa la demanda antes de que ocurra).
  *
- * Protocolo "Depredador de Ancho de Banda":
- *   - NIVEL 0 (VERDE):   x1 — Flujo natural, 1 conexión TCP
- *   - NIVEL 1 (AMARILLO): x2 — Dual TCP Prefetch, 2 conexiones paralelas
- *   - NIVEL 2 (NARANJA):  x4 — Burst Mode, Accept-Ranges paralelo
- *   - NIVEL 3 (ROJO):     x8 — NUCLEAR, chunk splitting multi-CDN
+ * ALGORITMO:
+ *   1. Mantiene un historial deslizante de los últimos 10 segmentos (bitrate,
+ *      tiempo de descarga, jitter, pérdida de paquetes).
+ *   2. Calcula el "tiempo hasta vaciado" del buffer en tiempo real.
+ *   3. Si tiempo_hasta_vaciado < prefetch_threshold → inicia pre-carga en
+ *      hilo paralelo (curl_multi o pcntl_fork según disponibilidad).
+ *   4. El buffer dinámico se calcula matemáticamente con piso 4000ms y
+ *      techo 15000ms para evitar acumulación de segmentos obsoletos en live.
  *
- * NUNCA degrada resolución. Prefiere micro-pausa sobre pixelación.
+ * INTEGRACIÓN EN resolve_quality.php (2 líneas):
+ *   require_once __DIR__ . '/neuro_buffer_controller.php';
+ *   $bufferDirectives = NeuroBufferController::getDirectives($channelId, $health);
  *
- * Integración:
- *   - Se invoca desde resolve_quality.php via shim
- *   - Lee condiciones de QoSQoEOrchestrator
- *   - Alimenta headers a ResilienceEngine
- *   - Estado persistido en /tmp/ (sin Redis)
- *
- * @package  cmaf_engine/modules
- * @version  1.0.0
- * @requires PHP 8.1+
+ * @package  cmaf_engine
+ * @version  3.1.0
  */
 class NeuroBufferController
 {
-    // ── Niveles de agresión ────────────────────────────────────────────────
-    public const LEVEL_NORMAL   = 'NORMAL';      // x1
-    public const LEVEL_ESCALATE = 'ESCALATING';   // x2
-    public const LEVEL_BURST    = 'BURST';         // x4
-    public const LEVEL_NUCLEAR  = 'NUCLEAR';       // x8
+    const VERSION = '3.1.0';
 
-    // ── Umbrales de buffer (%) ─────────────────────────────────────────────
-    private const THRESHOLD_GREEN  = 70;  // > 70%: todo bien
-    private const THRESHOLD_YELLOW = 30;  // 30-70%: escalar a x2
-    private const THRESHOLD_ORANGE = 10;  // 10-30%: burst mode x4
-    // < 10%: NUCLEAR x8
+    // ── Umbrales de pre-carga ──────────────────────────────────────────────────
+    private const PREFETCH_THRESHOLD_STABLE   = 2.5;   // segundos antes del vaciado
+    private const PREFETCH_THRESHOLD_UNSTABLE = 1.5;   // red inestable: reaccionar antes
+    private const MAX_PREFETCH_SEGMENTS       = 3;     // máximo segmentos adelante
+    private const SEGMENT_HISTORY_SIZE        = 10;    // historial deslizante
 
-    // ── DSCP Tags por nivel ────────────────────────────────────────────────
-    private const DSCP_NORMAL  = 0;   // Best Effort
-    private const DSCP_ESCALATE= 26;  // AF31
-    private const DSCP_BURST   = 34;  // AF41
-    private const DSCP_NUCLEAR = 46;  // EF (Expedited Forwarding)
+    // ── Límites del buffer dinámico ────────────────────────────────────────────
+    private const BUFFER_FLOOR_MS   = 4000;   // piso absoluto: nunca bajar
+    private const BUFFER_CEILING_MS = 15000;  // techo absoluto: nunca subir (live)
+    private const BUFFER_LIVE_MAX   = 8000;   // máximo para canales live
+    private const BUFFER_VOD_MAX    = 15000;  // máximo para VOD
 
-    // ── Persistencia ───────────────────────────────────────────────────────
-    private const STATE_FILE       = '/tmp/neuro_buffer_state.json';
-    private const HISTORY_FILE     = '/tmp/neuro_buffer_history.json';
-    private const TREND_WINDOW     = 10;   // Muestras para calcular tendencia
-    private const MAX_HISTORY_ITEMS= 100;  // Máximo de entradas en historial
+    // ── Almacenamiento de historial (APCu o fichero) ───────────────────────────
+    private const CACHE_PREFIX = 'ape_nbuf_';
+    private const CACHE_TTL    = 300; // 5 minutos
 
-    // ── API pública ────────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    // API PÚBLICA
+    // ══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Calcula el perfil de agresión para un canal basado en su buffer actual.
-     * Este es el método principal invocado por resolve_quality.php.
+     * Punto de entrada principal.
+     * Retorna el array de directivas M3U8/VLC para el buffer óptimo.
      *
-     * @param string $channelId   ID del canal (e.g., "1312008")
-     * @param float  $bufferPct   Porcentaje de buffer actual (0-100)
-     * @param array  $networkInfo Información de red opcional del QoSQoEOrchestrator
-     * @return array Perfil completo de agresión con headers y configuración
+     * @param string $channelId  ID único del canal
+     * @param array  $health     Datos de salud del stream (del rq_streaming_health_engine)
+     * @param string $contentType 'live' | 'vod' | 'sports' | 'news'
+     * @return array             Directivas listas para inyectar en el M3U8
      */
-    public static function calculateAggression(
+    public static function getDirectives(
         string $channelId,
-        float  $bufferPct,
-        array  $networkInfo = []
+        array  $health = [],
+        string $contentType = 'live'
     ): array {
-        // Registrar muestra de buffer para análisis de tendencia
-        self::recordBufferSample($channelId, $bufferPct);
+        $history  = self::loadHistory($channelId);
+        $metrics  = self::computeMetrics($history, $health);
+        $bufferMs = self::computeDynamicBuffer($metrics, $contentType);
+        $prefetch = self::shouldPrefetch($metrics);
 
-        // Obtener historial para calcular tendencia
-        $history = self::getBufferHistory($channelId);
-        $trend   = self::calculateBufferTrend($history);
+        // Persistir métricas actualizadas
+        self::saveHistory($channelId, $metrics);
 
-        // Determinar nivel de agresión
-        $level = self::resolveLevel($bufferPct, $trend);
-
-        // Construir perfil completo
-        $profile = self::buildAggressionProfile($level, $bufferPct, $trend, $networkInfo);
-
-        // Persistir estado actual
-        self::saveChannelState($channelId, $profile);
-
-        // Registrar escalada en historial (si cambió de nivel)
-        $previousState = self::getChannelState($channelId);
-        if ($previousState && $previousState['level'] !== $level) {
-            self::recordEscalation($channelId, $previousState['level'], $level);
-        }
-
-        return $profile;
+        return self::buildDirectives($bufferMs, $prefetch, $metrics, $contentType);
     }
 
     /**
-     * Genera los headers HTTP de agresión para inyectar en el manifiesto.
-     * Estos headers instruyen al player sobre el comportamiento de descarga.
+     * Registra las métricas del segmento más reciente.
+     * Llamar desde el proxy cuando un segmento es servido al cliente.
      *
-     * @param array $profile Perfil de agresión de calculateAggression()
-     * @return array Headers key => value para EXTHTTP
+     * @param string $channelId
+     * @param float  $bitrateKbps    Bitrate real del segmento en Kbps
+     * @param float  $downloadTimeMs Tiempo de descarga en ms
+     * @param float  $segmentDurSec  Duración del segmento en segundos
+     * @param float  $jitterMs       Jitter de red en ms
+     * @param float  $lossRate       Tasa de pérdida de paquetes (0.0 - 1.0)
      */
-    public static function buildAggressionHeaders(array $profile): array
-    {
-        return [
-            'X-Buffer-Escalation-Level'  => $profile['level'],
-            'X-Aggression-Multiplier'    => (string)$profile['multiplier'],
-            'X-Parallel-Connections'     => (string)$profile['connections'],
-            'X-DSCP-Override'            => (string)$profile['dscp'],
-            'X-Prefetch-Depth'           => (string)$profile['prefetch_depth'],
-            'X-Chunk-Split-Enabled'      => $profile['chunk_split'] ? 'true' : 'false',
-            'X-Buffer-Target-Override'   => (string)($profile['buffer_target_ms']),
-            'X-Buffer-Strategy'          => $profile['strategy'],
-            'X-Quality-Lock'             => 'NATIVA_MAXIMA',
-            'X-Degradation-Allowed'      => 'false',
-        ];
-    }
+    public static function recordSegment(
+        string $channelId,
+        float  $bitrateKbps,
+        float  $downloadTimeMs,
+        float  $segmentDurSec = 2.0,
+        float  $jitterMs = 0.0,
+        float  $lossRate = 0.0
+    ): void {
+        $history = self::loadHistory($channelId);
 
-    /**
-     * Genera los tags APE para el manifiesto M3U8.
-     *
-     * @param array $profile Perfil de agresión
-     * @return array Líneas de tags para el manifiesto
-     */
-    public static function buildApeTags(array $profile): array
-    {
-        $tags = [
-            "#EXT-X-APE-BUFFER-LEVEL:{$profile['level']}",
-            "#EXT-X-APE-BUFFER-MULTIPLIER:{$profile['multiplier']}",
-            "#EXT-X-APE-BUFFER-CONNECTIONS:{$profile['connections']}",
-            "#EXT-X-APE-BUFFER-STRATEGY:{$profile['strategy']}",
-            "#EXT-X-APE-QUALITY-LOCK:NATIVA_MAXIMA",
+        // Agregar nuevo segmento al historial
+        $history['segments'][] = [
+            'ts'           => microtime(true),
+            'bitrate_kbps' => $bitrateKbps,
+            'dl_ms'        => $downloadTimeMs,
+            'seg_dur_sec'  => $segmentDurSec,
+            'jitter_ms'    => $jitterMs,
+            'loss_rate'    => $lossRate,
         ];
 
-        if ($profile['level'] === self::LEVEL_NUCLEAR) {
-            $tags[] = "#EXT-X-APE-NUCLEAR-MODE:ACTIVE";
-            $tags[] = "#EXT-X-APE-DSCP-EF:46";
+        // Mantener solo los últimos N segmentos (ventana deslizante)
+        if (count($history['segments']) > self::SEGMENT_HISTORY_SIZE) {
+            array_shift($history['segments']);
         }
 
-        return $tags;
+        self::saveHistory($channelId, $history);
     }
 
-    /**
-     * Genera los EXTVLCOPT adicionales para el perfil de agresión.
-     * Se suman a los 63+ EXTVLCOPT existentes de resolve_quality.php.
-     *
-     * @param array $profile Perfil de agresión
-     * @return array Líneas EXTVLCOPT adicionales
-     */
-    /**
-     * Builds the complete anti-cut VLC/Player options.
-     *
-     * ARCHITECTURE: 9-Layer Anti-Cut Shield
-     *   Capa 1: Network Caching (RAM)
-     *   Capa 2: Live Caching (stream)
-     *   Capa 3: File Caching (prefetch)
-     *   Capa 4: Disc Caching (disk backup)
-     *   Capa 5: Connection Resilience (reconnect)
-     *   Capa 6: Clock Tolerance (timing drift)
-     *   Capa 7: Player-Specific (ExoPlayer/Kodi/OTT)
-     *   Capa 8: Predictive Jump (jump to live edge on underrun)  ← NEW
-     *   Capa 9: Redundancy Hydra (backup URL failover)           ← NEW
-     *
-     * @param array  $profile      Aggression profile from buildAggressionProfile()
-     * @param string $streamType   'live', 'vod', or 'series'
-     * @param string $networkType  'ethernet', 'wifi', 'mobile'
-     * @param string $fallbackUrl  Optional backup stream URL
-     * @return array VLC/Player option lines
-     */
-    public static function buildVlcOpts(
-        array  $profile,
-        string $streamType  = 'live',
-        string $networkType = 'ethernet',
-        string $fallbackUrl = ''
-    ): array {
-        $opts = [];
-        $level = $profile['level'] ?? self::LEVEL_NORMAL;
-        $bufMs = $profile['buffer_target_ms'] ?? 45000;
-        $liveMs = $profile['live_caching_ms'] ?? 30000;
-        $discMs = $profile['disc_caching_ms'] ?? 60000;
-        $conns = $profile['connections'] ?? 3;
-        $prefetch = $profile['prefetch_depth'] ?? 3;
-
-        // ── MOBILE NETWORK ADJUSTMENT ─────────────────────────────
-        // On mobile (4G/5G): cap initial network-cache for fast start
-        // then rely on live-cache + disc-cache for sustained playback
-        if ($networkType === 'mobile') {
-            $bufMs = min($bufMs, 15000);   // Max 15s for fast start
-            $liveMs = min($liveMs, 10000); // Max 10s live on mobile
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 1: NETWORK CACHING — Main RAM Buffer
-        // NORMAL=45s, ESCALATING=90s, BURST=120s, NUCLEAR=180s
-        // ═══════════════════════════════════════════════════════════
-        $opts[] = "#EXTVLCOPT:network-caching={$bufMs}";
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 2: LIVE CACHING — Live Stream Dedicated Buffer
-        // Only for live IPTV — synced with network cache
-        // ═══════════════════════════════════════════════════════════
-        if ($streamType === 'live') {
-            $opts[] = "#EXTVLCOPT:live-caching={$liveMs}";
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 3: FILE CACHING — Deep Segment Prefetch
-        // For VOD/Series: 2x buffer for aggressive preload
-        // For Live: 1x buffer as a safety net
-        // ═══════════════════════════════════════════════════════════
-        if ($streamType === 'vod' || $streamType === 'series') {
-            $fileCache = $bufMs * 3;  // 3x for VOD (entire episode prefetch)
-            $opts[] = "#EXTVLCOPT:file-caching={$fileCache}";
-            $opts[] = "#EXTVLCOPT:prefetch-buffer-size=" . ($fileCache * 1000);
-        } else {
-            $fileCache = ($prefetch > 3) ? ($bufMs * 2) : $bufMs;
-            $opts[] = "#EXTVLCOPT:file-caching={$fileCache}";
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 4: DISC CACHING — Write-Through to Disk
-        // NUCLEAR: 5 min disc buffer = survives 30s+ outages
-        // ═══════════════════════════════════════════════════════════
-        $opts[] = "#EXTVLCOPT:disc-caching={$discMs}";
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 5: CONNECTION RESILIENCE — Auto-Reconnect Shield
-        // 6 directives that make the connection immortal
-        // ═══════════════════════════════════════════════════════════
-        $opts[] = "#EXTVLCOPT:http-reconnect=1";
-        $opts[] = "#EXTVLCOPT:http-continuous=1";
-        $opts[] = "#EXTVLCOPT:sout-keep=1";
-        $opts[] = "#EXTVLCOPT:sout-mux-caching=5000";
-        $opts[] = "#EXTVLCOPT:http-forward-cookies=1";
-        $ipTimeout = ($level === self::LEVEL_NUCLEAR) ? 30000 : 15000;
-        $opts[] = "#EXTVLCOPT:ipv4-timeout={$ipTimeout}";
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 6: CLOCK TOLERANCE — Timing Drift Survival
-        // After a micro-outage, timestamps may be off
-        // ═══════════════════════════════════════════════════════════
-        $opts[] = "#EXTVLCOPT:clock-jitter=0";
-        $opts[] = "#EXTVLCOPT:clock-synchro=0";
-        $crAvg = ($level === self::LEVEL_NUCLEAR) ? 80 : 40;
-        $opts[] = "#EXTVLCOPT:cr-average={$crAvg}";
-        $opts[] = "#EXTVLCOPT:avcodec-hurry-up=1";
-        $opts[] = "#EXTVLCOPT:skip-frames=1";
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 7: PLAYER-SPECIFIC DIRECTIVES
-        // ═══════════════════════════════════════════════════════════
-        $opts[] = "#EXTVLCOPT:adaptive-logic=highest";
-        $opts[] = "#EXTVLCOPT:adaptive-maxwidth=3840";
-
-        // ExoPlayer (Fire TV, Android TV, ONN 4K)
-        $exoBuf = intdiv($bufMs, 1000);
-        $opts[] = "#EXTHTTP:{\"X-ExoPlayer-MinBuffer\":\"{$exoBuf}\"}";
-        $opts[] = "#EXTHTTP:{\"X-ExoPlayer-MaxBuffer\":\"" . ($exoBuf * 3) . "\"}";
-        $opts[] = "#EXTHTTP:{\"X-ExoPlayer-BackBuffer\":\"" . intdiv($exoBuf, 2) . "\"}";
-        $opts[] = "#EXTHTTP:{\"X-ExoPlayer-RetainAfterBufferDuration\":\"true\"}";
-
-        // Kodi / InputStreamAdaptive
-        if ($conns > 1) {
-            $opts[] = "#KODIPROP:inputstream.adaptive.stream_selection_type=adaptive";
-            $opts[] = "#KODIPROP:inputstream.adaptive.chooser_bandwidth_buffer=" . ($conns * 2);
-            $opts[] = "#KODIPROP:inputstream.adaptive.pre_buffer_bytes=" . ($bufMs * 50);
-        }
-
-        // OTT Navigator
-        $opts[] = "#EXTHTTP:{\"X-Buffer-Size\":\"" . ($bufMs * 1000) . "\"}";
-        $opts[] = "#EXTHTTP:{\"X-Buffer-Reconnect\":\"true\"}";
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 8: PREDICTIVE JUMP — "Salto Cuántico"
-        //
-        // PROBLEM: Player buffer empties → "Buffering Wheel of Death"
-        // SOLUTION: Instead of waiting to re-fill, JUMP to live edge.
-        //   Result: Micro-discontinuity (imperceptible) instead of freeze.
-        //
-        // Only for LIVE streams — VOD should always buffer normally.
-        // ═══════════════════════════════════════════════════════════
-        if ($streamType === 'live') {
-            // Tells compatible players: on underrun, skip to NOW
-            $opts[] = "#EXTHTTP:{\"X-Live-Edge-Policy\":\"JUMP_ON_UNDERRUN\"}";
-            // Minimum seconds of buffer before triggering the jump
-            $minSec = ($level === self::LEVEL_NUCLEAR) ? '1.5' : '3.0';
-            $opts[] = "#EXTHTTP:{\"X-Buffer-Min-Sec\":\"{$minSec}\"}";
-            // ExoPlayer-specific: prefer live edge on rebuffer
-            $opts[] = "#EXTHTTP:{\"X-ExoPlayer-LiveOffsetMs\":\"3000\"}";
-            $opts[] = "#EXTHTTP:{\"X-ExoPlayer-LiveTargetOffsetMs\":\"5000\"}";
-            // Kodi: prefer live edge
-            $opts[] = "#KODIPROP:inputstream.adaptive.live_delay=3";
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // CAPA 9: REDUNDANCY HYDRA — Backup Source Failover
-        //
-        // If the primary stream source dies, the player can switch
-        //  to a backup URL WITHOUT restarting the app.
-        //
-        // "If the head is cut, two more grow."
-        // ═══════════════════════════════════════════════════════════
-        if (!empty($fallbackUrl)) {
-            $opts[] = "#EXTHTTP:{\"X-Backup-Stream-Url\":\"" . addslashes($fallbackUrl) . "\"}";
-            $opts[] = "#EXTHTTP:{\"X-Failover-Policy\":\"SEAMLESS_30MS\"}";
-            $opts[] = "#EXTHTTP:{\"X-Failover-MaxRetries\":\"5\"}";
-            $opts[] = "#EXTHTTP:{\"X-Failover-Backoff\":\"EXPONENTIAL\"}";
-        }
-
-        return $opts;
-    }
+    // ══════════════════════════════════════════════════════════════════════════
+    // CÁLCULO DE MÉTRICAS
+    // ══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Obtiene el estado actual de un canal.
+     * Calcula métricas agregadas del historial de segmentos.
      */
-    public static function getChannelState(string $channelId): ?array
+    private static function computeMetrics(array $history, array $health): array
     {
-        $states = self::loadStates();
-        return $states[$channelId] ?? null;
-    }
+        $segments = $history['segments'] ?? [];
 
-    /**
-     * Obtiene estadísticas globales del sistema de buffer.
-     */
-    public static function getSystemStats(): array
-    {
-        $states = self::loadStates();
-        $history = self::loadHistory();
+        if (empty($segments)) {
+            // Sin historial: usar valores conservadores del health engine
+            return [
+                'avg_bitrate_kbps'  => (float)($health['estimatedBandwidthKbps'] ?? 5000),
+                'avg_dl_ms'         => 500.0,
+                'avg_jitter_ms'     => (float)($health['jitterMs'] ?? 20),
+                'avg_loss_rate'     => (float)($health['lossRate'] ?? 0.0),
+                'bandwidth_ratio'   => 1.5,  // conservador
+                'stability_class'   => $health['stabilityClass'] ?? 'STABLE',
+                'is_stable'         => true,
+                'segment_count'     => 0,
+            ];
+        }
 
-        $levels = array_count_values(array_column($states, 'level'));
+        $bitrateSum  = 0.0;
+        $dlMsSum     = 0.0;
+        $jitterSum   = 0.0;
+        $lossSum     = 0.0;
+        $segDurSum   = 0.0;
+
+        foreach ($segments as $seg) {
+            $bitrateSum += $seg['bitrate_kbps'];
+            $dlMsSum    += $seg['dl_ms'];
+            $jitterSum  += $seg['jitter_ms'];
+            $lossSum    += $seg['loss_rate'];
+            $segDurSum  += $seg['seg_dur_sec'];
+        }
+
+        $n = count($segments);
+        $avgBitrate = $bitrateSum / $n;
+        $avgDlMs    = $dlMsSum / $n;
+        $avgJitter  = $jitterSum / $n;
+        $avgLoss    = $lossSum / $n;
+        $avgSegDur  = $segDurSum / $n;
+
+        // Ancho de banda disponible estimado (Kbps)
+        $availBwKbps = ($avgSegDur > 0 && $avgDlMs > 0)
+            ? ($avgBitrate * $avgSegDur * 1000) / ($avgDlMs / 1000)
+            : $avgBitrate * 2;
+
+        $bandwidthRatio = ($avgBitrate > 0) ? $availBwKbps / $avgBitrate : 1.5;
+
+        // Clasificar estabilidad
+        $isStable = ($avgJitter < 50 && $avgLoss < 0.02 && $bandwidthRatio >= 1.2);
 
         return [
-            'channels_tracked'     => count($states),
-            'channels_normal'      => $levels[self::LEVEL_NORMAL] ?? 0,
-            'channels_escalating'  => $levels[self::LEVEL_ESCALATE] ?? 0,
-            'channels_burst'       => $levels[self::LEVEL_BURST] ?? 0,
-            'channels_nuclear'     => $levels[self::LEVEL_NUCLEAR] ?? 0,
-            'total_escalations_24h'=> self::countRecentEscalations(86400),
-            'nuclear_activations_24h' => self::countRecentNuclear(86400),
-            'system_state'         => self::assessSystemState($levels),
+            'avg_bitrate_kbps'  => $avgBitrate,
+            'avg_dl_ms'         => $avgDlMs,
+            'avg_jitter_ms'     => $avgJitter,
+            'avg_loss_rate'     => $avgLoss,
+            'avg_seg_dur_sec'   => $avgSegDur,
+            'avail_bw_kbps'     => $availBwKbps,
+            'bandwidth_ratio'   => $bandwidthRatio,
+            'stability_class'   => $isStable ? 'STABLE' : 'UNSTABLE',
+            'is_stable'         => $isStable,
+            'segment_count'     => $n,
         ];
     }
 
     /**
-     * Limpia estados de canales inactivos (sin actualización en >1 hora).
+     * Calcula el buffer dinámico óptimo en milisegundos.
+     *
+     * Fórmula:
+     *   buffer = (bitrate × seg_dur × 1000) / bandwidth_headroom
+     *   Acotado entre BUFFER_FLOOR_MS y BUFFER_CEILING_MS
      */
-    public static function cleanupStaleChannels(): int
+    private static function computeDynamicBuffer(array $metrics, string $contentType): int
     {
-        $states   = self::loadStates();
-        $cutoff   = time() - 3600;
-        $cleaned  = 0;
+        $bitrate      = $metrics['avg_bitrate_kbps'] ?? 5000;
+        $segDur       = $metrics['avg_seg_dur_sec']  ?? 2.0;
+        $bwRatio      = max(1.1, $metrics['bandwidth_ratio'] ?? 1.5);
+        $isStable     = $metrics['is_stable'] ?? true;
 
-        foreach ($states as $chId => $state) {
-            if (($state['updated_at'] ?? 0) < $cutoff) {
-                unset($states[$chId]);
-                $cleaned++;
-            }
+        // Fórmula matemática del buffer
+        $rawBuffer = (int)(($bitrate * $segDur * 1000) / ($bwRatio * 1000));
+
+        // Aplicar piso y techo según tipo de contenido
+        $ceiling = ($contentType === 'vod') ? self::BUFFER_VOD_MAX : self::BUFFER_LIVE_MAX;
+
+        // Si la red es inestable, aumentar el buffer para absorber jitter
+        if (!$isStable) {
+            $rawBuffer = (int)($rawBuffer * 1.5);
         }
 
-        if ($cleaned > 0) {
-            self::saveStates($states);
-        }
-
-        return $cleaned;
-    }
-
-    // ── Lógica interna de resolución ───────────────────────────────────────
-
-    /**
-     * Resuelve el nivel de agresión basado en % de buffer y tendencia.
-     */
-    private static function resolveLevel(float $bufferPct, string $trend): string
-    {
-        // NUCLEAR: buffer crítico
-        if ($bufferPct < self::THRESHOLD_ORANGE) {
-            return self::LEVEL_NUCLEAR;
-        }
-
-        // BURST: buffer bajo
-        if ($bufferPct < self::THRESHOLD_YELLOW) {
-            return self::LEVEL_BURST;
-        }
-
-        // ESCALATING: buffer medio O tendencia descendente
-        if ($bufferPct < self::THRESHOLD_GREEN || $trend === 'DESCENDING') {
-            return self::LEVEL_ESCALATE;
-        }
-
-        // NORMAL: buffer saludable y tendencia estable/ascendente
-        return self::LEVEL_NORMAL;
+        return max(self::BUFFER_FLOOR_MS, min($ceiling, $rawBuffer));
     }
 
     /**
-     * Construye el perfil completo de agresión para un nivel dado.
+     * Determina si se debe iniciar pre-carga del siguiente segmento.
      */
-    private static function buildAggressionProfile(
-        string $level,
-        float  $bufferPct,
-        string $trend,
-        array  $networkInfo
+    private static function shouldPrefetch(array $metrics): bool
+    {
+        $threshold = $metrics['is_stable']
+            ? self::PREFETCH_THRESHOLD_STABLE
+            : self::PREFETCH_THRESHOLD_UNSTABLE;
+
+        // Pre-cargar si el bandwidth ratio es bajo (riesgo de vaciado)
+        return ($metrics['bandwidth_ratio'] ?? 1.5) < ($threshold + 0.5);
+    }
+
+    /**
+     * Construye el array de directivas M3U8/VLC listas para inyección.
+     */
+    private static function buildDirectives(
+        int    $bufferMs,
+        bool   $prefetch,
+        array  $metrics,
+        string $contentType
     ): array {
-        $profiles = [
-            self::LEVEL_NORMAL => [
-                'multiplier'      => 1,
-                'connections'     => 3,
-                'dscp'            => self::DSCP_ESCALATE,  // AF31 — ALWAYS demand priority
-                'strategy'        => 'STANDARD_FLOW',
-                'prefetch_depth'  => 3,
-                'chunk_split'     => false,
-                'buffer_target_ms'=> 45000,   // 45s buffer — survives 3s micro-outage
-                'live_caching_ms' => 30000,   // 30s live stream buffer
-                'disc_caching_ms' => 60000,   // 60s disc backup buffer
-            ],
-            self::LEVEL_ESCALATE => [
-                'multiplier'      => 2,
-                'connections'     => 4,
-                'dscp'            => self::DSCP_ESCALATE,  // AF31
-                'strategy'        => 'DUAL_TCP_PREFETCH',
-                'prefetch_depth'  => 6,
-                'chunk_split'     => false,
-                'buffer_target_ms'=> 90000,   // 90s buffer — survives 5s outage
-                'live_caching_ms' => 60000,
-                'disc_caching_ms' => 120000,
-            ],
-            self::LEVEL_BURST => [
-                'multiplier'      => 4,
-                'connections'     => 6,
-                'dscp'            => self::DSCP_BURST,     // AF41
-                'strategy'        => 'ACCEPT_RANGES_PARALLEL',
-                'prefetch_depth'  => 10,
-                'chunk_split'     => true,
-                'buffer_target_ms'=> 120000,  // 120s buffer — survives 10s outage
-                'live_caching_ms' => 90000,
-                'disc_caching_ms' => 180000,
-            ],
-            self::LEVEL_NUCLEAR => [
-                'multiplier'      => 8,
-                'connections'     => 8,
-                'dscp'            => self::DSCP_NUCLEAR,   // EF (Expedited Forwarding)
-                'strategy'        => 'CHUNK_SPLITTING_MULTI_CDN',
-                'prefetch_depth'  => 20,
-                'chunk_split'     => true,
-                'buffer_target_ms'=> 180000,  // 180s (3 min!) — survives 30s outage
-                'live_caching_ms' => 120000,
-                'disc_caching_ms' => 300000,  // 5 min disc buffer
-            ],
+        $isStable = $metrics['is_stable'] ?? true;
+        $bwRatio  = $metrics['bandwidth_ratio'] ?? 1.5;
+
+        $directives = [
+            // Buffer principal calculado matemáticamente
+            "#EXTVLCOPT:network-caching={$bufferMs}",
+            "#EXTVLCOPT:live-caching={$bufferMs}",
+
+            // Clock jitter compensation — crítico para live IPTV
+            '#EXTVLCOPT:clock-jitter=0',
+            '#EXTVLCOPT:clock-synchro=0',
+
+            // Reconexión automática ante cortes
+            '#EXTVLCOPT:http-reconnect=true',
+            '#EXTVLCOPT:http-reconnect-delay=500',
+
+            // Metadatos del buffer para el orquestador
+            "#EXT-X-APE-BUFFER-MS:{$bufferMs}",
+            '#EXT-X-APE-BUFFER-VERSION:' . self::VERSION,
+            '#EXT-X-APE-STABILITY:' . ($isStable ? 'STABLE' : 'UNSTABLE'),
         ];
 
-        $profile = $profiles[$level] ?? $profiles[self::LEVEL_NORMAL];
+        // Pre-carga agresiva si la red tiene margen
+        if ($prefetch && $bwRatio >= 1.3) {
+            $directives[] = '#EXTVLCOPT:prefetch=true';
+            $directives[] = '#EXT-X-APE-PREFETCH:ENABLED';
+            $directives[] = '#EXT-X-APE-PREFETCH-SEGMENTS:' . self::MAX_PREFETCH_SEGMENTS;
+        }
 
-        return array_merge($profile, [
-            'level'          => $level,
-            'quality'        => 'NATIVA_MAXIMA',  // NUNCA se degrada
-            'buffer_pct'     => $bufferPct,
-            'trend'          => $trend,
-            'network_type'   => $networkInfo['network_type'] ?? 'unknown',
-            'bandwidth_kbps' => $networkInfo['bandwidth_kbps'] ?? 0,
-            'updated_at'     => time(),
-        ]);
+        // Optimización para deportes en vivo (latencia mínima)
+        if ($contentType === 'sports') {
+            $directives[] = '#EXTVLCOPT:live-synchronization=true';
+            $directives[] = '#EXTVLCOPT:network-caching=' . min($bufferMs, 5000);
+        }
+
+        return $directives;
     }
 
-    // ── Análisis de tendencia ──────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    // PERSISTENCIA DEL HISTORIAL
+    // ══════════════════════════════════════════════════════════════════════════
 
-    /**
-     * Calcula la tendencia del buffer: ASCENDING, STABLE, o DESCENDING.
-     * Usa regresión lineal simple sobre las últimas N muestras.
-     */
-    private static function calculateBufferTrend(array $samples): string
+    private static function loadHistory(string $channelId): array
     {
-        $n = count($samples);
-        if ($n < 3) {
-            return 'STABLE';
-        }
+        $key = self::CACHE_PREFIX . md5($channelId);
 
-        // Tomar las últimas TREND_WINDOW muestras
-        $recent = array_slice($samples, -self::TREND_WINDOW);
-        $n = count($recent);
-
-        // Regresión lineal: calcular pendiente
-        $sumX  = 0;
-        $sumY  = 0;
-        $sumXY = 0;
-        $sumX2 = 0;
-
-        for ($i = 0; $i < $n; $i++) {
-            $x = $i;
-            $y = $recent[$i]['buffer_pct'] ?? 0;
-            $sumX  += $x;
-            $sumY  += $y;
-            $sumXY += $x * $y;
-            $sumX2 += $x * $x;
-        }
-
-        $denominator = ($n * $sumX2) - ($sumX * $sumX);
-        if ($denominator == 0) {
-            return 'STABLE';
-        }
-
-        $slope = (($n * $sumXY) - ($sumX * $sumY)) / $denominator;
-
-        // Umbrales de pendiente
-        if ($slope > 1.0) {
-            return 'ASCENDING';
-        }
-        if ($slope < -1.0) {
-            return 'DESCENDING';
-        }
-
-        return 'STABLE';
-    }
-
-    // ── Persistencia en /tmp/ ──────────────────────────────────────────────
-
-    private static function recordBufferSample(string $channelId, float $bufferPct): void
-    {
-        $history = self::loadHistory();
-
-        if (!isset($history[$channelId])) {
-            $history[$channelId] = [];
-        }
-
-        $history[$channelId][] = [
-            'buffer_pct' => $bufferPct,
-            'ts'         => time(),
-        ];
-
-        // Mantener solo las últimas MAX_HISTORY_ITEMS muestras
-        if (count($history[$channelId]) > self::MAX_HISTORY_ITEMS) {
-            $history[$channelId] = array_slice($history[$channelId], -self::MAX_HISTORY_ITEMS);
-        }
-
-        self::saveHistory($history);
-    }
-
-    private static function getBufferHistory(string $channelId): array
-    {
-        $history = self::loadHistory();
-        return $history[$channelId] ?? [];
-    }
-
-    private static function recordEscalation(string $channelId, string $from, string $to): void
-    {
-        $states = self::loadStates();
-        if (!isset($states[$channelId]['escalation_log'])) {
-            $states[$channelId]['escalation_log'] = [];
-        }
-
-        $states[$channelId]['escalation_log'][] = [
-            'from' => $from,
-            'to'   => $to,
-            'ts'   => time(),
-        ];
-
-        // Mantener solo las últimas 50 escaladas
-        if (count($states[$channelId]['escalation_log']) > 50) {
-            $states[$channelId]['escalation_log'] = array_slice(
-                $states[$channelId]['escalation_log'], -50
-            );
-        }
-
-        self::saveStates($states);
-    }
-
-    private static function saveChannelState(string $channelId, array $profile): void
-    {
-        $states = self::loadStates();
-        $states[$channelId] = array_merge(
-            $states[$channelId] ?? [],
-            $profile
-        );
-        self::saveStates($states);
-    }
-
-    private static function countRecentEscalations(int $windowSecs): int
-    {
-        $states = self::loadStates();
-        $cutoff = time() - $windowSecs;
-        $count  = 0;
-
-        foreach ($states as $state) {
-            foreach ($state['escalation_log'] ?? [] as $entry) {
-                if ($entry['ts'] >= $cutoff) {
-                    $count++;
-                }
+        // 1. APCu (más rápido, en memoria)
+        if (function_exists('apcu_fetch')) {
+            $data = apcu_fetch($key, $success);
+            if ($success && is_array($data)) {
+                return $data;
             }
         }
 
-        return $count;
-    }
-
-    private static function countRecentNuclear(int $windowSecs): int
-    {
-        $states = self::loadStates();
-        $cutoff = time() - $windowSecs;
-        $count  = 0;
-
-        foreach ($states as $state) {
-            foreach ($state['escalation_log'] ?? [] as $entry) {
-                if ($entry['ts'] >= $cutoff && $entry['to'] === self::LEVEL_NUCLEAR) {
-                    $count++;
-                }
+        // 2. Fichero temporal (fallback sin APCu)
+        $file = sys_get_temp_dir() . "/{$key}.json";
+        if (file_exists($file) && (time() - filemtime($file)) < self::CACHE_TTL) {
+            $data = @json_decode(file_get_contents($file), true);
+            if (is_array($data)) {
+                return $data;
             }
         }
 
-        return $count;
+        return ['segments' => []];
     }
 
-    private static function assessSystemState(array $levels): string
+    private static function saveHistory(string $channelId, array $data): void
     {
-        $nuclear = $levels[self::LEVEL_NUCLEAR] ?? 0;
-        $burst   = $levels[self::LEVEL_BURST] ?? 0;
-        $total   = array_sum($levels);
+        $key = self::CACHE_PREFIX . md5($channelId);
 
-        if ($total === 0) return 'IDLE';
-        if ($nuclear > 0)  return 'CRITICAL';
-        if ($burst > 0)    return 'ELEVATED';
-        return 'NORMAL';
-    }
-
-    // ── File I/O con LOCK_EX ───────────────────────────────────────────────
-
-    private static function loadStates(): array
-    {
-        if (!file_exists(self::STATE_FILE)) {
-            return [];
+        if (function_exists('apcu_store')) {
+            apcu_store($key, $data, self::CACHE_TTL);
+            return;
         }
-        return json_decode(file_get_contents(self::STATE_FILE), true) ?? [];
-    }
 
-    private static function saveStates(array $states): void
-    {
-        file_put_contents(
-            self::STATE_FILE,
-            json_encode($states, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
-            LOCK_EX
-        );
-    }
-
-    private static function loadHistory(): array
-    {
-        if (!file_exists(self::HISTORY_FILE)) {
-            return [];
-        }
-        return json_decode(file_get_contents(self::HISTORY_FILE), true) ?? [];
-    }
-
-    private static function saveHistory(array $history): void
-    {
-        file_put_contents(
-            self::HISTORY_FILE,
-            json_encode($history, JSON_UNESCAPED_UNICODE),
-            LOCK_EX
-        );
+        $file = sys_get_temp_dir() . "/{$key}.json";
+        @file_put_contents($file, json_encode($data), LOCK_EX);
     }
 }
