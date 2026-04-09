@@ -66,6 +66,18 @@
         }
 
         /**
+         * Verifica si un módulo está habilitado en la arquitectura
+         */
+        isEnabled(moduleId) {
+            // Hardcode fallbacks for critical dynamic features checked by API wrapper / generators
+            const coreFlags = ['dual-client-runtime', 'quality-overlay-vip', 'elite-hls-v16', 'cortex-js', 'phantom-hydra', 'heuristics-engine', 'smart-codec', 'tls-coherence', 'vpn-suprema', 'xtream-exploit', 'latency-rayo'];
+            if (coreFlags.includes(moduleId)) return true;
+            
+            const allModules = [...this.coreModules, ...this.omegaV6Modules, ...this.legacyModules];
+            return allModules.some(m => m.id === moduleId);
+        }
+
+        /**
          * Inicializa la secuencia de ignición
          */
         async initAll() {

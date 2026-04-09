@@ -26,13 +26,18 @@ if (!$uploadId) {
 
 // Sanitizar
 $uploadId = preg_replace('/[^a-zA-Z0-9_-]/', '', $uploadId);
-$filename = preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($filename));
+$filename = basename($filename);
+$filename = preg_replace('/[()]/', '', $filename);
+$filename = preg_replace('/\s+/', '_', $filename);
+$filename = preg_replace('/[^a-zA-Z0-9._-]/', '', $filename);
+$filename = preg_replace('/_+/', '_', $filename);
+
 if (!preg_match('/\.(m3u8|m3u)$/i', $filename)) {
     $filename .= '.m3u8';
 }
 
 $chunkDir = __DIR__ . '/chunks/' . $uploadId;
-$outputDir = __DIR__;  // Directorio principal para archivos M3U8
+$outputDir = '/var/www/lists';  // Directorio principal para archivos M3U8
 
 if (!is_dir($chunkDir)) {
     http_response_code(404);
@@ -117,6 +122,10 @@ if (file_exists($gzipPath)) {
     $gzipRatio = round((1 - $gzipSize / $totalSize) * 100, 1);
     $gzipOk = true;
     chmod($gzipPath, 0644);
+    
+    // REGLA 84: SIEMPRE crear el placeholder DESPUÉS de verificar que el .gz se creó exitosamente
+    // Placeholder Trick (8 bytes) to maintain compliance while saving space
+    file_put_contents($outputPath, "#EXTM3U\n");
     
     // Log
     error_log(sprintf(

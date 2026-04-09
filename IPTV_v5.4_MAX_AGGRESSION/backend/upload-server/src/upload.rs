@@ -289,29 +289,39 @@ pub async fn finalize_upload(
     // Drop the reference before removing
     drop(upload_state);
 
-    // Assemble file
+    // 📦 GZIP + Placeholder Trick 
     let chunk_dir = format!("uploads/tmp/{}", upload_id);
     let output_path = format!("uploads/final/{}", filename);
+    let gz_output_path = format!("{}.gz", output_path);
     
-    let mut output = std::fs::File::create(&output_path)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to create output: {}", e)))?;
+    let gz_file = std::fs::File::create(&gz_output_path)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to create gz output: {}", e)))?;
+    
+    let mut encoder = flate2::write::GzEncoder::new(gz_file, flate2::Compression::default());
 
     let mut total_size: u64 = 0;
+    let mut channels: u32 = 0;
     
     for i in 0..total_chunks {
         let chunk_path = format!("{}/{:06}.part", chunk_dir, i);
         let data = std::fs::read(&chunk_path)
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to read chunk {}: {}", i, e)))?;
+            
+        // Count channels on-the-fly to save memory (No loaded JSON!)
+        let text = String::from_utf8_lossy(&data);
+        channels += text.matches("#EXTINF:").count() as u32;
+
         total_size += data.len() as u64;
-        output.write_all(&data)
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to write chunk {}: {}", i, e)))?;
+        encoder.write_all(&data)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to write to gz chunk {}: {}", i, e)))?;
     }
 
-    drop(output);
+    encoder.finish()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to finish gz encoding: {}", e)))?;
 
-    // Count channels
-    let content = std::fs::read_to_string(&output_path).unwrap_or_default();
-    let channels = content.matches("#EXTINF:").count() as u32;
+    // Create 8-byte placeholder trick
+    std::fs::write(&output_path, "#EXTM3U\n")
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to write placeholder: {}", e)))?;
 
     // Cleanup chunks
     std::fs::remove_dir_all(&chunk_dir).ok();

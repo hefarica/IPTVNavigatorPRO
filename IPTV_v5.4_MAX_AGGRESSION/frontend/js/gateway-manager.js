@@ -724,110 +724,36 @@
                     finalContent = result.transformedContent;
                 }
 
-                // ✅ Usar FormData (multipart/form-data) - requerido por Node.js/Express
+                // ✅ Usar Siempre ResumableChunkUploader (Rust Server Integration)
                 const finalFilename = this._sanitizeFilename(this.config.custom_filename || this.state.lastMetadata?.filename);
-                const formData = new FormData();
                 const fileBlob = new Blob([finalContent], { type: 'application/x-mpegurl' });
-                formData.append('file', fileBlob, finalFilename);
+                
+                // Rust Upload Server REQUIRES Chunked Uploads for all file sizes.
+                console.log('%c📦 [VPS-API] Using ResumableChunkUploader (Rust API)', 'color: #3b82f6;');
+                this._updateProgress(10, 'Iniciando subida al servidor Rust...');
 
-                if (fileBlob.size > 50 * 1024 * 1024) { // >50MB usa Resumable Pro
-                    console.log('%c📦 [VPS-API] Usando ResumableChunkUploader (WeTransfer-Grade)', 'color: #3b82f6;');
-                    this._updateProgress(10, 'Iniciando subida resiliente...');
+                const uploadFile = this.state.manualFile || new File([fileBlob], finalFilename, { type: 'application/x-mpegurl' });
 
-                    const uploadFile = this.state.manualFile || fileBlob;
+                // Hook into uploader events for UI updates
+                const onProgress = (e) => this._updateProgress(e.detail, `📤 Subiendo Chunks... (${e.detail}%)`);
+                this.uploader.events.addEventListener('progress', onProgress);
 
-                    // Hook into uploader events for UI updates
-                    const onProgress = (e) => this._updateProgress(e.detail, `📤 Subiendo Chunks... (${e.detail}%)`);
-                    this.uploader.events.addEventListener('progress', onProgress);
+                try {
+                    const result = await this.uploader.upload(uploadFile);
+                    this.uploader.events.removeEventListener('progress', onProgress);
 
-                    try {
-                        const result = await this.uploader.upload(uploadFile);
-                        this.uploader.events.removeEventListener('progress', onProgress);
-
-                        // 🔒 ASSERT WETRANSFER-GRADE (Strict Gate)
-                        if (result?.success === true && result?.verified !== true) throw new Error("[ASSERT FAIL] success without server verify");
-
+                    // result typically returns { success, upload_id, filename, size_bytes, channels, public_url }
+                    if (result && result.success) {
                         this._showSuccessMessage(result);
-                        return;
-                    } catch (err) {
-                        this.uploader.events.removeEventListener('progress', onProgress);
-                        throw err;
+                    } else {
+                        throw new Error("[SERVER FAIL] Upload did not complete successfully: " + JSON.stringify(result));
                     }
+                } catch (err) {
+                    this.uploader.events.removeEventListener('progress', onProgress);
+                    throw err;
                 }
-
-                const uploadUrl = `${this.config.api_url}/upload`;
-                const startTime = performance.now();
-
-                const result = await new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    let uploadCompleted = false;
-
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                            const percent = Math.round((e.loaded / e.total) * 100);
-                            const uploaded = (e.loaded / 1024 / 1024).toFixed(1);
-                            const total = (e.total / 1024 / 1024).toFixed(1);
-                            this._updateProgress(60 + Math.round(percent * 0.35), `📤 Subiendo: ${uploaded}/${total} MB (${percent}%)`);
-                            if (e.loaded >= e.total) uploadCompleted = true;
-                        }
-                    };
-
-                    xhr.onload = () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            try {
-                                const data = JSON.parse(xhr.responseText);
-                                console.log('%c✅ [VPS-API] Received response. Initiating mandatory verification...', 'color: #10b981;');
-
-                                // MANDATORY CONTRACT: No success without server-side check
-                                const candidateName = data.serverFilename || data.filename || finalFilename;
-                                const candidateUrl = data.url || `${this.config.vps_url}/lists/${encodeURIComponent(candidateName)}`;
-
-                                resolve(this._rescueVerification(candidateName, candidateUrl));
-                            } catch (e) {
-                                console.warn('⚠️ [VPS-API] Ambiguous response, triggering rescue loop...');
-                                resolve(this._rescueVerification(finalFilename, `${this.config.vps_url}/lists/${encodeURIComponent(finalFilename)}`));
-                            }
-                        } else {
-                            reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
-                        }
-                    };
-
-                    xhr.onerror = async () => {
-                        if (uploadCompleted) {
-                            console.warn('⚠️ [VPS-API] Socket reset at 100% (expected due to timeouts). Triggering rescue...');
-                            resolve(this._rescueVerification(finalFilename, `${this.config.vps_url}/lists/${encodeURIComponent(finalFilename)}`));
-                        } else {
-                            reject(new Error('Network failure during transfer'));
-                        }
-                    };
-
-                    xhr.onabort = () => reject(new Error('Upload aborted by user/browser'));
-
-                    // Requirement 4.1: Explicit XHR timeout for 1 hour
-                    xhr.timeout = 3600 * 1000;
-                    xhr.ontimeout = () => {
-                        if (uploadCompleted) {
-                            console.warn('⏱️ [VPS-API] Timeout at 100%, triggering rescue...');
-                            resolve(this._rescueVerification(finalFilename, `${this.config.vps_url}/lists/${encodeURIComponent(finalFilename)}`));
-                        } else {
-                            reject(new Error('Upload timed out before completing'));
-                        }
-                    };
-
-                    // Unified /api/ entry point
-                    xhr.open('POST', uploadUrl, true);
-                    xhr.send(formData);
-                });
-
-                // 🔒 FINAL SUCCESS CONTRACT (Incorruptible)
-                if (!result || result.verified !== true || result.success !== true) {
-                    throw new Error("Verification Contract Failed: File not confirmed on server storage.");
-                }
-
-                this._showSuccessMessage(result);
-
-
             } catch (error) {
+                console.error("Upload error:", error);
                 alert(`❌ Error: ${error.message}`);
             } finally {
                 this.state.uploadInProgress = false;
@@ -981,7 +907,11 @@
         }
 
         _sanitizeFilename(filename) {
-            return (filename || 'upload.m3u8').trim().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
+            return (filename || 'upload.m3u8').trim()
+                .replace(/[()]/g, '')           // Eliminar paréntesis limpiamente
+                .replace(/\s+/g, '_')           // Espacios a guion bajo
+                .replace(/[^a-zA-Z0-9._-]/g, '')// Eliminar caracteres inválidos
+                .replace(/_+/g, '_');           // Evitar guiones bajos dobles
         }
 
         _formatBytes(bytes) {

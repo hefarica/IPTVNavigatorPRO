@@ -181,35 +181,48 @@ class OmegaStreamingHealthEngine
         $isGodTier = ($health['riskScore'] <= 5 && $health['stallRate'] <= 0.05 && $health['stabilityClass'] === 'OPTIMAL' && ($health['vfi'] ?? 0) >= 70);
 
         if ($isVulnerable) {
-            // Activar Protocolo Sniper / BWDIF a YADIF degradación masiva automática
+            // PROTOCOLO RED: Acorralar al ISP y Preservar Calidad Visual Intacta
             $defenseFlags = [];
             $defenseFlags[] = "#EXT-X-APE-DYNAMIC-DEFENSE-ACTIVATED:TRUE";
             $defenseFlags[] = "#EXT-X-APE-DEFENSE-REASON:RISK_SCORE_{$health['riskScore']}_STALL_{$health['stallRate']}";
             
-            // Requerir caida estricta a resolucion 1080p o 720p hardware
-            $defenseFlags[] = "#EXT-X-APE-OVERRIDE-RISK:TRUE";
-            $defenseFlags[] = "#EXT-X-APE-FORCE-CODEC:H264"; // Obligar Hardware de menor requerimiento
-            $defenseFlags[] = "#EXT-X-APE-DEINTERLACE-FALLBACK:YADIF"; // Apagar BWDIF
-            $defenseFlags[] = "#EXTVLCOPT:network-caching=60000"; // Obligar RAM Inflation a 60s
+            // Reafirmar la Suprema Calidad para que ExoPlayer NO baje la resolución
+            $defenseFlags[] = "#EXT-X-APE-QUALITY-LOCK:ABSOLUTE"; 
             
-            // Sueros Adicionales de Resiliencia: Mejoras Visuales para Enmascarar la Degradación (Pasable y Mejorado)
-            $defenseFlags[] = "#EXT-X-CORTEX-AI-SUPER-RESOLUTION:REALESRGAN_X4PLUS_LITE"; // Upscaling ligero a pesar del H264
-            $defenseFlags[] = "#EXT-X-CORTEX-AI-SPATIAL-DENOISE:NLMEANS_OPTICAL"; // Disimular macrobloques
-            $defenseFlags[] = "#EXT-X-CORTEX-LCEVC:PHASE_3_FP16"; // Refuerzo de Capa Base LCEVC (Enhancement Layer) bajo costo
-            $defenseFlags[] = "#EXT-X-APE-CHROMA-SMOOTHING:ACTIVE"; // Reducir banding causado por bajo bitrate
+            // Sueros Adicionales: Multiplicar RAM y Caché en lugar de bajar CODECS
+            $defenseFlags[] = "#EXTVLCOPT:network-caching=90000"; // RAM Inflation masiva (90s target)
+            $defenseFlags[] = "#KODIPROP:inputstream.adaptive.stream.min_buffer_time=34000"; // El UI Target "34000" para Player
+            $defenseFlags[] = "#KODIPROP:inputstream.adaptive.stream.max_buffer_time=54000"; // Cap C2 + C1 total
             
-            // 🛡️ Mecanismos Expertos: Anti-Pixelamiento Agresivo y Relleno Artificial Perfect-Frame
-            $defenseFlags[] = "#EXT-X-APE-POST-PROCESSING:DEBLOCKING_STRONG"; // Macroblock Purifier
-            $defenseFlags[] = "#EXTVLCOPT:video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full"; // Optical Flow + Deblock
+            // Garantizar permanencia de los sueros visuales nativos sin re-sobrescribir video-filters (evita colapso de Chroma 4:4:4)
+            $defenseFlags[] = "#EXT-X-CORTEX-AI-SUPER-RESOLUTION:REALESRGAN_X4PLUS_LITE"; 
+            $defenseFlags[] = "#EXT-X-CORTEX-AI-SPATIAL-DENOISE:NLMEANS_OPTICAL"; 
+            $defenseFlags[] = "#EXT-X-CORTEX-LCEVC:PHASE_3_FP16"; 
+            $defenseFlags[] = "#EXT-X-CORTEX-TEMPORAL-ARTIFACT-REPAIR:ACTIVATED";
+            $defenseFlags[] = "#EXT-X-CORTEX-DYNAMIC-FILTER-CACHING:APCU_ACTIVE";
+            $defenseFlags[] = "#EXT-X-CORTEX-B-PYRAMID-HIERARCHY:STRICT_CGOP_LOCKED";
+            $defenseFlags[] = "#EXT-X-CORTEX-TELECINE-INVERSE:IVTC_ACTIVATED";
+            $defenseFlags[] = "#EXT-X-CORTEX-CONSTANT-FRAME-RATE:CFR_60_ANCHOR_LOCKED";
+            $defenseFlags[] = "#EXT-X-CORTEX-OPTICAL-FLOW-MINTERPOLATE:120FPS_ACTIVATED";
+            $defenseFlags[] = "#EXT-X-CORTEX-SPORTS-MOTION-BLUR-REDUCTION:ACTIVATED";
+            $defenseFlags[] = "#EXT-X-CORTEX-EXOPLAYER-TUNNELED-MODE:ACTIVATED";
+            $defenseFlags[] = "#EXT-X-APE-POST-PROCESSING:DEBLOCKING_STRONG"; 
             
-            // ⚔️ Estrangulador de ISP (Contra-Ataque de Red)
-            // Mientras bajamos la calidad visual localmente por asfixia, ordenaremos al reproductor EXIGIR agresivamente el ancho de banda faltante al ISP.
-            $defenseFlags[] = "#EXT-X-APE-THROTTLER:ISP_STRANGULATION_ACTIVE"; // Activar el Modulo de asedio
-            $defenseFlags[] = "#EXT-X-APE-QOS-DSCP-OVERRIDE:AF41,EF"; // Forzar marcados QoS exigiendo prioridad
-            $defenseFlags[] = "#EXT-X-APE-TCP-WINDOW-SPAM:512M"; // Ventana expansiva forzando flooding
-            $defenseFlags[] = "#EXT-X-APE-CONCURRENCY-SURGE:8_THREADS"; // Abrir conexiones paralelas destructivas
-            $defenseFlags[] = "#KODIPROP:inputstream.adaptive.bandwidth_safety_factor=3.5"; // Exagerar la velocidad real forzando Failover Up
-            $defenseFlags[] = "#EXT-X-APE-FAILOVER-UP-RECALIBRATE:TRUE"; // Instrucción de restauración matemática a HEVC en cuanto atrape su meta.
+            // ⚔️ Extorsión al ISP: Modificadores Dinámicos de Concurrencia (Evasión Fibonacci)
+            // Seleccionamos un tope asimétrico de la secuencia de Fibonacci (menos predecible para el anti-bot)
+            $fiboThreads = [3, 5, 8, 13];
+            $thLimit = $fiboThreads[array_rand($fiboThreads)];
+            
+            $defenseFlags[] = "#EXT-X-APE-THROTTLER:ISP_STRANGULATION_ACTIVE"; 
+            $defenseFlags[] = "#EXT-X-APE-QOS-DSCP-OVERRIDE:AF41,EF"; 
+            $defenseFlags[] = "#EXT-X-APE-TCP-WINDOW-SPAM:512M"; 
+            $defenseFlags[] = "#EXT-X-APE-CONCURRENCY-SURGE:{$thLimit}_THREADS"; 
+            
+            // Inyectamos directivas puras al Manifest Parser para secuestrar el ISP a voluntad
+            $defenseFlags[] = "#EXT-X-APE-PREFETCH-SEGMENTS:25"; // Aumentado agresivamente para consumir rápido
+            $defenseFlags[] = "#EXT-X-APE-MEDIA-PARALLEL-DOWNLOADS:{$thLimit}"; // Fibonacci Evasion Limit
+            $defenseFlags[] = "#KODIPROP:inputstream.adaptive.bandwidth_safety_factor=1.2"; // Ponderar al ras para evitar bajar ABR
+            $defenseFlags[] = "#EXT-X-APE-FAILOVER-UP-RECALIBRATE:TRUE";
             
             $currentM3U8 .= "\n" . implode("\n", $defenseFlags) . "\n";
             

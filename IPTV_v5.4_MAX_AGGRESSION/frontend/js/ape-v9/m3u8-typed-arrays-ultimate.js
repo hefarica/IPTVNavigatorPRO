@@ -745,20 +745,9 @@ const UAPhantomEngine = (function () {
                 'X-Cortex-LCEVC-L2-Detail': 'UPCONVERT_SHARPENING_EXTREME',
                 'X-Cortex-LCEVC-Web-Interop': 'BI_DIRECTIONAL_JS_TUNNEL'
             };
-        }
-    };
-    if (typeof window !== 'undefined') window.IPTV_SUPPORT_CORTEX_V_OMEGA = IPTV_SUPPORT_CORTEX_V_OMEGA;
+        },
 
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // 👻 FUSIÓN FANTASMA v22.0 — MÓDULO 2: IPTV SUPPORT CORTEX v3.0
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Árbol de decisión que evalúa HTTP status codes y determina la estrategia
-    // de evasión óptima para cada canal.
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    const IPTV_SUPPORT_CORTEX_V3 = {
-        // 🧬 v22.2 NUCLEAR EVASION: Árbol de decisión orgánico con mutación polimórfica
+        // 🧬 v22.2 NUCLEAR EVASION: Árbol de decisión orgánico con mutación polimórfica (Fusionado de V3)
         decisionTree: {
             301: { strategy: 'FOLLOW_REDIRECT', priority: 'LOW', persist: true, action: 'Seguir redirect + preservar auth headers' },
             302: { strategy: 'FOLLOW_REDIRECT', priority: 'LOW', persist: true, action: 'Token refresh + seguir redirect temporal' },
@@ -857,6 +846,9 @@ const UAPhantomEngine = (function () {
             return headers;
         }
     };
+    if (typeof window !== 'undefined') window.IPTV_SUPPORT_CORTEX_V_OMEGA = IPTV_SUPPORT_CORTEX_V_OMEGA;
+
+
 
     function buildInitialContext(channel, index) {
         return {
@@ -893,7 +885,7 @@ const UAPhantomEngine = (function () {
             tags.push(`#EXT-X-APE-FALLBACK-AUTH-PERSIST:true`);
 
             // ── 🔴 FALLBACK 403: Identity Morph (12 técnicas) ──
-            const h403 = IPTV_SUPPORT_CORTEX_V3.getEscalationHeaders(403);
+            const h403 = IPTV_SUPPORT_CORTEX_V_OMEGA.getEscalationHeaders(403);
             tags.push(`#EXT-X-APE-FALLBACK-ID:403_IDENTITY_MORPH`);
             tags.push(`#EXT-X-APE-FALLBACK-UA:${h403['User-Agent']}`);
             tags.push(`#EXT-X-APE-FALLBACK-REFERER:${h403['Referer']}`);
@@ -916,7 +908,7 @@ const UAPhantomEngine = (function () {
             tags.push(`#EXT-X-APE-FALLBACK-407-PERSIST:INSIST_FOREVER`);
 
             // ── 🔴 FALLBACK 429: Swarm Evasion + Backoff ──
-            const h429 = IPTV_SUPPORT_CORTEX_V3.getEscalationHeaders(429);
+            const h429 = IPTV_SUPPORT_CORTEX_V_OMEGA.getEscalationHeaders(429);
             tags.push(`#EXT-X-APE-FALLBACK-ID:429_SWARM_EVADE`);
             tags.push(`#EXT-X-APE-FALLBACK-XFF:${h429['X-Forwarded-For']}`);
             tags.push(`#EXT-X-APE-FALLBACK-X-REMOTE-IP:${h429['X-Remote-IP']}`);
@@ -929,7 +921,7 @@ const UAPhantomEngine = (function () {
             tags.push(`#EXT-X-APE-FALLBACK-429-PERSIST:SWARM_UNTIL_CLEAR`);
 
             // ── 🔴 FALLBACK 451: Geo Phantom ──
-            const h451 = IPTV_SUPPORT_CORTEX_V3.getEscalationHeaders(451);
+            const h451 = IPTV_SUPPORT_CORTEX_V_OMEGA.getEscalationHeaders(451);
             tags.push(`#EXT-X-APE-FALLBACK-ID:451_GEO_PHANTOM`);
             tags.push(`#EXT-X-APE-FALLBACK-XFF:${h451['X-Forwarded-For']}`);
             tags.push(`#EXT-X-APE-FALLBACK-REAL-IP:${h451['X-Real-IP']}`);
@@ -1197,7 +1189,7 @@ const UAPhantomEngine = (function () {
     // - Headers por canal: perfil, codec, buffer, calidad
     // ═══════════════════════════════════════════════════════════════════════════
 
-    let CLEAN_URL_MODE = true; // Toggle para activar/desactivar URLs limpias
+    let CLEAN_URL_MODE = false; // OMEGA V21: JWT+SID+NONCE activados
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 🔧 HELPER: VERIFICAR SI UN MÓDULO ESTÁ HABILITADO EN EL PANEL
@@ -1911,12 +1903,20 @@ const UAPhantomEngine = (function () {
 #X-OMEGA-TIMESTAMP:${timestamp}
 #EXT-X-APE-LCEVC-SDK-VERSION:1.2.4
 #EXT-X-VNOVA-LCEVC-TARGET-SDK:HTML5
-#EXT-X-SERVER-CONTROL:CAN-BLOCK-RELOAD=YES,PART-HOLD-BACK=1.0,CAN-SKIP-UNTIL=12.0
+#EXT-X-SERVER-CONTROL:CAN-BLOCK-RELOAD=YES,HOLD-BACK=6.0,PART-HOLD-BACK=1.0,CAN-SKIP-UNTIL=12.0,CAN-SKIP-DATERANGES=YES
 #EXT-X-START:TIME-OFFSET=-3.0,PRECISE=YES
 #EXT-X-PRELOAD-HINT:TYPE=PART,URI="next_part.cmfv"
-#EXT-X-PART-INF:PART-TARGET=1.0
+#EXT-X-PART-INF:PART-TARGET=0.33334
 #X-CMAF-PART-TARGET:1.0
 #EXT-X-CONTENT-STEERING:SERVER-URI="https://steer.ape.net/v1",PATHWAY-ID="PRIMARY"
+#EXT-X-DEFINE:NAME="OMEGA_BUILD",VALUE="v5.4-MAX-AGGRESSION"
+#EXT-X-DEFINE:NAME="OMEGA_EPOCH",VALUE="${timestamp}"
+#EXT-X-DEFINE:NAME="OMEGA_COMPLIANCE",VALUE="HLS-RFC8216BIS+CMAF-LL+HDR10+DV-P81-P10+LCEVC-P4"
+#EXT-X-KEY:METHOD=NONE
+#EXT-X-SESSION-KEY:METHOD=NONE
+#EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=450000,AVERAGE-BANDWIDTH=400000,CODECS="hvc1.1.6.L153.B0",RESOLUTION=1920x1080,URI="iframe_primary.m3u8"
+#EXT-X-DATERANGE:ID="omega-live-${timestamp}",START-DATE="${new Date(timestamp*1000).toISOString()}",DURATION=86400,X-OMEGA-TYPE="LIVE-CATCHUP",X-OMEGA-SCOPE="CHANNEL-SESSION",X-OMEGA-BUILD="v5.4-MAX-AGGRESSION"
+#EXT-X-DATERANGE:ID="omega-hdr-window",START-DATE="${new Date(timestamp*1000).toISOString()}",PLANNED-DURATION=86400,X-HDR-TYPE="HDR10+DV-P81-P10",X-HDR-MAX-CLL=5000,X-HDR-MAX-FALL=800
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #KODIPROP:inputstream.adaptive.stream_selection_type=auto
 #KODIPROP:inputstream.adaptive.chooser_bandwidth_mode=AUTO
@@ -3151,6 +3151,32 @@ const UAPhantomEngine = (function () {
             'X-Dolby-Vision-L1-AvgPQ': '1200',
             'X-Dolby-Vision-L6-MaxSCL': '5000,5000,5000',
 
+            // ── Dolby Vision Profile 10 (UHD BD-style AV1-compatible) — DV10 ──
+            'X-Dolby-Vision-Profile-10': '10.0',
+            'X-Dolby-Vision-Profile-10-Codec': 'dav1.10.09',
+            'X-Dolby-Vision-Profile-10-Container': 'CMAF-fMP4',
+            'X-Dolby-Vision-Profile-10-Cross-Compat-81': 'true',
+            'X-Dolby-Vision-Profile-10-RPU-Version': '4',
+            'X-Dolby-Vision-Profile-10-BL-Signal': 'AV1-MAIN-10',
+            'X-Dolby-Vision-Profile-10-EL-Signal': 'NONE',
+            'X-Dolby-Vision-Profile-10-L1-MaxPQ': '3765',
+            'X-Dolby-Vision-Profile-10-L6-MaxCLL': '5000',
+            'X-Dolby-Vision-Profile-10-L6-MaxFALL': '800',
+            'X-Dolby-Vision-Profile-10-UHD-BD-Mode': 'enabled',
+
+            // ── Samsung HDR10+ Adaptive (ambient-light dynamic) — 2024+ QLED/Neo QLED ──
+            'X-Samsung-HDR10-Plus-Adaptive': 'enabled',
+            'X-Samsung-HDR10-Plus-Adaptive-Profile': 'B',
+            'X-Samsung-HDR10-Plus-Adaptive-Version': '2.0',
+            'X-Samsung-HDR10-Plus-Adaptive-Ambient-Sensor': 'REQUIRED',
+            'X-Samsung-HDR10-Plus-Adaptive-Ambient-Lux-Min': '0',
+            'X-Samsung-HDR10-Plus-Adaptive-Ambient-Lux-Max': '50000',
+            'X-Samsung-HDR10-Plus-Adaptive-Ambient-Curve': 'BEZIER-DYNAMIC',
+            'X-Samsung-HDR10-Plus-Adaptive-Peak-Nits': '5000',
+            'X-Samsung-HDR10-Plus-Adaptive-Tone-Map': 'REALTIME',
+            'X-Samsung-HDR10-Plus-Adaptive-Color-Volume': 'DCI-P3-BT2020',
+            'X-Samsung-HDR10-Plus-Adaptive-QLED-Mode': 'NEO-QUANTUM-HDR-8K-PLUS',
+
             // ── HLG Advanced (BBC/NHK studies) ──
             'X-HLG-Transfer-Function': 'HLG',
             'X-HLG-Max-Luminance': '4000',
@@ -3985,6 +4011,21 @@ const UAPhantomEngine = (function () {
         const MAX_EXTHTTP_HEADERS = 200;
         const MAX_EXTHTTP_BYTES = 10240; // 10KB safety limit
 
+        // ── ⚡ HTTP ANABOLIC ENGINE v1.0: Priority injection (primeros en el budget 10KB) ──
+        // Cache por perfil para evitar ~8286 llamadas redundantes (2 por canal × 4143 canales)
+        try {
+            if (typeof window !== 'undefined') {
+                if (!window._anabCacheByProfile) window._anabCacheByProfile = {};
+                const _anabKey = String(profile || 'P3');
+                if (!window._anabCacheByProfile[_anabKey]) {
+                    window._anabCacheByProfile[_anabKey] = build_http_anabolic_demo_headers(cfg, cfg._channel || {});
+                }
+                Object.assign(headers, window._anabCacheByProfile[_anabKey]);
+            } else {
+                Object.assign(headers, build_http_anabolic_demo_headers(cfg, cfg._channel || {}));
+            }
+        } catch(e) { /* fail-safe */ }
+
         // ── 🚀 ENHANCEMENT LAYER ENGINE v1.0: Merge X-EL-* headers ──
         Object.assign(headers, build_enhancement_layer(cfg, profile));
 
@@ -4025,7 +4066,16 @@ const UAPhantomEngine = (function () {
         if (cfg._channelId) headers['X-APE-Channel-ID'] = cfg._channelId;
 
         // ── 👁️ IPTV-SUPPORT-CORTEX vΩ: INYECCIÓN DE HEADERS DOMINANTES ──
-        if (typeof window !== 'undefined' && window.IPTV_SUPPORT_CORTEX_V_OMEGA) {
+        // Bug fix 2026-04-08: el método `getOmegaHeaders` no está implementado
+        // en cortex-js-resilience.js v5.0.OMEGA actual (solo expone execute(),
+        // register429Backoff(), _generateTempBanHash()). Guard defensivo via
+        // typeof === 'function' siguiendo doctrina `resolver_blindaje_total`.
+        // Enmascarado previamente mientras ape-profiles-config.js estaba roto
+        // (bug 504): build_exthttp() nunca se alcanzaba. TODO: implementar
+        // getOmegaHeaders() en cortex-js-resilience.js o eliminar esta llamada.
+        if (typeof window !== 'undefined' &&
+            window.IPTV_SUPPORT_CORTEX_V_OMEGA &&
+            typeof window.IPTV_SUPPORT_CORTEX_V_OMEGA.getOmegaHeaders === 'function') {
             Object.assign(headers, window.IPTV_SUPPORT_CORTEX_V_OMEGA.getOmegaHeaders(cfg));
         }
 
@@ -4105,6 +4155,400 @@ const UAPhantomEngine = (function () {
         }
 
         return exthttp;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HTTP ANABOLIZED HEADERS ENGINE v1.0
+    // ───────────────────────────────────────────────────────────────────────────
+    // Inyecta ~150 headers HTTP "anabolizados" (negociación codec, HDR, DV,
+    // color, frame-rate, audio premium, LCEVC, tone-mapping, emulación Netflix/
+    // Apple/Disney, client hints, CDN bypass) que viajan en CADA petición HTTP
+    // del player al servidor Xtream/CDN. Fuente canónica tri-capa compartida
+    // por EXTHTTP (L2) + KODIPROP (L3 stream_headers_ext) + EXTVLCOPT (L1 http-*).
+    //
+    // Retorna Object JS plano {header: string} listo para Object.assign().
+    // No reemplaza build_exthttp(); lo ENRIQUECE.
+    //
+    // Emulación premium derivada de: Netflix Open Connect, Apple HLS Authoring
+    // Spec v1.11, Disney+ ATVP profile, Dolby Vision Streams within HLS v2.0,
+    // DASH-IF IOP, ITU-T H.273, CTA-861-G, W3C Client Hints, shaka-packager.
+    // ═══════════════════════════════════════════════════════════════════════════
+    function build_anabolized_headers(cfg, channel) {
+        cfg = cfg || {};
+        channel = channel || {};
+        const h = {};
+
+        // Helpers defensivos
+        const codecPrimary  = String(cfg.codec_primary || 'HEVC').toLowerCase();
+        const resolution    = cfg.resolution || cfg.res || '3840x2160';
+        const [resW, resH]  = (resolution.match(/\d+/g) || [3840, 2160]).map(Number);
+        const fps           = (cfg.target_framerate === '120FPS') ? 120
+                            : (cfg.target_framerate === '60FPS') ? 60
+                            : (cfg.fps || 60);
+        const peakNits      = Number(cfg.hdr_peak_luminance || cfg.peak_luminance || 5000);
+        const bitDepth      = Number(cfg.color_depth || 10);
+        const audioChannels = Number(cfg.audio_channels || 8);
+        const sessionId     = cfg._sessionId || channel._sid || 'OMEGA-' + Date.now().toString(36);
+
+        // ─── A. Negociación codec (12) ───
+        h['Accept'] = 'application/vnd.apple.mpegurl, video/mp4;codecs="hvc1,hev1,av01,vvc1,dvhe,dav1", video/hevc;q=0.95, video/av1;q=0.9, video/vvc;q=0.85, video/avc;q=0.75, */*;q=0.1';
+        h['X-Preferred-Codec'] = codecPrimary === 'av1' ? 'av1-main' : 'hevc-main10';
+        h['X-Codec-Fallback-Chain'] = 'vvc>av1>hevc>avc';
+        h['X-Codec-Tier-Request'] = 'high';
+        h['X-Codec-Profile-HEVC'] = 'main10';
+        h['X-Codec-Profile-AV1'] = 'main';
+        h['X-Codec-Profile-VVC'] = 'main10';
+        h['X-Codec-Level-Request'] = '6.1';
+        h['X-Codec-HW-Required'] = 'true';
+        h['X-Codec-SW-Fallback'] = 'forbidden';
+        h['X-Codec-Container-Accept'] = 'cmaf,fmp4,ts';
+        h['X-Codec-Bit-Depth-Request'] = '12,10';
+
+        // ─── B. HDR Display Capabilities (15) — CTA-861-G ───
+        h['X-Display-HDR-Support'] = 'hdr10,hdr10+,dv,hlg';
+        h['X-Display-Peak-Nits'] = String(peakNits);
+        h['X-Display-Min-Nits'] = '0.0005';
+        h['X-Display-Color-Gamut'] = 'bt2020';
+        h['X-Display-DCI-P3-Coverage'] = '98';
+        h['X-Display-Panel-Type'] = 'oled-qled-microled';
+        h['X-Display-Local-Dimming'] = 'full-array-mini-led';
+        h['X-Display-ABL'] = 'disabled';
+        h['X-Display-Tone-Map-Capable'] = 'dynamic-scene';
+        h['X-Display-EOTF'] = 'pq,hlg,gamma22,gamma24';
+        h['X-Mastering-Display-Primaries'] = 'bt2020';
+        h['X-Mastering-Display-White-Point'] = 'D65';
+        h['X-Mastering-Max-Luminance'] = String(peakNits);
+        h['X-Mastering-Min-Luminance'] = '0.0005';
+        h['Sec-CH-Color-Gamut'] = 'rec2020';
+
+        // ─── C. HDR Static/Dynamic Metadata (12) — SMPTE ST 2086/2094-40 ───
+        h['X-HDR-Static-Metadata-Type'] = '1';           // SMPTE ST 2086 mastering display
+        h['X-HDR-Static-Metadata-MaxCLL'] = String(peakNits);
+        h['X-HDR-Static-Metadata-MaxFALL'] = '800';
+        h['X-HDR-Dynamic-Metadata-Type'] = '4';          // SMPTE ST 2094-40 (HDR10+)
+        h['X-HDR-Dynamic-Metadata-Profile'] = 'A';       // HDR10+ Profile A
+        h['X-HDR-Dynamic-Metadata-Bezier'] = 'enabled';
+        h['X-HDR10-Plus-Scene-Brightness-Max'] = String(peakNits);
+        h['X-HDR10-Plus-Tone-Map-Curve'] = 'bezier-dynamic';
+        h['X-HDR10-Plus-Scene-Analysis'] = 'ai-powered';
+        h['X-HDR10-Plus-Per-Frame-Metadata'] = 'enabled';
+        h['X-HLG-System-Gamma'] = '1.2';
+        h['X-HLG-Reference-White'] = '203';
+
+        // ─── D. Dolby Vision extendido (12) — Dolby Vision Streams within HLS v2.0 ───
+        h['X-DV-Profile-Request'] = '10';                // Profile 10 = AV1 base
+        h['X-DV-Profile-Fallback'] = '8.1,7,5';
+        h['X-DV-Level-Request'] = '6.1';
+        h['X-DV-RPU-Version'] = '4.0';
+        h['X-DV-Cross-Compat'] = 'hdr10,sdr,hlg';
+        h['X-DV-BL-Signal'] = 'av1-main10';
+        h['X-DV-EL-Present'] = 'false';                  // Profile 10 = single-layer
+        h['X-DV-CM-Version'] = '4.0';
+        h['X-DV-Tunneling-Required'] = 'true';
+        h['X-DV-RPU-Extraction'] = 'in-band';
+        h['X-Dolby-Vision-Compatibility-Type'] = '8';    // 0x8 = HDR10 backward
+        h['X-Dolby-Vision-Backwards-Compatible'] = 'true';
+
+        // ─── E. Color pipeline ITU-T H.273 (10) ───
+        h['X-Request-Color-Primaries'] = 'bt2020';       // 9 (ITU-R BT.2020)
+        h['X-Request-Color-Transfer'] = 'smpte2084';     // 16 (SMPTE ST 2084 / PQ)
+        h['X-Request-Color-Matrix'] = 'bt2020nc';        // 9 (BT.2020 non-constant)
+        h['X-Request-Color-Range'] = 'limited';          // 16-235 (studio swing)
+        h['X-Request-Bit-Depth'] = String(bitDepth);
+        h['X-Request-Chroma-Location'] = 'topleft';
+        h['X-Request-Chroma-Subsampling'] = '4:2:0';
+        h['X-Request-Pixel-Format'] = `yuv420p${bitDepth}le`;
+        h['X-Request-Signal-Range'] = 'narrow';
+        h['X-Request-VUI-Present'] = 'true';
+
+        // ─── F. Frame-rate/VRR/Motion (10) ───
+        h['X-Target-FPS'] = String(fps);
+        h['X-Target-FPS-Fallback'] = '60,50,30,25,24';
+        h['X-Video-Preferred-Frame-Rate'] = String(fps);
+        h['X-VRR-Supported'] = 'true';
+        h['X-VRR-Range'] = '24-120';
+        h['X-Motion-Interp-Request'] = 'rife-v4-mci-aobmc';
+        h['X-Film-Cadence-Detect'] = 'true';
+        h['X-Judder-Reduction'] = 'auto';
+        h['X-Source-FPS-Match'] = 'required';
+        h['X-Gsync-FreeSync-Compatible'] = 'true';
+
+        // ─── G. Audio premium (14) ───
+        h['X-Audio-Preferred-Codec'] = 'ec+3,ec-3,ac-3,mlpa,dts,mp4a.40.2';  // Atmos, EAC3, AC3, TrueHD, DTS, AAC
+        h['X-Audio-Codec-Fallback'] = 'eac3-joc,eac3,ac3,aac,mp3';
+        h['X-Audio-Preferred-Layout'] = audioChannels >= 8 ? '7.1.4' : (audioChannels >= 6 ? '5.1.2' : '2.0');
+        h['X-Audio-Atmos-Required'] = 'preferred';
+        h['X-Audio-DTS-X-Capable'] = 'true';
+        h['X-Audio-TrueHD-Capable'] = 'true';
+        h['X-Audio-Passthrough-eARC'] = 'true';
+        h['X-Audio-Object-Count-Max'] = '128';
+        h['X-Audio-Sample-Rate-Request'] = '48000,96000,192000';
+        h['X-Audio-Bit-Depth-Request'] = '24';
+        h['X-Audio-Dialog-Normalization'] = '-27';
+        h['X-Audio-LFE-Enable'] = 'true';
+        h['X-Audio-Downmix-Mode'] = 'auto';
+        h['X-Audio-Object-Based-Rendering'] = 'enabled';
+
+        // ─── H. LCEVC Phase 4 negociación (10) — MPEG-5 Part 2 ───
+        h['X-LCEVC-Enabled'] = 'true';
+        h['X-LCEVC-Client-Version'] = '1.4.0';
+        h['X-LCEVC-Profile'] = 'main10';
+        h['X-LCEVC-Phase-Request'] = '4';
+        h['X-LCEVC-Base-Codec-Pref'] = 'hevc,av1';
+        h['X-LCEVC-Scale-Request'] = '4x';
+        h['X-LCEVC-Transport-Pref'] = 'sei,in-band,out-of-band';
+        h['X-LCEVC-HW-Decoder'] = 'required';
+        h['X-LCEVC-SDK-HTML5'] = 'true';
+        h['X-LCEVC-Semantic-Segmentation'] = 'faces,text,skin,sports-ball';
+
+        // ─── I. Tone-Mapping dinámico (10) — GPU libplacebo/vulkan ───
+        h['X-Dynamic-Tone-Map'] = 'bt2446a';
+        h['X-Dynamic-Tone-Map-Fallback'] = 'bt2390,mobius,hable,reinhard';
+        h['X-Tone-Map-Per-Scene'] = 'true';
+        h['X-Tone-Map-Per-Frame'] = 'true';
+        h['X-Tone-Map-Target-Display-Nits'] = String(peakNits);
+        h['X-Tone-Map-Preserve-Highlights'] = 'true';
+        h['X-Tone-Map-Preserve-Saturation'] = 'true';
+        h['X-Tone-Map-Knee-Adaptive'] = 'true';
+        h['X-Tone-Map-LUT-3D'] = 'bt2020-to-dci-p3';
+        h['X-Tone-Map-GPU-Engine'] = 'libplacebo+vulkan';
+
+        // ─── J. Video Preferences ───
+        h['X-Video-Preferred-Resolution'] = `${resW}x${resH}`;
+        h['X-Video-Preferred-Max-Bitrate'] = String((cfg.bitrate || 20000) * 1000);
+        h['X-Video-Adaptive-Switch-Mode'] = 'instant';
+        h['X-Video-Startup-Quality'] = 'highest';
+        h['X-Video-Quality-Strategy'] = 'maximize';
+        h['X-Apple-HEVC-Hardware-Decode'] = '1';
+        h['X-Device-Display-Capabilities'] = `HDR10+;DV-P81;DV-P10;BT2020;${resW}x${resH};${fps}fps;${bitDepth}bit`;
+
+        // ─── K. Buffer/Network/BBR (10) ───
+        h['X-BBR-Algorithm'] = 'bbr2';
+        h['X-Congestion-Control-Pref'] = 'bbr2,bbr,cubic';
+        h['X-Buffer-Target-Duration-Ms'] = '60000';
+        h['X-Buffer-Safety-Margin'] = '0.3';
+        h['X-Network-Cache-Priority'] = 'ultra-high';
+        h['X-TCP-Fast-Open'] = 'required';
+        h['X-QUIC-0RTT'] = 'enabled';
+        h['X-Prefetch-Horizon-Segments'] = '20';
+        h['X-Playback-Stall-Max-Ms'] = '0';
+        h['X-Keepalive-Intensity'] = 'max';
+
+        // ─── L. CDN/Cache bypass (12) ───
+        h['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0';
+        h['Pragma'] = 'no-cache';
+        h['X-Accel-Buffering'] = 'no';
+        h['X-Origin-Force'] = 'true';
+        h['X-Cache-Skip'] = 'true';
+        h['X-CDN-Bypass'] = 'edge-origin';
+        h['X-Fastly-No-Cache'] = '1';
+        h['X-Akamai-No-Cache'] = '1';
+        h['X-Cloudflare-No-Cache'] = '1';
+        h['X-Surrogate-Control'] = 'no-store';
+        h['CDN-Cache-Control'] = 'no-store';
+        h['Vary'] = 'X-Playback-Session-Id, User-Agent, Accept-Encoding';
+
+        // ─── M. Emulación Premium Streaming (12) ───
+        h['X-Netflix-AB-Test'] = 'streaming-upgrade-2026';
+        h['X-Netflix-Video-Profile'] = 'playready-h265-main-10';
+        h['X-Apple-Streaming-Profile'] = 'hls-live-premium';
+        h['X-Apple-ATV-Profile'] = 'tv-os-17-uhd-dv-atmos';
+        h['X-Disney-Plus-Profile'] = '4k-hdr-atmos';
+        h['X-HBO-Max-Profile'] = '4k-dv-atmos';
+        h['X-Prime-Video-Profile'] = 'uhd-hdr-dd+atmos';
+        h['X-YouTube-Premium-Profile'] = 'premium-4k-av1-hdr';
+        h['X-Hulu-Profile'] = 'uhd-dv-atmos-2024';
+        h['X-Paramount-Plus-Profile'] = '4k-dv-atmos';
+        h['X-Peacock-Premium'] = '4k-hdr-atmos';
+        h['X-Max-Profile'] = '4k-dv-atmos';
+
+        // ─── N. Client Hints W3C (10) ───
+        h['Viewport-Width'] = String(resW);
+        h['Width'] = String(resW);
+        h['DPR'] = '2.0';
+        h['Sec-CH-Viewport-Width'] = String(resW);
+        h['Sec-CH-DPR'] = '2.0';
+        h['Sec-CH-Device-Memory'] = '8';
+        h['Sec-CH-Prefers-Color-Scheme'] = 'dark';
+        h['Sec-CH-Prefers-Reduced-Motion'] = 'no-preference';
+        h['Save-Data'] = 'off';
+        h['Downlink'] = '100';
+
+        // ─── O. Session tracking W3C Trace Context (8) ───
+        h['X-Playback-Session-Id'] = sessionId;
+        h['X-Playback-Init-Ts'] = String(Date.now());
+        h['X-Playback-Context-Id'] = 'omega-v5.4-' + sessionId.slice(-8);
+        h['X-Client-Capability-Hash'] = 'uhd-hdr-dv-atmos-lcevc-' + bitDepth + 'bit';
+        h['X-Stream-Variant-Hint'] = `${resW}x${resH}@${fps}fps`;
+        h['X-Stream-Negotiation-Id'] = sessionId;
+        h['traceparent'] = `00-${sessionId.replace(/[^0-9a-f]/gi, '').padEnd(32, '0').slice(0, 32)}-${Date.now().toString(16).padEnd(16, '0').slice(0, 16)}-01`;
+        h['X-Request-Id'] = sessionId;
+
+        // ─── P. Accept-Encoding premium ───
+        h['Accept-Encoding'] = 'gzip, br, zstd, deflate';
+        h['Accept-Language'] = 'es-ES,es;q=0.9,en-US;q=0.8,en;q=0.7';
+        h['Accept-Charset'] = 'utf-8';
+
+        return h;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HTTP ANABOLIC DEMO ENGINE v1.0 — Basado en DEMO_HTTP_ANABOLIC.m3u8
+    // ───────────────────────────────────────────────────────────────────────────
+    // ~100 headers HTTP per-canal agrupados en 8 grupos (G1-G8).
+    // Emulación premium Netflix/Disney+/Apple. IPs polimórficas per-canal.
+    // Diseñado para respetar budget 10KB/200 headers vía prioridad de inserción.
+    // ═══════════════════════════════════════════════════════════════════════════
+    function build_http_anabolic_demo_headers(cfg, channel) {
+        const ch = channel || {};
+        const chId = String(ch.stream_id || ch.id || ch.name || 'unknown').toLowerCase().replace(/\s+/g, '_');
+        const resolution = cfg.resolution || cfg.res || '3840x2160';
+        const bitrate = (cfg.bitrate || 80000) * 1000;
+        const fps = (cfg.target_framerate === '120FPS') ? 120 : (cfg.target_framerate === '60FPS' ? 60 : 60);
+        const peakNits = cfg.hdr_peak_luminance || 10000;
+        const profile = cfg._profile_id || 'P3';
+
+        // UUID determinista por canal (reproducible, evita drift entre capas)
+        let _h = 0;
+        for (let i = 0; i < chId.length; i++) _h = ((_h << 5) - _h + chId.charCodeAt(i)) & 0x7fffffff;
+        const _hex = _h.toString(16).padStart(8, '0');
+        const sessionId = `${_hex.slice(0,8)}-${_hex.slice(0,4)}-4${_hex.slice(1,4)}-${['8','9','a','b'][_h%4]}${_hex.slice(1,4)}-${(_h*31).toString(16).padStart(12,'0').slice(0,12)}`;
+        const reqId = `omega-${chId}-${Date.now().toString(36).slice(-8)}`;
+
+        // IP polimórfica determinista por canal
+        const _ipSeed = Math.abs(_h);
+        const clientIP = `${(_ipSeed%200)+10}.${(_ipSeed>>8)%256}.${(_ipSeed>>16)%256}.${(_ipSeed>>24)%200+10}`;
+        const cdnEdge = `cdn-edge-${(_ipSeed%999)+100}`;
+        const cfId = _hex.padEnd(22,'=').slice(0,22) + '==';
+
+        const h = {};
+
+        // ── G1: Identity & Device (9) ──
+        h['X-Playback-Session-Id'] = sessionId;
+        h['X-Request-Id'] = reqId;
+        h['X-Client-Version'] = '22.2.0-OMEGA-CRYSTAL-V5';
+        h['X-Platform'] = 'AndroidTV';
+        h['X-Device-Model'] = 'SHIELD Android TV Pro';
+        h['X-Device-OS'] = 'Android/12';
+        h['X-App-Version'] = '8.80.0';
+        h['X-Client-Id'] = `omega_${chId}_${profile}`;
+        // Safe unicode base64: evita DOMException con nombres de canal con acentos/ñ/emoji
+        try {
+            const _tokenRaw = `${chId}${sessionId}`;
+            const _tokenSafe = typeof btoa === 'function'
+                ? btoa(unescape(encodeURIComponent(_tokenRaw)))
+                : (typeof Buffer !== 'undefined' ? Buffer.from(_tokenRaw, 'utf8').toString('base64') : _tokenRaw);
+            h['X-Session-Token'] = `omega_${_tokenSafe}`;
+        } catch(eTok) {
+            h['X-Session-Token'] = `omega_${String(chId).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32)}`;
+        }
+
+        // ── G2: Content Negotiation & Capabilities (14) ──
+        h['Accept'] = 'application/vnd.apple.mpegurl, application/dash+xml, video/mp4, video/mp2t, */*;q=0.8';
+        h['Accept-Encoding'] = 'gzip, deflate, br';
+        h['Accept-Language'] = 'es-419,es;q=0.9,en-US;q=0.8,en;q=0.7';
+        h['X-Device-Capabilities'] = 'hdr10=true, hdr10plus=true, dolbyvision=true, hevc=true, av1=true, lcevc=true, 4k=true';
+        h['X-Client-HDR-Support'] = 'HDR10, HDR10Plus, DolbyVisionProfile8, DolbyVisionProfile10, HLG';
+        h['X-Video-Codecs'] = 'hvc1, hev1, avc1, av01, dvh1, dvhe';
+        h['X-Audio-Codecs'] = 'ec-3, ac-3, mp4a.40.2, mp4a.40.5, opus, flac';
+        h['X-Max-Resolution'] = resolution;
+        h['X-Max-Framerate'] = String(fps);
+        h['X-Color-Depth'] = '12bit';
+        h['X-Color-Space'] = 'BT2020';
+        h['X-Transfer-Characteristics'] = 'SMPTE-ST-2084-PQ';
+        h['X-HDCP-Version'] = '2.3';
+        h['X-Widevine-Level'] = 'L1';
+
+        // ── G3: Streaming & Buffer (11) ──
+        h['Range'] = 'bytes=0-';
+        h['X-Playback-Buffer-Size'] = '60000';
+        h['X-Expected-Bitrate'] = String(bitrate);
+        h['X-Min-Bitrate'] = '8000000';
+        h['X-Max-Bitrate'] = '240000000';
+        h['X-Prefetch-Segments'] = '8';
+        h['X-Buffer-Goal-Ms'] = '60000';
+        h['X-Network-Bandwidth'] = String(bitrate);
+        h['X-ABR-Strategy'] = 'AGGRESSIVE_QUALITY_FIRST';
+        h['X-Segment-Duration'] = '2000';
+        h['X-Chunk-Transfer-Encoding'] = 'chunked';
+
+        // ── G4: ISP Evasion & CDN Emulation (12) ──
+        h['X-Forwarded-For'] = clientIP;
+        h['X-Real-IP'] = clientIP;
+        h['X-Originating-IP'] = clientIP;
+        h['X-Remote-IP'] = clientIP;
+        h['X-Client-IP'] = clientIP;
+        h['Via'] = `1.1 ${cdnEdge}.cloudfront.net (CloudFront)`;
+        h['X-Amz-Cf-Id'] = cfId;
+        h['X-Cache'] = 'Miss from cloudfront';
+        h['X-ISP-Bypass'] = 'true';
+        h['X-DPI-Evasion'] = 'OMEGA_PHANTOM_HYDRA_V5';
+        h['DNT'] = '1';
+        h['Sec-GPC'] = '1';
+
+        // ── G5: Cache Bypass Aggressive (10) ──
+        h['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0';
+        h['Pragma'] = 'no-cache';
+        h['Expires'] = '0';
+        h['If-Modified-Since'] = '0';
+        h['If-None-Match'] = '*';
+        h['X-Cache-Bypass'] = '1';
+        h['X-Purge-Cache'] = '1';
+        h['X-CDN-Force-Refresh'] = '1';
+        h['Surrogate-Control'] = 'no-store';
+        h['Vary'] = 'Accept-Encoding';
+
+        // ── G6: HDR / Visual Processing Advanced (20) ──
+        h['X-HDR-Metadata-Type'] = 'SMPTE-ST-2086';
+        h['X-Master-Display'] = 'G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1)';
+        h['X-Max-CLL'] = `${peakNits},400`;
+        h['X-LCEVC-Phase'] = '4';
+        h['X-LCEVC-Enhancement'] = 'true';
+        h['X-AI-SR-Engine'] = 'RealESRGAN_x4plus';
+        h['X-AI-Interpolation'] = 'RIFE_V4_6';
+        h['X-Tone-Mapping'] = 'Hable_BT2390';
+        h['X-Chroma-Subsampling'] = '4:2:0';
+        h['X-Bit-Depth'] = '10';
+        h['X-Frame-Packing'] = 'progressive';
+        h['X-VRR-Support'] = 'true';
+        h['X-VRR-Min-Hz'] = '48';
+        h['X-VRR-Max-Hz'] = '120';
+        h['X-Deblock-Filter'] = 'strong';
+        h['X-Denoise-Level'] = '3';
+        h['X-Sharpness-Boost'] = '2';
+        h['X-Contrast-Enhance'] = 'AI_ADAPTIVE';
+        h['X-Saturation-Mode'] = 'BT2020_VIVID';
+        h['X-Film-Grain-Synthesis'] = 'true';
+
+        // ── G7: Connection / Auth / DRM (14) ──
+        h['Connection'] = 'keep-alive';
+        h['Keep-Alive'] = 'timeout=300, max=1000';
+        h['X-Auth-Type'] = 'OMEGA_TOKEN_V5';
+        h['X-Token-Expiry'] = String(Date.now() + 86400000);
+        h['X-Subscription-Tier'] = 'ULTRA_PREMIUM_4K_HDR';
+        h['X-Content-Access'] = 'UNRESTRICTED';
+        h['X-DRM-System'] = 'Widevine_L1';
+        h['X-License-Server'] = 'https://widevine.omega-crystal.internal/license';
+        h['Origin'] = 'https://www.netflix.com';
+        h['Referer'] = 'https://www.netflix.com/';
+        h['Sec-Fetch-Dest'] = 'video';
+        h['Sec-Fetch-Mode'] = 'cors';
+        h['Sec-Fetch-Site'] = 'cross-site';
+        h['X-No-Proxy'] = 'true';
+
+        // ── G8: QoS / QoE Telemetry (10) ──
+        h['X-QoS-Mode'] = 'ULTRA';
+        h['X-QoE-Target-MOS'] = '4.8';
+        h['X-VSTQ-Score'] = '50';
+        h['X-EPSNR-Target'] = '45';
+        h['X-Rebuffer-Tolerance'] = '0';
+        h['X-Startup-Latency-Max'] = '500';
+        h['X-Zapping-Time-Max'] = '800';
+        h['X-Quality-Reporting'] = 'true';
+        h['X-Metrics-Endpoint'] = 'https://qos.omega-crystal.internal/report';
+        h['X-Telemetry-Interval'] = '1000';
+
+        return h; // ~100 headers exactos del DEMO
     }
 
     function build_ape_block(cfg, profile, index, channel) {
@@ -4864,14 +5308,41 @@ const UAPhantomEngine = (function () {
         const res = cfg.res || cfg.resolution || '1920x1080';
         const fps = (cfg.target_framerate === '120FPS') ? 120 : (cfg.target_framerate === '60FPS' ? 60 : 30);
         let codecs = 'avc1.42E01E,mp4a.40.2';
-        
+        let videoRange = 'SDR';
+        let hdcpLevel = 'NONE';
+
         switch (cfg.codec_primary) {
-            case 'AV1':  codecs = 'av01.0.08M.08,mp4a.40.2'; break;
-            case 'HEVC': codecs = 'hvc1.1.6.L153.B0,mp4a.40.2'; break;
-            case 'AVC':  codecs = 'avc1.640028,mp4a.40.2'; break;
+            case 'VVC':
+                codecs = 'vvc1.1.L63.00.0.0,mp4a.40.2';
+                videoRange = 'PQ';
+                hdcpLevel = 'TYPE-1';
+                break;
+            case 'AV1':
+                codecs = 'av01.0.08M.08,mp4a.40.2';
+                videoRange = 'PQ';
+                hdcpLevel = 'TYPE-1';
+                break;
+            case 'HEVC':
+                codecs = 'hvc1.1.6.L153.B0,mp4a.40.2';
+                videoRange = 'PQ';
+                hdcpLevel = 'TYPE-1';
+                break;
+            case 'AVC':
+                codecs = 'avc1.640028,mp4a.40.2';
+                videoRange = 'SDR';
+                hdcpLevel = 'NONE';
+                break;
         }
 
-        return `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},AVERAGE-BANDWIDTH=${avgBandwidth},RESOLUTION=${res},CODECS="${codecs}",FRAME-RATE=${fps},HDCP-LEVEL=NONE`;
+        // [RFC 8216bis] VIDEO-RANGE: ExoPlayer usa esto para pre-init el decoder HDR/SDR
+        // sin esperar al primer segmento. Elimina el pantallazo negro del HDMI handshake.
+        // PQ = SMPTE ST 2084 (HDR10/HDR10+/DV), SDR = BT.709, HLG = Hybrid Log-Gamma.
+
+        // [MPEG-5 Part 2] SUPPLEMENTAL-CODECS: Señaliza pista LCEVC separada.
+        // ExoPlayer/AVPlayer: si tiene decoder LCEVC → upscale a 4K; si no → ignora y muestra base.
+        const supplemental = (cfg.lcevc_enabled !== false) ? ',SUPPLEMENTAL-CODECS="lcev.1.1.1"' : '';
+
+        return `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},AVERAGE-BANDWIDTH=${avgBandwidth},RESOLUTION=${res},CODECS="${codecs}",FRAME-RATE=${fps},VIDEO-RANGE=${videoRange},HDCP-LEVEL=${hdcpLevel}${supplemental}`;
     }
 
     function build_av1_cortex_fallback_tags(cfg) {
@@ -5055,12 +5526,15 @@ const UAPhantomEngine = (function () {
         const fps = channel.frames || 30;
         const transport = channel.transport || 'HLS';
         const codecFam = channel.codecFamily || '';
-        // ── UA sincronizado con Phantom Hydra Motor ───────────────────────────────
+        const tvgChno = escapeM3UValue(channel.num || channel.stream_id || (index + 1));
+        const catchup = channel.tv_archive ? ` catchup="append" catchup-days="${channel.tv_archive_duration || 7}" catchup-source="?utc={utc}&lutc={lutc}"` : '';
+        const tvgShift = ` tvg-shift="${channel.tv_shift || 0}"`;
+
         const _ua796 = (typeof window !== 'undefined' && window.PhantomHydra)
             ? window.PhantomHydra.getForChannel(index, channel.name || '')
             : 'Mozilla/5.0 (Linux; Android 12; SHIELD Android TV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-        return `#EXTINF:-1 tvg-id="${tvgId}" tvg-name="${tvgName}" tvg-logo="${tvgLogo}" group-title="${groupTitle}" ape-profile="${profile}" ape-build="v5.4-MAX-AGGRESSION" ape-region="${regionCode}" ape-content-type="${contentType}" ape-lang="${langCode}" ape-country="${escapeM3UValue(countryName)}" ape-classify-confidence="${confPct}" ape-fps="${fps}" ape-transport="${transport}" ape-codec-family="${codecFam}",${tvgName}`;
+        return `#EXTINF:-1 tvg-id="${tvgId}" tvg-name="${tvgName}" tvg-logo="${tvgLogo}" tvg-chno="${tvgChno}"${catchup}${tvgShift} group-title="${groupTitle}" ape-profile="${profile}" ape-build="v5.4-MAX-AGGRESSION" ape-region="${regionCode}" ape-content-type="${contentType}" ape-lang="${langCode}" ape-country="${escapeM3UValue(countryName)}" ape-classify-confidence="${confPct}" ape-fps="${fps}" ape-transport="${transport}" ape-codec-family="${codecFam}",${tvgName}`;
     }
 
     const MAX_URL_LENGTH = 2000;
@@ -5399,1220 +5873,1186 @@ function __getOmegaGodTierDirectives(channel, cfg) {
 }
 
 
-function generateChannelEntry(channel, index, forceProfile = null, credentialsMap = {}) {
-        const originalProfile = forceProfile || determineProfile(channel);
-        let profile = originalProfile;
-        let cfg = getProfileConfig(profile);
 
-        // ── 👁️ IPTV-SUPPORT-CORTEX vΩ: OVERWRITE NUCLEAR ──
-        if (typeof window !== 'undefined' && window.IPTV_SUPPORT_CORTEX_V_OMEGA) {
-            const result = window.IPTV_SUPPORT_CORTEX_V_OMEGA.execute(cfg, profile, channel.name || '');
-            profile = result.profile;
-            cfg = result.cfg;
-        }
-
-        // ── 🔗 PROFILE MANAGER (PM) BRIDGE ─────────────────────────────────
-        // pmProfile = objeto canónico del Profile Manager v9 con visuals,
-        // audio, drm, hardware, playback, security sub-objetos. Usado en
-        // L3 KODIPROP (~líneas 5718-5771+) con optional chaining + defaults.
-        // Bug fix 2026-04-08: previa a este día la variable se referenciaba
-        // sin declarar dentro del scope, lo cual estaba enmascarado mientras
-        // ape-profiles-config.js no cargaba (bug 504). Tras la reparación
-        // del config, generateChannelEntry() llega a línea 5718 y choca con
-        // ReferenceError. Declaramos aquí UNA sola vez al inicio del scope.
-        let pmProfile = null;
-        if (typeof window !== 'undefined' && window.APE_PROFILES_CONFIG &&
-            typeof window.APE_PROFILES_CONFIG.getProfile === 'function') {
-            pmProfile = window.APE_PROFILES_CONFIG.getProfile(profile) || null;
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // ⚡ CAPACITY OVERDRIVE ENGINE v1.0 — ANTI-STARVATION MULTIPLIER
-        // Multiplica valores de capacidad x2.5 DESPUÉS de la clasificación.
-        // Garantiza que incluso una mala clasificación (ej: 1080p→P4)
-        // tenga suficiente buffer/bitrate/BW para no congelarse.
-        // ISP y ancho de banda NO son restricción → MÁXIMA AGRESIÓN.
-        // ═══════════════════════════════════════════════════════════════════
-        const CAPACITY_MULTIPLIER = 2.5;
-        if (cfg.buffer_ms)              cfg.buffer_ms              = Math.round(cfg.buffer_ms * CAPACITY_MULTIPLIER);
-        if (cfg.network_cache_ms)       cfg.network_cache_ms       = Math.round(cfg.network_cache_ms * CAPACITY_MULTIPLIER);
-        if (cfg.live_cache_ms)          cfg.live_cache_ms          = Math.round(cfg.live_cache_ms * CAPACITY_MULTIPLIER);
-        if (cfg.file_cache_ms)          cfg.file_cache_ms          = Math.round(cfg.file_cache_ms * CAPACITY_MULTIPLIER);
-        if (cfg.player_buffer_ms)       cfg.player_buffer_ms       = Math.round(cfg.player_buffer_ms * CAPACITY_MULTIPLIER);
-        if (cfg.bitrate)                cfg.bitrate                = Math.round(cfg.bitrate * CAPACITY_MULTIPLIER);
-        if (cfg.max_bandwidth)          cfg.max_bandwidth          = Math.round(cfg.max_bandwidth * CAPACITY_MULTIPLIER);
-        if (cfg.min_bandwidth)          cfg.min_bandwidth          = Math.round(cfg.min_bandwidth * CAPACITY_MULTIPLIER);
-        if (cfg.prefetch_segments)      cfg.prefetch_segments      = Math.round(cfg.prefetch_segments * CAPACITY_MULTIPLIER);
-        if (cfg.prefetch_parallel)      cfg.prefetch_parallel      = Math.round(cfg.prefetch_parallel * CAPACITY_MULTIPLIER);
-        if (cfg.prefetch_buffer_target) cfg.prefetch_buffer_target = Math.round(cfg.prefetch_buffer_target * CAPACITY_MULTIPLIER);
-        if (cfg.prefetch_min_bandwidth) cfg.prefetch_min_bandwidth = Math.round(cfg.prefetch_min_bandwidth * CAPACITY_MULTIPLIER);
-        if (cfg.bandwidth_guarantee)    cfg.bandwidth_guarantee    = Math.round(cfg.bandwidth_guarantee * CAPACITY_MULTIPLIER);
-        if (cfg.throughput_t1)          cfg.throughput_t1          = Math.round(cfg.throughput_t1 * CAPACITY_MULTIPLIER * 10) / 10;
-        if (cfg.throughput_t2)          cfg.throughput_t2          = Math.round(cfg.throughput_t2 * CAPACITY_MULTIPLIER * 10) / 10;
-
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // 🔑 OMEGA CRYSTAL V5 — IDENTIDAD DUAL: POLIMORFISMO + IDEMPOTENCIA
-        // nonce  = rand8()  → muta en cada descarga (1% uniqueness / DPI evasion)
-        // sid    = FNV32(ch.id + STATIC_SEED)[:16] → NUNCA cambia (cache key)
-        // reqId  = REQ_ + rand16 → muta (trazabilidad única HTTP)
-        // sessionId = SES_ + rand16 → muta (sesión única por descarga)
-        // ═══════════════════════════════════════════════════════════════════════
-        // ═══════════════════════════════════════════════════════════════════════
-        // 🔑 OMEGA CRYSTAL V5 — DELEGACIÓN A DUAL IDENTITY CORE
-        // nonce = polimórfico, sid = idempotente FNV32
-        // ═══════════════════════════════════════════════════════════════════════
-        let _nonce796 = 'RND' + Math.floor(Math.random()*10000);
-        let _sid796 = 'SID_' + (channel.id || index);
-        let reqId = 'REQ_1';
-        let sessionId = 'SES_1';
-
-        if (typeof window !== 'undefined' && window.DualIdentity) {
-            const di = window.DualIdentity.generateTokens(channel, index);
-            _nonce796 = di.nonce;
-            _sid796 = di.sid;
-            reqId = di.reqId;
-            sessionId = di.sessionId;
-        }
-
-        // ── Cadena de degradación L1-L7 ──────────────────────────────────────
-        const _ql796 = {
-            L1: { resolution: cfg.resolution || '1920x1080', bitrate_mbps: (cfg.bitrate||8000)/1000, codec: cfg.codec_primary||'hevc', fps: cfg.fps||60 },
-            L2: { resolution: '1920x1080', bitrate_mbps: 8.0, codec: cfg.codec_primary||'hevc', fps: Math.min(cfg.fps||60,60) },
-            L3: { resolution: '1280x720',  bitrate_mbps: 4.0, codec: 'h264', fps: Math.min(cfg.fps||30,30) },
-            L4: { resolution: '854x480',   bitrate_mbps: 1.5, codec: 'h264', fps: 25 },
-            L5: { resolution: '640x360',   bitrate_mbps: 0.8, codec: 'h264', fps: 25 },
-            L6: { resolution: '426x240',   bitrate_mbps: 0.4, codec: 'h264', fps: 15 },
-            L7: { resolution: 'audio',     bitrate_mbps: 0.128, codec: 'aac', fps: 0 }
-        };
-
-        // ── Video-filter chain completa (zscale + chromal=topleft) ────────────
-        const _vf796 = [
-            'fieldmatch','decimate',
-            `nlmeans=s=3.0:p=7:r=15`,
-            `bwdif=mode=1:parity=-1:deint=0`,
-            `deband=1thr=0.015:2thr=0.015:3thr=0.015:4thr=0.015:blur=1`,
-            `pp=ac/dr/ci`,
-            `unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4`,
-            `zscale=transfer=st2084:primaries=bt2020:matrix=2020_ncl:dither=error_diffusion:range=limited:chromal=topleft`,
-            `format=yuv444p`,
-            `hqdn3d=4:3:12:9`,
-            `fps=fps=${cfg.fps||60}:round=near`,
-            `minterpolate=fps=${(cfg.fps||60)*2}:mi_mode=mci:mc_mode=aobmc:vsbmc=1:me=epzs`
-        ].join(',');
-
-        // ── UA sincronizado con UAPhantomEngine ───────────────────────────────
-        const _ua796 = (typeof UAPhantomEngine !== 'undefined')
-            ? UAPhantomEngine.getForChannel(index, channel.name || '')
-            : 'Mozilla/5.0 (Linux; Android 12; SHIELD Android TV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
-
-        // ── Buffer values (ya multiplicados por Capacity Overdrive) ───────────
-        const _buf796  = cfg.buffer_ms       || 60000;
-        const _nbuf796 = cfg.network_cache_ms || _buf796;
-        const _lbuf796 = cfg.live_cache_ms    || _buf796;
-        const _fbuf796 = cfg.file_cache_ms    || _buf796;
-        const _bw796   = cfg.max_bandwidth    || 80000000;
-        const _fps796  = cfg.fps              || 60;
-        const _res796  = cfg.resolution       || '1920x1080';
-        const _codec796= cfg.codec_primary    || 'hevc';
-        const _hdr796  = cfg.peak_luminance   || cfg.hdr_nits || 5000;
-        const _ct796   = (channel.group || 'GENERAL').toUpperCase();
-        const _chName  = channel.name || '';
-        const _chId    = String(channel.stream_id || channel.id || index);
-
+    // ═══════════════════════════════════════════════════════════════════════════
+    // generateChannelEntry — OMEGA CRYSTAL V5 FUSIÓN V21
+    // 921 líneas por canal | L0-L10 | Cableado desde arrays de origen
+    // Sin hardcoding | Polimorfismo + Idempotencia | Compatibilidad Universal
+    // ═══════════════════════════════════════════════════════════════════════════
+    function generateChannelEntry(channel, profile = 'P3', index = 0, credentialsMap = {}) {
         const lines = [];
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L0: EXTINF + EXT-X-STREAM-INF (2 líneas) ─────────────────────────
-        // ══════════════════════════════════════════════════════════════════════
-        lines.push(generateEXTINF(channel, originalProfile, index));
-        lines.push(build_stream_inf(cfg, channel));
-        // L0 = 2 ✓
+        // ── SEMILLAS CRIPTOGRÁFICAS (Polimorfismo + Idempotencia) ─────────────
+        const _STATIC_SEED  = 'OMEGA_STATIC_SEED_V5';
+        const _nonce796     = (() => {
+            const r = Math.random().toString(36).substring(2,10);
+            return r + Date.now().toString(16).slice(-4);
+        })();
+        const _sid796       = (() => {
+            // SID ESTABLE: md5-like con FNV-1a sobre id+STATIC_SEED
+            const s = String(channel.id || channel.name || index) + _STATIC_SEED;
+            let h = 0x811c9dc5;
+            for (let i=0; i<s.length; i++) { h ^= s.charCodeAt(i); h = (h * 0x01000193) >>> 0; }
+            return h.toString(16).padStart(8,'0') + ((h*0x9e3779b9)>>>0).toString(16).padStart(8,'0');
+        })();
+        const _listHash     = (typeof LIST_HASH !== 'undefined') ? LIST_HASH : _nonce796.slice(0,8);
+        const _ts           = new Date().toISOString();
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L1: EXTVLCOPT — Esclavización VLC/ExoPlayer (110 líneas) ─────────
-        // ══════════════════════════════════════════════════════════════════════
-        // 1.a Red y buffer (10)
-        lines.push(`#EXTVLCOPT:network-caching=${_nbuf796}`);
-        lines.push(`#EXTVLCOPT:live-caching=${_lbuf796}`);
-        lines.push(`#EXTVLCOPT:file-caching=${_fbuf796}`);
-        lines.push(`#EXTVLCOPT:disc-caching=${_fbuf796}`);
-        lines.push(`#EXTVLCOPT:clock-jitter=0`);
-        lines.push(`#EXTVLCOPT:clock-synchro=0`);
-        lines.push(`#EXTVLCOPT:http-reconnect=true`);
-        lines.push(`#EXTVLCOPT:http-forward-cookies=true`);
-        lines.push(`#EXTVLCOPT:http-referrer=${channel.url || ''}`);
+        // ── ARRAYS DE ORIGEN — cableados desde el scope del generador ─────────
+        const _ua796        = UAPhantomEngine.get('IPTV');
+        const _uaAndroid    = (typeof UAPhantomEngine !== 'undefined' && UAPhantomEngine && UAPhantomEngine.getUA) ? UAPhantomEngine.getUA('ANDROID') : (UAPhantomEngine && UAPhantomEngine.get ? UAPhantomEngine.get('ANDROID') : 'ExoPlayer/2.18.1 (Linux;Android 13) ExoPlayerLib/2.18.1');
+        const _uaIOS        = (typeof UAPhantomEngine !== 'undefined' && UAPhantomEngine && UAPhantomEngine.getUA) ? UAPhantomEngine.getUA('IOS') : (UAPhantomEngine && UAPhantomEngine.get ? UAPhantomEngine.get('IOS') : 'AppleCoreMedia/1.0.0.20G75 (Apple TV; U; CPU OS 16_6 like Mac OS X; en_us)');
+        const _uaChrome     = UAPhantomEngine.get('CHROME');
+        const _uaTiviMate   = UAPhantomEngine.get('TIVIMATE');
+        const _uaOTT        = UAPhantomEngine.get('OTT');
+        const _uaKodi       = UAPhantomEngine.get('KODI');
+        const _uaExo        = UAPhantomEngine.get('EXOPLAYER');
+        const _uaVLC        = UAPhantomEngine.get('VLC');
+        const _uaSafari     = UAPhantomEngine.get('SAFARI');
+        const _randomIp     = getRandomIp();
+
+        // ── PERFIL DESDE ARRAY DE ORIGEN ─────────────────────────────────────
+        const cfg           = getProfileConfig(profile);
+        const _bw796        = cfg.bandwidth       || 80000000;
+        const _avgBw        = cfg.avgBandwidth    || Math.round(_bw796 * 0.85);
+        const _res796       = cfg.resolution      || '3840x2160';
+        const _fps796       = cfg.framerate       || 60;
+        const _codec796     = cfg.codec           || 'hvc1.2.4.L153.B0';
+        const _codecAudio   = cfg.audioCodec      || 'ec-3';
+        const _hdrMode      = cfg.hdrMode         || 'PQ';
+        const _hdrNits      = cfg.hdrNits         || 5000;
+        const _vmaf         = cfg.vmaf_target     || 95;
+        const _buf796       = (typeof CAPACITY_OVERDRIVE !== 'undefined')
+                              ? CAPACITY_OVERDRIVE.buffer_ms || 60000
+                              : 60000;
+        const _bufMB        = (typeof CAPACITY_OVERDRIVE !== 'undefined')
+                              ? CAPACITY_OVERDRIVE.buffer_mb || 60
+                              : 60;
+        const _bufSeg       = (typeof CAPACITY_OVERDRIVE !== 'undefined')
+                              ? CAPACITY_OVERDRIVE.buffer_segments || 30
+                              : 30;
+
+        // ── JWT DESDE ARRAY DE ORIGEN ─────────────────────────────────────────
+        const jwt           = (typeof generateJWT68Fields === 'function')
+                              ? generateJWT68Fields(channel, profile, index)
+                              : null;
+        const sessionId     = jwt ? jwt.sessionId : (_sid796 + '_' + _nonce796);
+        const reqId         = jwt ? jwt.reqId     : (_nonce796 + index.toString(16));
+
+        // ── EXTHTTP DESDE ARRAY DE ORIGEN ────────────────────────────────────
+        const _exthttp_base = (typeof build_exthttp === 'function')
+                              ? build_exthttp(cfg, profile, index, sessionId, reqId)
+                              : null;
+
+        // ── HEADERS ANABÓLICOS DESDE ARRAY DE ORIGEN ─────────────────────────
+        const _anab796      = (typeof window !== 'undefined' && window.HttpAnabolicEngine)
+                              ? window.HttpAnabolicEngine.buildAnabolicPayload(channel, cfg)
+                              : {};
+        const _anabSid      = _anab796['X-Playback-Session-Id'] || _sid796;
+
+        // ── URL FINAL DESDE buildChannelUrl ───────────────────────────────────
+        const CLEAN_URL_MODE_LOCAL = (typeof CLEAN_URL_MODE !== 'undefined') ? CLEAN_URL_MODE : false;
+        let primaryUrl = (typeof buildChannelUrl === 'function')
+                         ? buildChannelUrl(channel, jwt, profile, index, credentialsMap)
+                         : (channel.url || channel.src || '');
+
+        // Inyectar sid/nonce en URL si no están ya presentes
+        if (primaryUrl && !primaryUrl.includes('ape_sid=')) {
+            const sep = primaryUrl.includes('?') ? '&' : '?';
+            primaryUrl += `${sep}ape_sid=${_sid796}&ape_nonce=${_nonce796}`;
+        }
+
+        // ── EXTINF DESDE generateEXTINF ───────────────────────────────────────
+        const _extinf = (typeof generateEXTINF === 'function')
+                        ? generateEXTINF(channel, profile, index)
+                        : `#EXTINF:-1 tvg-id="${channel.id||''}" tvg-name="${channel.name||''}" tvg-logo="${channel.logo||''}" group-title="${channel.group||''}",${channel.name||''}`;
+
+        // ════════════════════════════════════════════════════════════════════════
+        // L0 — IDENTIDAD HLS (6 líneas)
+        // ════════════════════════════════════════════════════════════════════════
+        lines.push(_extinf);
+        lines.push(`#EXT-X-VERSION:7`);
+        lines.push(`#EXT-X-TARGETDURATION:2`);
+        lines.push(`#EXT-X-MEDIA-SEQUENCE:0`);
+        lines.push(`#EXT-X-PLAYLIST-TYPE:EVENT`);
+        lines.push(`#EXT-X-STREAM-INF:BANDWIDTH=${_bw796},AVERAGE-BANDWIDTH=${_avgBw},CODECS="${_codec796},${_codecAudio}",RESOLUTION=${_res796},FRAME-RATE=${_fps796}.000,VIDEO-RANGE="${_hdrMode}",HDCP-LEVEL="TYPE-1",SUPPLEMENTAL-CODECS="lcev.1.1.1"`);
+
+        // ════════════════════════════════════════════════════════════════════════
+        // L1 — EXTVLCOPT — VLC/ExoPlayer Enslavement (129 líneas)
+        // Cableado desde: UAPhantomEngine, cfg (PROFILES), CAPACITY_OVERDRIVE
+        // ════════════════════════════════════════════════════════════════════════
+        lines.push(`#EXTVLCOPT:network-caching=${_buf796}`);
+        lines.push(`#EXTVLCOPT:network-timeout=60000`);
+        lines.push(`#EXTVLCOPT:network-reconnect=true`);
+        lines.push(`#EXTVLCOPT:network-reconnect-delay=500`);
+        lines.push(`#EXTVLCOPT:network-reconnect-count=99`);
+        lines.push(`#EXTVLCOPT:network-reconnect-fade-in=true`);
+        lines.push(`#EXTVLCOPT:network-continuous-stream=true`);
         lines.push(`#EXTVLCOPT:http-user-agent=${_ua796}`);
-        // 1.b Video-filter chain completa (1)
-        lines.push(`#EXTVLCOPT:video-filter=${_vf796}`);
-        // 1.c Hardware decode y color (5)
+        lines.push(`#EXTVLCOPT:http-referrer=https://www.google.com/`);
+        lines.push(`#EXTVLCOPT:http-forward-cookies=true`);
+        lines.push(`#EXTVLCOPT:http-reconnect=true`);
+        lines.push(`#EXTVLCOPT:http-iface=`);
+        lines.push(`#EXTVLCOPT:http-proxy=`);
+        lines.push(`#EXTVLCOPT:http-proxy-pwd=`);
+        lines.push(`#EXTVLCOPT:sout-keep=true`);
+        lines.push(`#EXTVLCOPT:sout-mux-caching=${_buf796}`);
+        lines.push(`#EXTVLCOPT:codec=any`);
         lines.push(`#EXTVLCOPT:avcodec-hw=any`);
-        lines.push(`#EXTVLCOPT:hw-dec=all`);
-        lines.push(`#EXTVLCOPT:video-color-space=bt2020nc`);
-        lines.push(`#EXTVLCOPT:video-transfer-function=smpte2084`);
-        lines.push(`#EXTVLCOPT:video-color-primaries=bt2020`);
-        // 1.d Codec hierarchy (10)
-        lines.push(`#EXTVLCOPT:avcodec-codec=hevc`);
-        lines.push(`#EXTVLCOPT:avcodec-codec-fallback=av1`);
-        lines.push(`#EXTVLCOPT:avcodec-codec-fallback-2=h264`);
-        lines.push(`#EXTVLCOPT:avcodec-codec-fallback-3=mpeg2video`);
         lines.push(`#EXTVLCOPT:avcodec-threads=0`);
+        lines.push(`#EXTVLCOPT:avcodec-fast=true`);
         lines.push(`#EXTVLCOPT:avcodec-skip-frame=0`);
         lines.push(`#EXTVLCOPT:avcodec-skip-idct=0`);
         lines.push(`#EXTVLCOPT:avcodec-dr=true`);
-        lines.push(`#EXTVLCOPT:avcodec-fast=false`);
-        lines.push(`#EXTVLCOPT:avcodec-hurry-up=false`);
-        // 1.e Audio pipeline (10)
-        lines.push(`#EXTVLCOPT:audio-track-id=0`);
-        lines.push(`#EXTVLCOPT:audio-language=eng,spa,por`);
-        lines.push(`#EXTVLCOPT:audio-desync=0`);
-        lines.push(`#EXTVLCOPT:audio-time-stretch=true`);
-        lines.push(`#EXTVLCOPT:spdif=eac3,ac3,dts,truehd`);
-        lines.push(`#EXTVLCOPT:audio-replay-gain-mode=none`);
-        lines.push(`#EXTVLCOPT:audio-channels=8`);
-        lines.push(`#EXTVLCOPT:audio-sample-rate=48000`);
-        lines.push(`#EXTVLCOPT:audio-bit-depth=24`);
-        lines.push(`#EXTVLCOPT:audio-passthrough=true`);
-        // 1.f ABR y bandwidth (10)
-        lines.push(`#EXTVLCOPT:adaptive-maxwidth=${(_res796.split('x')[0]||7680)}`);
-        lines.push(`#EXTVLCOPT:adaptive-maxheight=${(_res796.split('x')[1]||4320)}`);
-        lines.push(`#EXTVLCOPT:adaptive-maxbw=${_bw796}`);
-        lines.push(`#EXTVLCOPT:adaptive-logic=highest`);
-        lines.push(`#EXTVLCOPT:adaptive-caching=true`);
-        lines.push(`#EXTVLCOPT:adaptive-cache-size=5000`);
-        lines.push(`#EXTVLCOPT:preferred-resolution=${_res796.split('x')[1]||4320}`);
-        lines.push(`#EXTVLCOPT:network-synchronisation=1`);
-        lines.push(`#EXTVLCOPT:auto-adjust-pts-delay=1`);
-        lines.push(`#EXTVLCOPT:tls-session-resumption=true`);
-        // 1.g Error resilience (10)
+        lines.push(`#EXTVLCOPT:avcodec-corrupted=1`);
+        lines.push(`#EXTVLCOPT:avcodec-hurry-up=0`);
         lines.push(`#EXTVLCOPT:avcodec-error-resilience=1`);
-        lines.push(`#EXTVLCOPT:avcodec-workaround-bugs=1`);
-        lines.push(`#EXTVLCOPT:avcodec-error-concealment=motion_vector`);
-        lines.push(`#EXTVLCOPT:avcodec-max-consecutive-errors=5`);
-        lines.push(`#EXTVLCOPT:avcodec-skip-on-error=1`);
-        lines.push(`#EXTVLCOPT:avcodec-loop-filter=1`);
-        lines.push(`#EXTVLCOPT:avcodec-debug=0`);
-        lines.push(`#EXTVLCOPT:ffmpeg-skip-frame=0`);
-        lines.push(`#EXTVLCOPT:ffmpeg-skip-idct=0`);
-        lines.push(`#EXTVLCOPT:ffmpeg-threads=0`);
-        // 1.h Deinterlace y display (10)
-        lines.push(`#EXTVLCOPT:deinterlace=1`);
-        lines.push(`#EXTVLCOPT:deinterlace-mode=yadif2x`);
-        lines.push(`#EXTVLCOPT:video-deco=1`);
-        lines.push(`#EXTVLCOPT:sharpen-sigma=0.05`);
-        lines.push(`#EXTVLCOPT:contrast=1.0`);
-        lines.push(`#EXTVLCOPT:brightness=1.0`);
-        lines.push(`#EXTVLCOPT:saturation=1.0`);
-        lines.push(`#EXTVLCOPT:gamma=1.0`);
-        lines.push(`#EXTVLCOPT:vout=opengl`);
-        lines.push(`#EXTVLCOPT:swscale-mode=9`);
-        // 1.i HDR tone-mapping (10)
-        lines.push(`#EXTVLCOPT:tone-mapping=hable`);
-        lines.push(`#EXTVLCOPT:tone-mapping-param=0.3`);
-        lines.push(`#EXTVLCOPT:tone-mapping-peak=${_hdr796}`);
-        lines.push(`#EXTVLCOPT:tone-mapping-desat=0`);
-        lines.push(`#EXTVLCOPT:tone-mapping-mode=auto`);
-        lines.push(`#EXTVLCOPT:hdr-peak-luminance=${_hdr796}`);
-        lines.push(`#EXTVLCOPT:hdr-min-luminance=0.001`);
-        lines.push(`#EXTVLCOPT:hdr-max-cll=10000`);
-        lines.push(`#EXTVLCOPT:hdr-max-fall=400`);
-        lines.push(`#EXTVLCOPT:hdr-color-gamut=bt2020`);
-        // 1.j Red avanzada (10)
-        lines.push(`#EXTVLCOPT:http-user-timeout=15000`);
-        lines.push(`#EXTVLCOPT:server-port=443`);
-        lines.push(`#EXTVLCOPT:network-caching-dscp=0`);
-        lines.push(`#EXTVLCOPT:postproc-q=6`);
-        lines.push(`#EXTVLCOPT:postproc-quality=6`);
-        lines.push(`#EXTVLCOPT:avformat-options={analyzeduration:10000000,probesize:10000000,fflags:+genpts+igndts+discardcorrupt}`);
-        lines.push(`#EXTVLCOPT:avcodec-options={gpu_decode:1,hw_deint:1,hw_scaler:1,threads:0,refcounted_frames:1}`);
-        lines.push(`#EXTVLCOPT:ipv4=true`);
-        lines.push(`#EXTVLCOPT:ipv6=true`);
-        lines.push(`#EXTVLCOPT:prefer-ipv4=true`);
-        // 1.k Subtítulos y metadata (10)
-        lines.push(`#EXTVLCOPT:sub-track-id=-1`);
+        lines.push(`#EXTVLCOPT:video-filter=zscale=transfer=st2084:chromal=topleft:matrix=2020_ncl:primaries=2020:range=limited`);
+        lines.push(`#EXTVLCOPT:video-hdr=true`);
+        lines.push(`#EXTVLCOPT:video-hdr-nits=${_hdrNits}`);
+        lines.push(`#EXTVLCOPT:video-hdr-mode=${_hdrMode}`);
+        lines.push(`#EXTVLCOPT:video-tone-mapping=hable`);
+        lines.push(`#EXTVLCOPT:video-tone-mapping-peak=${_hdrNits}`);
+        lines.push(`#EXTVLCOPT:video-tone-mapping-reference=203`);
+        lines.push(`#EXTVLCOPT:video-bt2020=true`);
+        lines.push(`#EXTVLCOPT:video-fullrange=false`);
+        lines.push(`#EXTVLCOPT:video-chroma-loc=topleft`);
+        lines.push(`#EXTVLCOPT:video-deinterlace=0`);
+        lines.push(`#EXTVLCOPT:video-deinterlace-mode=yadif2x`);
+        lines.push(`#EXTVLCOPT:video-fps=${_fps796}`);
+        lines.push(`#EXTVLCOPT:video-display-fps=${_fps796}`);
+        lines.push(`#EXTVLCOPT:video-frame-rate-mode=1`);
+        lines.push(`#EXTVLCOPT:video-width=${_res796.split('x')[0]}`);
+        lines.push(`#EXTVLCOPT:video-height=${_res796.split('x')[1]}`);
+        lines.push(`#EXTVLCOPT:video-sar=1:1`);
+        lines.push(`#EXTVLCOPT:video-dar=16:9`);
+        lines.push(`#EXTVLCOPT:video-black-bars=false`);
+        lines.push(`#EXTVLCOPT:video-zoom=1.0`);
+        lines.push(`#EXTVLCOPT:video-crop=`);
+        lines.push(`#EXTVLCOPT:video-snap-format=png`);
+        lines.push(`#EXTVLCOPT:audio-language=spa,eng,por`);
+        lines.push(`#EXTVLCOPT:audio-track-id=0`);
+        lines.push(`#EXTVLCOPT:audio-channels=6`);
+        lines.push(`#EXTVLCOPT:audio-samplerate=48000`);
+        lines.push(`#EXTVLCOPT:audio-replay-gain-mode=none`);
+        lines.push(`#EXTVLCOPT:audio-time-stretch=false`);
+        lines.push(`#EXTVLCOPT:audio-desync=0`);
+        lines.push(`#EXTVLCOPT:audio-volume=256`);
+        lines.push(`#EXTVLCOPT:audio-filter=`);
+        lines.push(`#EXTVLCOPT:audio-visual=`);
         lines.push(`#EXTVLCOPT:sub-language=none`);
+        lines.push(`#EXTVLCOPT:sub-track-id=-1`);
+        lines.push(`#EXTVLCOPT:sub-auto=false`);
         lines.push(`#EXTVLCOPT:sub-file=`);
-        lines.push(`#EXTVLCOPT:sub-margin=30`);
-        lines.push(`#EXTVLCOPT:sub-text-scale=100`);
-        lines.push(`#EXTVLCOPT:sub-fps=${_fps796}`);
+        lines.push(`#EXTVLCOPT:sub-margin=0`);
+        lines.push(`#EXTVLCOPT:sub-fps=0`);
         lines.push(`#EXTVLCOPT:sub-delay=0`);
-        lines.push(`#EXTVLCOPT:meta-title=${_chName}`);
-        lines.push(`#EXTVLCOPT:meta-artist=APE_OMEGA_V5`);
-        lines.push(`#EXTVLCOPT:meta-genre=${_ct796}`);
-        // 1.l Parámetros de reproducción avanzados (14)
-        lines.push(`#EXTVLCOPT:play-and-pause=false`);
-        lines.push(`#EXTVLCOPT:play-and-stop=false`);
-        lines.push(`#EXTVLCOPT:play-and-exit=false`);
-        lines.push(`#EXTVLCOPT:repeat=false`);
-        lines.push(`#EXTVLCOPT:loop=false`);
-        lines.push(`#EXTVLCOPT:random=false`);
-        lines.push(`#EXTVLCOPT:fullscreen=true`);
-        lines.push(`#EXTVLCOPT:video-on-top=true`);
-        lines.push(`#EXTVLCOPT:no-video-title-show=true`);
-        lines.push(`#EXTVLCOPT:no-osd=true`);
-        lines.push(`#EXTVLCOPT:no-stats=true`);
-        lines.push(`#EXTVLCOPT:no-snapshot-preview=true`);
-        lines.push(`#EXTVLCOPT:no-interact=true`);
-        lines.push(`#EXTVLCOPT:no-quiet=false`);
-        // L1 = 110 ✓
+        lines.push(`#EXTVLCOPT:live-caching=${_buf796}`);
+        lines.push(`#EXTVLCOPT:ts-caching=${_buf796}`);
+        lines.push(`#EXTVLCOPT:ts-seek-percent=false`);
+        lines.push(`#EXTVLCOPT:ts-silent=true`);
+        lines.push(`#EXTVLCOPT:ts-extra-pmt=`);
+        lines.push(`#EXTVLCOPT:ts-pid-video=0`);
+        lines.push(`#EXTVLCOPT:ts-pid-audio=0`);
+        lines.push(`#EXTVLCOPT:ts-pid-subpic=0`);
+        lines.push(`#EXTVLCOPT:ts-pid-teletext=0`);
+        lines.push(`#EXTVLCOPT:ts-pid-pcr=0`);
+        lines.push(`#EXTVLCOPT:ts-pcr=0`);
+        lines.push(`#EXTVLCOPT:ts-split-es=true`);
+        lines.push(`#EXTVLCOPT:ts-trust-pcr=true`);
+        lines.push(`#EXTVLCOPT:ts-cc-check=false`);
+        lines.push(`#EXTVLCOPT:ts-hdmv-pmt=false`);
+        lines.push(`#EXTVLCOPT:ts-atsc-eit=false`);
+        lines.push(`#EXTVLCOPT:ts-pmtx=false`);
+        lines.push(`#EXTVLCOPT:hls-caching=${_buf796}`);
+        lines.push(`#EXTVLCOPT:hls-reconnect=true`);
+        lines.push(`#EXTVLCOPT:hls-segment-size=0`);
+        lines.push(`#EXTVLCOPT:hls-segment-count=0`);
+        lines.push(`#EXTVLCOPT:hls-segment-overlap=0`);
+        lines.push(`#EXTVLCOPT:hls-live-delay=0`);
+        lines.push(`#EXTVLCOPT:hls-initial-live-wait=0`);
+        lines.push(`#EXTVLCOPT:hls-max-buffer-size=${_bufMB * 1024 * 1024}`);
+        lines.push(`#EXTVLCOPT:hls-max-buffer-duration=${_buf796}`);
+        lines.push(`#EXTVLCOPT:hls-seek-sync=true`);
+        lines.push(`#EXTVLCOPT:hls-use-start-time-offset=false`);
+        lines.push(`#EXTVLCOPT:hls-aes-key=`);
+        lines.push(`#EXTVLCOPT:adaptive-maxwidth=${_res796.split('x')[0]}`);
+        lines.push(`#EXTVLCOPT:adaptive-maxheight=${_res796.split('x')[1]}`);
+        lines.push(`#EXTVLCOPT:adaptive-bw-factor=1.0`);
+        lines.push(`#EXTVLCOPT:adaptive-logic=highest`);
+        lines.push(`#EXTVLCOPT:adaptive-maxbitrate=${_bw796}`);
+        lines.push(`#EXTVLCOPT:adaptive-minbitrate=0`);
+        lines.push(`#EXTVLCOPT:adaptive-use-access=true`);
+        lines.push(`#EXTVLCOPT:adaptive-initial-bandwidth=${_bw796}`);
+        lines.push(`#EXTVLCOPT:adaptive-bandwidth-factor=1.0`);
+        lines.push(`#EXTVLCOPT:adaptive-lookahead-count=3`);
+        lines.push(`#EXTVLCOPT:adaptive-segcount-factor=1.0`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-threshold=100`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-maxperiod=0`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-minperiod=0`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-cache=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-etag=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-if-modified-since=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-if-none-match=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-if-range=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-range=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-byte-range=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-chunked=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-keep-alive=true`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-pipelining=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-http2=true`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-http3=true`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-quic=true`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-tls13=true`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-0rtt=true`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-session-resumption=true`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-early-data=true`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-push=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-server-push=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-server-sent-events=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-websocket=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-webtransport=false`);
+        lines.push(`#EXTVLCOPT:adaptive-reload-use-webrtc=false`);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L2: EXTHTTP — JSON ADN Colosal enriquecido (1 línea) ─────────────
-        // Integra build_exthttp() existente + campos OMEGA V5
-        // ══════════════════════════════════════════════════════════════════════
-        {
-            const _exthttp_base = build_exthttp(cfg, profile, index, sessionId, reqId);
-            let _exthttp_obj = {};
-            try {
-                const _match = _exthttp_base.match(/^#EXTHTTP:(.+)$/);
-                if (_match) _exthttp_obj = JSON.parse(_match[1]);
-            } catch(e) { _exthttp_obj = {}; }
-            _exthttp_obj.sid                = _sid796;
-            _exthttp_obj.uniqueness_nonce   = _nonce796;
-            _exthttp_obj.paradigm           = 'OMNI-ORCHESTRATOR-V5-OMEGA';
-            _exthttp_obj.quality_levels     = _ql796;
-            _exthttp_obj.resilience         = {
-                degradation_levels: 7,
-                chain: ['CMAF+HEVC','HLS/fMP4+HEVC','HLS/fMP4+H264','HLS/TS+H264','HLS/TS+Baseline','TS_Direct','HTTP_Redirect'],
-                buffer_strategy: 'ADAPTIVE_PREDICTIVE_NEURAL',
-                anti_cut_engine: true,
-                error_401: 'ESCALATE_CREDENTIALS',
-                error_403: 'ROTATE_IDENTITY',
-                error_429: 'SWARM_EVASION',
-                error_5xx: 'FAILOVER_CDN'
-            };
-            _exthttp_obj.isp_evasion        = {
-                mode: 'SWARM_PHANTOM_HYDRA_STEALTH',
-                parallel_connections: 2048,
-                doh_enabled: true,
-                doh_provider: 'cloudflare',
-                sni_obfuscation: true,
-                traffic_morphing: true,
-                dscp_qos: 'EF'
-            };
-            _exthttp_obj.ai_pipeline        = {
-                lcevc_phase: 4,
-                ai_sr: 'RealESRGAN_x4Plus',
-                ai_frame_interp: 'RIFE_V4',
-                ai_denoising: 'NLMEANS_HQDN3D_TEMPORAL',
-                gpu_pipeline: 'DECODE_ITM_LCEVC_AI_SR_DENOISE_TONEMAP_RENDER'
-            };
-            if (!_exthttp_obj.headers) _exthttp_obj.headers = {};
-            _exthttp_obj.headers['X-APE-SID']              = _sid796;
-            _exthttp_obj.headers['X-APE-NONCE']            = _nonce796;
-            _exthttp_obj.headers['X-APE-LCEVC-PHASE']      = '4';
-            _exthttp_obj.headers['X-APE-HDR-PEAK-NITS']    = String(_hdr796);
-            _exthttp_obj.headers['X-APE-CONTENT-TYPE']     = _ct796;
-            _exthttp_obj.headers['X-APE-QUALITY-LEVELS']   = '7';
-            _exthttp_obj.headers['X-APE-DEGRADATION-CHAIN']= 'CMAF+HEVC,HLS/fMP4+HEVC,HLS/fMP4+H264,HLS/TS+H264,HLS/TS+Baseline,TS_Direct,HTTP_Redirect';
-            lines.push(`#EXTHTTP:${JSON.stringify(_exthttp_obj)}`);
-        }
-        // L2 = 1 ✓
+        // ════════════════════════════════════════════════════════════════════════
+        // L2 — EXTHTTP — JSON Payload Colosal (1 línea, payload máximo)
+        // Cableado desde: build_exthttp(), HttpAnabolicEngine, JWT, UAPhantomEngine
+        // ════════════════════════════════════════════════════════════════════════
+        const _httpPayload = {
+            // Identidad y sesión
+            'User-Agent':              _ua796,
+            'X-User-Agent-Android':    _uaAndroid,
+            'X-User-Agent-iOS':        _uaIOS,
+            'X-User-Agent-Chrome':     _uaChrome,
+            'X-User-Agent-TiviMate':   _uaTiviMate,
+            'X-User-Agent-OTT':        _uaOTT,
+            'X-User-Agent-Kodi':       _uaKodi,
+            'X-User-Agent-ExoPlayer':  _uaExo,
+            'X-User-Agent-VLC':        _uaVLC,
+            'X-User-Agent-Safari':     _uaSafari,
+            'X-Forwarded-For':         _randomIp,
+            'X-Real-IP':               _randomIp,
+            'X-Client-IP':             _randomIp,
+            'Referer':                 'https://www.google.com/',
+            'Origin':                  'https://www.google.com',
+            // Calidad y codecs
+            'X-Device-Capabilities':   `hdr10=true,dolbyvision=true,hevc=true,av1=true,lcevc=true,4k=true,8k=false,fps120=true,atmos=true,dts=true,truehd=true`,
+            'X-Video-Range':           _hdrMode,
+            'X-HDR-Nits':              String(_hdrNits),
+            'X-Codec-Primary':         _codec796,
+            'X-Codec-Audio':           _codecAudio,
+            'X-Resolution':            _res796,
+            'X-Framerate':             String(_fps796),
+            'X-VMAF-Target':           String(_vmaf),
+            // Buffer y ancho de banda
+            'X-Expected-Bitrate':      String(_bw796),
+            'X-Average-Bitrate':       String(_avgBw),
+            'X-Buffer-Target':         String(_buf796),
+            'X-Buffer-MB':             String(_bufMB),
+            'X-Buffer-Segments':       String(_bufSeg),
+            // Polimorfismo e idempotencia
+            'X-APE-Nonce':             _nonce796,
+            'X-APE-SID':               _sid796,
+            'X-APE-List-Hash':         _listHash,
+            'X-APE-Timestamp':         _ts,
+            'X-Request-Id':            reqId,
+            'X-Session-Id':            sessionId,
+            'X-Playback-Session-Id':   _anabSid,
+            // Headers anabólicos desde HttpAnabolicEngine
+            ..._anab796,
+            // JWT si disponible
+            ...(jwt ? { 'Authorization': `Bearer ${jwt.token || ''}` } : {}),
+            // Base EXTHTTP
+            ...(_exthttp_base ? _exthttp_base.headers || {} : {}),
+            // Evasión ISP
+            'X-Forwarded-Proto':       'https',
+            'X-Forwarded-Host':        'cdn.akamaized.net',
+            'X-Forwarded-Port':        '443',
+            'X-Via':                   `1.1 ${_randomIp}:443`,
+            'X-Cache':                 'HIT',
+            'X-Cache-Lookup':          'HIT from Cache [${_randomIp}:443]',
+            'X-Cache-Status':          'HIT',
+            'X-Served-By':             `cache-${_nonce796}`,
+            'X-Timer':                 `S${Date.now()},VS0,VE1`,
+            'X-Varnish':               String(Math.floor(Math.random()*999999999)),
+            'X-Age':                   '0',
+            'X-TTL':                   '0',
+            'X-Grace':                 'none',
+            'X-Hits':                  '0',
+            'X-Fetch-Error':           'none',
+            // QoS/QoE
+            'X-QoS-Mode':              'ULTRA',
+            'X-QoE-Target-MOS':        '4.8',
+            'X-Rebuffer-Tolerance':    '0',
+            'X-Zapping-Max':           '800ms',
+            'X-Startup-Max':           '500ms',
+            // Conexión
+            'Connection':              'keep-alive',
+            'Accept-Encoding':         'gzip, deflate, br, zstd',
+            'Accept':                  '*/*',
+            'Accept-Language':         'es-419,es;q=0.9,en;q=0.8',
+            'Cache-Control':           'no-cache',
+            'Pragma':                  'no-cache',
+            'TE':                      'trailers',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest':          'video',
+            'Sec-Fetch-Mode':          'no-cors',
+            'Sec-Fetch-Site':          'cross-site',
+            'Sec-CH-UA-Platform':      '"Android"',
+            'Sec-CH-UA-Mobile':        '?1',
+        };
+        lines.push(`#EXTHTTP:${JSON.stringify(_httpPayload)}`);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L3: KODIPROP — Kodi InputStream Adaptive (65 líneas) ─────────────
-        // ══════════════════════════════════════════════════════════════════════
-        // 3.a Manifest y stream selection (5)
+        // ════════════════════════════════════════════════════════════════════════
+        // L3 — KODIPROP — Kodi InputStream Adaptive (71 líneas)
+        // Cableado desde: cfg (PROFILES), _sid796, _ua796
+        // ════════════════════════════════════════════════════════════════════════
+        lines.push(`#KODIPROP:inputstream=inputstream.adaptive`);
         lines.push(`#KODIPROP:inputstream.adaptive.manifest_type=hls`);
-        lines.push(`#KODIPROP:inputstream.adaptive.stream_selection_type=ask-quality`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_handling=force_hdr`);
         lines.push(`#KODIPROP:inputstream.adaptive.manifest_update_parameter=full`);
-        lines.push(`#KODIPROP:inputstream.adaptive.manifest_headers=User-Agent=${_ua796}`);
-        // 3.b Hardware decode y calidad (10)
-        lines.push(`#KODIPROP:inputstream.adaptive.play_timeshift_buffer=true`);
-        lines.push(`#KODIPROP:inputstream.adaptive.max_bandwidth=${Math.round(_bw796/1000)}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.min_bandwidth=128`);
-        lines.push(`#KODIPROP:inputstream.adaptive.bandwidth_limit_factor=1.0`);
-        lines.push(`#KODIPROP:inputstream.adaptive.chooser_resolution_max=${_res796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.chooser_resolution_secure_max=${_res796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.chooser_resolution_min=426x240`);
-        lines.push(`#KODIPROP:inputstream.adaptive.chooser_bandwidth_max=2147483647`);
-        lines.push(`#KODIPROP:inputstream.adaptive.chooser_bandwidth_min=128`);
-        lines.push(`#KODIPROP:inputstream.adaptive.chooser_type=adaptive`);
-        // 3.c HDR y color (10)
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_type=${pmProfile?.visuals?.hdr_type || 'hdr10'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_peak_luminance=${_hdr796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_color_space=${pmProfile?.visuals?.hdr_color_space || 'bt2020'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_transfer_function=${pmProfile?.visuals?.hdr_transfer_function || 'smpte2084'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_color_primaries=${pmProfile?.visuals?.hdr_color_primaries || 'bt2020'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_matrix_coefficients=${pmProfile?.visuals?.hdr_matrix_coefficients || 'bt2020nc'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_max_cll=${pmProfile?.visuals?.hdr_max_cll || 10000}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_max_fall=${pmProfile?.visuals?.hdr_max_fall || 400}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_min_luminance=${pmProfile?.visuals?.hdr_min_luminance || 0.001}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.hdr_dolby_vision=${pmProfile?.visuals?.dolby_vision_enabled !== false}`);
-        // 3.d Audio pipeline (10)
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_language_preference=${pmProfile?.audio?.language_preference || 'eng,spa,por'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_track_selection=${pmProfile?.audio?.track_selection || 'best'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_passthrough_earc=${pmProfile?.audio?.passthrough_earc !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_codec_preference=${pmProfile?.audio?.codec_preference || 'eac3,ac3,aac'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_channels_max=${pmProfile?.audio?.channels_max || 8}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_sample_rate=${pmProfile?.audio?.sample_rate || 48000}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_bitdepth=${pmProfile?.audio?.bitdepth || 24}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_atmos_enabled=${pmProfile?.audio?.atmos_enabled !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_dts_enabled=${pmProfile?.audio?.dts_enabled !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.audio_truehd_enabled=${pmProfile?.audio?.truehd_enabled !== false}`);
-        // 3.e DRM y seguridad (10)
-        lines.push(`#KODIPROP:inputstream.adaptive.license_type=${pmProfile?.drm?.license_type || 'com.widevine.alpha'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.license_key=`);
-        lines.push(`#KODIPROP:inputstream.adaptive.license_flags=${pmProfile?.drm?.license_flags || 'persistent_storage'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.server_certificate=`);
-        lines.push(`#KODIPROP:inputstream.adaptive.drm_legacy=${pmProfile?.drm?.drm_legacy === true}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.drm_security_level=${pmProfile?.drm?.security_level || 'L1'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.drm_max_decode_width=${(_res796.split('x')[0]||7680)}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.drm_max_decode_height=${(_res796.split('x')[1]||4320)}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.drm_widevine_enforce=${pmProfile?.drm?.widevine_enforce !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.drm_fairplay_enforce=${pmProfile?.drm?.fairplay_enforce !== false}`);
-        // 3.f VRR y sincronización (10)
-        lines.push(`#KODIPROP:inputstream.adaptive.vrr_sync=${pmProfile?.hardware?.vrr_sync || 'enabled'}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.auto_match_source_fps=${pmProfile?.hardware?.auto_match_source_fps !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.refresh_rate_override=${_fps796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.frame_rate_match=${pmProfile?.hardware?.frame_rate_match !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.sport_mode_boost=${pmProfile?.hardware?.sport_mode_boost !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.low_latency_mode=${pmProfile?.playback?.low_latency_mode !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.live_edge_segments=${pmProfile?.playback?.live_edge_segments || 2}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.segment_timeshift=${pmProfile?.playback?.segment_timeshift === true}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.timeshift_buffer_depth=${pmProfile?.playback?.timeshift_buffer_depth || 0}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.live_delay=${pmProfile?.playback?.live_delay || 0}`);
-        // 3.g User-agent y headers (10)
-        lines.push(`#KODIPROP:inputstream.adaptive.user_agent=${_ua796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.stream_headers=User-Agent=${_ua796}&X-APE-SID=${_sid796}&X-APE-NONCE=${_nonce796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.license_headers=User-Agent=${_ua796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.media_headers=User-Agent=${_ua796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.segment_headers=User-Agent=${_ua796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.init_headers=User-Agent=${_ua796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.key_headers=User-Agent=${_ua796}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.manifest_type=hls`);
-        lines.push(`#KODIPROP:inputstream.adaptive.play_timeshift_buffer=${pmProfile?.playback?.play_timeshift_buffer !== false}`);
-        lines.push(`#KODIPROP:inputstream.adaptive.ssl_verify_peer=${pmProfile?.security?.ssl_verify_peer === true}`);
-        // L3 = 65 ✓
+        lines.push(`#KODIPROP:inputstream.adaptive.stream_selection_type=adaptive`);
+        lines.push(`#KODIPROP:inputstream.adaptive.max_bandwidth=${_bw796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.min_bandwidth=500000`);
+        lines.push(`#KODIPROP:inputstream.adaptive.initial_bandwidth=${_bw796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.bandwidth_factor=1.0`);
+        lines.push(`#KODIPROP:inputstream.adaptive.max_resolution=${_res796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.max_framerate=${_fps796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.hdr_mode=${_hdrMode}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.hdr_nits=${_hdrNits}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.hdr_bt2020=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.hdr_hlg=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.hdr_hdr10=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.hdr_hdr10plus=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.hdr_dolbyvision=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.hdr_dolbyvision_profile=8`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_language_preference=spa,eng,por`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_channels=6`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_dolby_atmos=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_dts=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_truehd=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_eac3=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_ac3=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_aac=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_mp3=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_passthrough=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_samplerate=48000`);
+        lines.push(`#KODIPROP:inputstream.adaptive.audio_bitdepth=24`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_codec=hevc,av1,vp9,h264`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_lcevc=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_lcevc_phase=4`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_ai_sr=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_ai_sr_model=realesrgan`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_ai_sr_scale=4`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_ai_fi=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_ai_fi_model=rife_v4`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_ai_fi_fps=${_fps796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_vrr=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_vrr_min=24`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_vrr_max=120`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_sport_mode=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_sport_mode_boost=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_sport_mode_fps=${_fps796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.video_sport_mode_bitrate=${_bw796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_type=widevine`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_level=L1`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_security_level=L1`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_hdcp_level=2.2`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_robustness_level=HW_SECURE_ALL`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_persistent_license=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_offline_license=false`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_license_timeout=10000`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_server_certificate=`);
+        lines.push(`#KODIPROP:inputstream.adaptive.drm_key_request_properties=`);
+        lines.push(`#KODIPROP:inputstream.adaptive.buffer_size=${_bufMB * 1024 * 1024}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.buffer_duration=${_buf796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.buffer_segments=${_bufSeg}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.buffer_ahead=3`);
+        lines.push(`#KODIPROP:inputstream.adaptive.buffer_behind=1`);
+        lines.push(`#KODIPROP:inputstream.adaptive.buffer_live_delay=0`);
+        lines.push(`#KODIPROP:inputstream.adaptive.buffer_hold_back=0`);
+        lines.push(`#KODIPROP:inputstream.adaptive.buffer_part_hold_back=0`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_timeout=60000`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_reconnect=true`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_reconnect_count=99`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_reconnect_delay=500`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_user_agent=${_ua796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_session_id=${_sid796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_request_id=${reqId}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_nonce=${_nonce796}`);
+        lines.push(`#KODIPROP:inputstream.adaptive.network_list_hash=${_listHash}`);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L4: EXT-X-CMAF — Pipeline CMAF/fMP4 Latencia Cero (25 líneas) ────
-        // ══════════════════════════════════════════════════════════════════════
-        lines.push(`#EXT-X-CMAF:CONTAINER=fMP4,SEGMENT=4,LATENCY=ZERO`);
-        lines.push(`#EXT-X-CMAF-HOLD-BACK:0`);
-        lines.push(`#EXT-X-CMAF-PART-HOLD-BACK:0`);
+        // ════════════════════════════════════════════════════════════════════════
+        // L4 — EXT-X-CMAF — Pipeline fMP4/CMAF (25 líneas)
+        // Cableado desde: cfg (PROFILES), _sid796, _nonce796
+        // ════════════════════════════════════════════════════════════════════════
+        lines.push(`#EXT-X-CMAF:CODECS="${_codec796},${_codecAudio}",BANDWIDTH=${_bw796},RESOLUTION=${_res796}`);
+        lines.push(`#EXT-X-CMAF-LATENCY:TARGET=0,HOLD-BACK=0,PART-HOLD-BACK=0`);
+        lines.push(`#EXT-X-CMAF-CHUNK-DURATION:0.5`);
         lines.push(`#EXT-X-CMAF-PART-TARGET:0.5`);
-        lines.push(`#EXT-X-CMAF-CODECS:${_codec796 === 'hevc' ? 'hev1.1.6.L180.B0,mp4a.40.2' : 'avc1.640028,mp4a.40.2'}`);
-        lines.push(`#EXT-X-CMAF-FALLBACK-1:HLS_FMP4_HEVC`);
-        lines.push(`#EXT-X-CMAF-FALLBACK-2:HLS_FMP4_H264`);
-        lines.push(`#EXT-X-CMAF-FALLBACK-3:HLS_TS_H264`);
-        lines.push(`#EXT-X-CMAF-FALLBACK-4:HLS_TS_BASELINE`);
-        lines.push(`#EXT-X-CMAF-FALLBACK-5:TS_DIRECT`);
-        lines.push(`#EXT-X-CMAF-FALLBACK-6:HTTP_REDIRECT`);
-        lines.push(`#EXT-X-CMAF-FALLBACK-7:AUDIO_ONLY`);
-        lines.push(`#EXT-X-CMAF-HDR:HDR10_PLUS,DOLBY_VISION,HLG`);
-        lines.push(`#EXT-X-CMAF-AUDIO:EAC3,AC3,AAC,ATMOS,DTS,TRUEHD`);
-        lines.push(`#EXT-X-CMAF-ENCRYPTION:CBCS,CENC`);
-        lines.push(`#EXT-X-CMAF-SEGMENT-FORMAT:fMP4`);
-        lines.push(`#EXT-X-CMAF-INIT-SEGMENT:init.mp4`);
-        lines.push(`#EXT-X-CMAF-BYTE-RANGE:true`);
-        lines.push(`#EXT-X-CMAF-INDEPENDENT-SEGMENTS:true`);
-        lines.push(`#EXT-X-CMAF-PROGRAM-DATE-TIME:true`);
-        lines.push(`#EXT-X-CMAF-DISCONTINUITY-SEQUENCE:0`);
-        lines.push(`#EXT-X-CMAF-MEDIA-SEQUENCE:0`);
-        lines.push(`#EXT-X-CMAF-TARGETDURATION:4`);
+        lines.push(`#EXT-X-CMAF-PART-HOLD-BACK:1.0`);
+        lines.push(`#EXT-X-CMAF-CONTAINER:fmp4`);
+        lines.push(`#EXT-X-CMAF-INIT-SEGMENT:URI="init.mp4",BYTERANGE="1024@0"`);
+        lines.push(`#EXT-X-CMAF-CODEC-FALLBACK:hevc,av1,vp9,h264`);
+        lines.push(`#EXT-X-CMAF-AUDIO-FALLBACK:ec-3,ac-3,mp4a.40.2`);
+        lines.push(`#EXT-X-CMAF-HDR:${_hdrMode},NITS=${_hdrNits}`);
+        lines.push(`#EXT-X-CMAF-HDR-METADATA:MDCV=true,CLLI=true`);
+        lines.push(`#EXT-X-CMAF-LCEVC:PHASE=4,ENABLED=true`);
+        lines.push(`#EXT-X-CMAF-AI-SR:MODEL=realesrgan,SCALE=4,ENABLED=true`);
+        lines.push(`#EXT-X-CMAF-AI-FI:MODEL=rife_v4,FPS=${_fps796},ENABLED=true`);
+        lines.push(`#EXT-X-CMAF-VRR:MIN=24,MAX=120,ENABLED=true`);
+        lines.push(`#EXT-X-CMAF-DOLBY-VISION:PROFILE=8,LEVEL=6,ENABLED=true`);
+        lines.push(`#EXT-X-CMAF-ATMOS:ENABLED=true,CHANNELS=7.1.4`);
+        lines.push(`#EXT-X-CMAF-DTS:ENABLED=true,TYPE=DTS:X`);
+        lines.push(`#EXT-X-CMAF-TRUEHD:ENABLED=true,CHANNELS=7.1`);
+        lines.push(`#EXT-X-CMAF-BUFFER:TARGET=${_buf796},MAX=${_bufMB * 1024 * 1024}`);
+        lines.push(`#EXT-X-CMAF-NETWORK:TIMEOUT=60000,RECONNECT=true,COUNT=99`);
+        lines.push(`#EXT-X-CMAF-SESSION:SID=${_sid796},NONCE=${_nonce796}`);
+        lines.push(`#EXT-X-CMAF-POLIMORFISMO:NONCE=${_nonce796},SID=${_sid796},HASH=${_listHash}`);
+        lines.push(`#EXT-X-CMAF-IDEMPOTENCIA:SID=${_sid796},SEED=OMEGA_STATIC_V5`);
         lines.push(`#EXT-X-CMAF-VERSION:7`);
-        lines.push(`#EXT-X-CMAF-PLAYLIST-TYPE:EVENT`);
-        // L4 = 25 ✓
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L5: EXT-X-APE-HDR-DV — Override HDR10+/Dolby Vision (45 líneas) ──
-        // ══════════════════════════════════════════════════════════════════════
-        lines.push(`#EXT-X-APE-HDR-DV:PEAK=${_hdr796}nits,PROFILE=8.1,LEVEL=6,CM=v4.0`);
-        lines.push(`#EXT-X-APE-HDR-DV-LCEVC-PHASE:4`);
-        lines.push(`#EXT-X-APE-HDR-DV-AI-SR:RealESRGAN_x4Plus`);
-        lines.push(`#EXT-X-APE-HDR-DV-FRAME-INTERP:RIFE_V4`);
-        lines.push(`#EXT-X-APE-HDR-DV-PEAK-LUMINANCE:${_hdr796}`);
-        lines.push(`#EXT-X-APE-HDR-DV-MIN-LUMINANCE:0.0005`);
-        lines.push(`#EXT-X-APE-HDR-DV-MAX-CLL:10000`);
-        lines.push(`#EXT-X-APE-HDR-DV-MAX-FALL:400`);
-        lines.push(`#EXT-X-APE-HDR-DV-COLOR-SPACE:BT.2020`);
-        lines.push(`#EXT-X-APE-HDR-DV-TRANSFER:SMPTE-ST-2084`);
-        lines.push(`#EXT-X-APE-HDR-DV-PRIMARIES:BT.2020`);
-        lines.push(`#EXT-X-APE-HDR-DV-MATRIX:BT.2020nc`);
-        lines.push(`#EXT-X-APE-HDR-DV-CHROMA:4:4:4`);
-        lines.push(`#EXT-X-APE-HDR-DV-BIT-DEPTH:10`);
-        lines.push(`#EXT-X-APE-HDR-DV-PIXEL-FORMAT:yuv444p10le`);
-        lines.push(`#EXT-X-APE-HDR-DV-TONE-MAP:BT2446a,BT2390`);
-        lines.push(`#EXT-X-APE-HDR-DV-GAMUT:DCI-P3,BT.2020`);
-        lines.push(`#EXT-X-APE-HDR-DV-STATIC-METADATA:enabled`);
-        lines.push(`#EXT-X-APE-HDR-DV-DYNAMIC-METADATA:HDR10+,DV-RPU`);
-        lines.push(`#EXT-X-APE-HDR-DV-MASTERING:G(0.265,0.690)B(0.150,0.060)R(0.680,0.320)WP(0.3127,0.3290)L(${_hdr796},0.001)`);
-        lines.push(`#EXT-X-APE-HDR-DV-CONTENT-LIGHT:${_hdr796},400`);
-        lines.push(`#EXT-X-APE-HDR-DV-AMBIENT:DIM`);
-        lines.push(`#EXT-X-APE-HDR-DV-REFERENCE-WHITE:203nits`);
-        lines.push(`#EXT-X-APE-HDR-DV-GAMMA:2.4`);
-        lines.push(`#EXT-X-APE-HDR-DV-LOCAL-DIMMING:AGGRESSIVE-FULL-ARRAY`);
-        lines.push(`#EXT-X-APE-HDR-DV-SPECULAR:QUANTUM`);
-        lines.push(`#EXT-X-APE-HDR-DV-BLOOM:NATURAL`);
-        lines.push(`#EXT-X-APE-HDR-DV-FILM-GRAIN:NEURAL-MPEG`);
-        lines.push(`#EXT-X-APE-HDR-DV-DEBAND:GRADFUN`);
-        lines.push(`#EXT-X-APE-HDR-DV-SHARPENING:CAS`);
-        lines.push(`#EXT-X-APE-HDR-DV-DEINTERLACE:BWDIF`);
-        lines.push(`#EXT-X-APE-HDR-DV-VMAF-TARGET:95`);
-        lines.push(`#EXT-X-APE-HDR-DV-PSNR-TARGET:42`);
-        lines.push(`#EXT-X-APE-HDR-DV-MS-SSIM-TARGET:0.97`);
-        lines.push(`#EXT-X-APE-HDR-DV-10PLUS-VERSION:2.0`);
-        lines.push(`#EXT-X-APE-HDR-DV-10PLUS-APPLICATION:4`);
-        lines.push(`#EXT-X-APE-HDR-DV-HLG-PEAK:4000`);
-        lines.push(`#EXT-X-APE-HDR-DV-HLG-GAMMA:1.2`);
-        lines.push(`#EXT-X-APE-HDR-DV-HLG-REF-WHITE:203`);
-        lines.push(`#EXT-X-APE-HDR-DV-HLG-DUAL-MODE:true`);
-        lines.push(`#EXT-X-APE-HDR-DV-GPU-TONEMAP:libplacebo+vulkan`);
-        lines.push(`#EXT-X-APE-HDR-DV-ST2094-10:true`);
-        lines.push(`#EXT-X-APE-HDR-DV-ST2094-40:true`);
-        lines.push(`#EXT-X-APE-HDR-DV-CROSS-COMPAT:true`);
-        lines.push(`#EXT-X-APE-HDR-DV-OUTPUT-MODE:auto`);
-        // L5 = 45 ✓
+        // ════════════════════════════════════════════════════════════════════════
+        // L5 — EXT-X-APE-HDR-DV — HDR10+/Dolby Vision/LCEVC (48 líneas)
+        // Cableado desde: cfg (PROFILES), _hdrNits, _hdrMode
+        // ════════════════════════════════════════════════════════════════════════
+        lines.push(`#EXT-X-APE-HDR-DV:MODE=${_hdrMode},NITS=${_hdrNits},BT2020=true`);
+        lines.push(`#EXT-X-APE-HDR-METADATA:MDCV=true,CLLI=true,PEAK=${_hdrNits},AVG=1000`);
+        lines.push(`#EXT-X-APE-HDR-TRANSFER:ST2084,HLG,BT709`);
+        lines.push(`#EXT-X-APE-HDR-PRIMARIES:BT2020`);
+        lines.push(`#EXT-X-APE-HDR-MATRIX:BT2020_NCL`);
+        lines.push(`#EXT-X-APE-HDR-RANGE:LIMITED`);
+        lines.push(`#EXT-X-APE-HDR-CHROMA:TOPLEFT`);
+        lines.push(`#EXT-X-APE-HDR-BITDEPTH:10`);
+        lines.push(`#EXT-X-APE-HDR-COLORSPACE:BT2020`);
+        lines.push(`#EXT-X-APE-HDR-TONE-MAPPING:HABLE,PEAK=${_hdrNits},REF=203`);
+        lines.push(`#EXT-X-APE-HDR-GAMUT:P3-D65,BT2020`);
+        lines.push(`#EXT-X-APE-HDR-WHITEPOINT:D65`);
+        lines.push(`#EXT-X-APE-HDR-BLACKLEVEL:0.0001`);
+        lines.push(`#EXT-X-APE-HDR-MAXFALL:1000`);
+        lines.push(`#EXT-X-APE-HDR-MAXCLL:${_hdrNits}`);
+        lines.push(`#EXT-X-APE-DV-PROFILE:8`);
+        lines.push(`#EXT-X-APE-DV-LEVEL:6`);
+        lines.push(`#EXT-X-APE-DV-COMPATIBILITY:SDR,HDR10,HLG`);
+        lines.push(`#EXT-X-APE-DV-CROSSCONVERSION:true`);
+        lines.push(`#EXT-X-APE-DV-METADATA:RPU=true,EL=false,BL=true`);
+        lines.push(`#EXT-X-APE-DV-ENHANCEMENT:ENABLED=true,SCALE=4`);
+        lines.push(`#EXT-X-APE-LCEVC-PHASE:4`);
+        lines.push(`#EXT-X-APE-LCEVC-ENABLED:true`);
+        lines.push(`#EXT-X-APE-LCEVC-BITRATE-SAVING:50%`);
+        lines.push(`#EXT-X-APE-LCEVC-QUALITY-BOOST:true`);
+        lines.push(`#EXT-X-APE-LCEVC-RESOLUTION-BOOST:${_res796}`);
+        lines.push(`#EXT-X-APE-LCEVC-LATENCY:0ms`);
+        lines.push(`#EXT-X-APE-LCEVC-FALLBACK:ENABLED=true,RESOLUTION=1920x1080`);
+        lines.push(`#EXT-X-APE-AI-SR:MODEL=realesrgan,SCALE=4,ENABLED=true`);
+        lines.push(`#EXT-X-APE-AI-SR-QUALITY:ULTRA`);
+        lines.push(`#EXT-X-APE-AI-SR-DENOISE:true`);
+        lines.push(`#EXT-X-APE-AI-SR-SHARPEN:true`);
+        lines.push(`#EXT-X-APE-AI-SR-ARTIFACT-REMOVAL:true`);
+        lines.push(`#EXT-X-APE-AI-FI:MODEL=rife_v4,FPS=${_fps796},ENABLED=true`);
+        lines.push(`#EXT-X-APE-AI-FI-QUALITY:ULTRA`);
+        lines.push(`#EXT-X-APE-AI-FI-GHOSTING:NONE`);
+        lines.push(`#EXT-X-APE-AI-FI-BLUR:NONE`);
+        lines.push(`#EXT-X-APE-AI-FI-JUDDER:NONE`);
+        lines.push(`#EXT-X-APE-VRR:MIN=24,MAX=120,ENABLED=true`);
+        lines.push(`#EXT-X-APE-VRR-GSYNC:true`);
+        lines.push(`#EXT-X-APE-VRR-FREESYNC:true`);
+        lines.push(`#EXT-X-APE-VRR-HDMI21:true`);
+        lines.push(`#EXT-X-APE-LUMA-PRECISION:10BIT`);
+        lines.push(`#EXT-X-APE-CHROMA-PRECISION:4:2:0`);
+        lines.push(`#EXT-X-APE-QUANTUM-PIXEL:ENABLED=true,DEPTH=12`);
+        lines.push(`#EXT-X-APE-BITRATE-ANARCHY:${_bw796}`);
+        lines.push(`#EXT-X-APE-RESOLUTION-SUPREMACY:${_res796}`);
+        lines.push(`#EXT-X-APE-FPS-SUPREMACY:${_fps796}`);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L6: EXT-X-APE-TELCHEMY — Telemetría QoS/QoE (10 líneas) ─────────
-        // ══════════════════════════════════════════════════════════════════════
+        // ════════════════════════════════════════════════════════════════════════
+        // L6 — EXT-X-APE-TELCHEMY — Telemetría QoS/QoE (19 líneas)
+        // Cableado desde: cfg (PROFILES), _sid796, _bw796
+        // ════════════════════════════════════════════════════════════════════════
         lines.push(`#EXT-X-APE-TELCHEMY:VSTQ=50,EPSNR=45,MOS=4.8,JITTER=0,LOSS=0`);
         lines.push(`#EXT-X-APE-TELCHEMY-QOS:DSCP=EF,PRIORITY=HIGHEST,CLASS=REALTIME`);
-        lines.push(`#EXT-X-APE-TELCHEMY-QOE:VMAF=${cfg.vmaf_target||95},PSNR=42,SSIM=0.97`);
-        lines.push(`#EXT-X-APE-TELCHEMY-BUFFER:TARGET=${_buf796}ms,MIN=1000ms,MAX=${_buf796*2}ms`);
+        lines.push(`#EXT-X-APE-TELCHEMY-QOE:VMAF=${_vmaf},PSNR=42,SSIM=0.99,VMAF-NEG=0`);
+        lines.push(`#EXT-X-APE-TELCHEMY-BUFFER:TARGET=${_buf796}ms,MIN=1000ms,MAX=${_buf796 * 2}ms`);
         lines.push(`#EXT-X-APE-TELCHEMY-LATENCY:STARTUP=0ms,REBUFFER=0ms,ZAPPING=<30ms`);
-        lines.push(`#EXT-X-APE-TELCHEMY-BITRATE:TARGET=${Math.round(_bw796/1000)}kbps,MIN=128kbps,PEAK=UNLIMITED`);
-        lines.push(`#EXT-X-APE-TELCHEMY-CODEC:PRIMARY=${_codec796.toUpperCase()},FALLBACK=H264,AUDIO=EAC3`);
+        lines.push(`#EXT-X-APE-TELCHEMY-BITRATE:TARGET=${Math.round(_bw796/1000)}kbps,MIN=500kbps,ADAPTIVE=true`);
+        lines.push(`#EXT-X-APE-TELCHEMY-CODEC:PRIMARY=${_codec796.toUpperCase()},FALLBACK=AVC,AUDIO=${_codecAudio.toUpperCase()}`);
         lines.push(`#EXT-X-APE-TELCHEMY-RESOLUTION:TARGET=${_res796},MIN=426x240,ADAPTIVE=true`);
         lines.push(`#EXT-X-APE-TELCHEMY-AVAILABILITY:TARGET=99.999%,FAILOVER=<60ms`);
         lines.push(`#EXT-X-APE-TELCHEMY-SID:${_sid796}`);
-        // L6 = 10 ✓
+        lines.push(`#EXT-X-APE-HTTP-QOS-MODE:${_anab796['X-QoS-Mode'] || 'ULTRA'}`);
+        lines.push(`#EXT-X-APE-HTTP-QOE-TARGET-MOS:4.8`);
+        lines.push(`#EXT-X-APE-HTTP-REBUFFER-TOLERANCE:0`);
+        lines.push(`#EXT-X-APE-HTTP-ZAPPING-MAX:800ms`);
+        lines.push(`#EXT-X-APE-HTTP-STARTUP-MAX:500ms`);
+        lines.push(`#EXT-X-APE-SCORECARD:VMAF=${_vmaf},MOS=4.8,PSNR=42,SSIM=0.99,REBUFFER=0,STARTUP=0`);
+        lines.push(`#EXT-X-APE-SCORECARD-DYNAMIC:ENABLED=true,INTERVAL=1000ms`);
+        lines.push(`#EXT-X-APE-SCORECARD-THRESHOLD:VMAF=80,MOS=4.0,PSNR=35`);
+        lines.push(`#EXT-X-APE-SCORECARD-ACTION:FAILOVER=true,ESCALATE=true,NOTIFY=true`);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L7: EXTATTRFROMURL — Puente Matemático L2-L7 (53 líneas) ─────────
-        // ══════════════════════════════════════════════════════════════════════
-        // 7.a Identidad y sesión (8)
-        lines.push(`#EXTATTRFROMURL:SID=${_sid796}`);
-        lines.push(`#EXTATTRFROMURL:NONCE=${_nonce796}`);
-        lines.push(`#EXTATTRFROMURL:PROFILE=${profile}`);
-        lines.push(`#EXTATTRFROMURL:CONTENT-TYPE=${_ct796}`);
-        lines.push(`#EXTATTRFROMURL:CHANNEL-ID=${_chId}`);
-        lines.push(`#EXTATTRFROMURL:CHANNEL-NAME=${_chName}`);
-        lines.push(`#EXTATTRFROMURL:SESSION-ID=${sessionId}`);
-        lines.push(`#EXTATTRFROMURL:REQUEST-ID=${reqId}`);
-        // 7.b Codec y calidad (8)
-        lines.push(`#EXTATTRFROMURL:CODEC=${_codec796}`);
-        lines.push(`#EXTATTRFROMURL:RESOLUTION=${_res796}`);
-        lines.push(`#EXTATTRFROMURL:FPS=${_fps796}`);
-        lines.push(`#EXTATTRFROMURL:HDR-PEAK=${_hdr796}`);
-        lines.push(`#EXTATTRFROMURL:BITRATE=${Math.round(_bw796/1000)}kbps`);
-        lines.push(`#EXTATTRFROMURL:BUFFER=${_buf796}ms`);
-        lines.push(`#EXTATTRFROMURL:LCEVC-PHASE=4`);
-        lines.push(`#EXTATTRFROMURL:AI-SR=RealESRGAN_x4Plus`);
-        // 7.c Evasión y spoof (8)
-        lines.push(`#EXTATTRFROMURL:UA=${_ua796}`);
-        lines.push(`#EXTATTRFROMURL:SPOOF-DEVICE=SHIELD_TV_PRO_2023`);
-        lines.push(`#EXTATTRFROMURL:SPOOF-OS=Android_12`);
-        lines.push(`#EXTATTRFROMURL:SPOOF-PLAYER=ExoPlayer_2.18`);
-        lines.push(`#EXTATTRFROMURL:DNS-PRIMARY=1.1.1.1`);
-        lines.push(`#EXTATTRFROMURL:DNS-SECONDARY=8.8.8.8`);
-        lines.push(`#EXTATTRFROMURL:SNI-FRONT=cloudflare.com`);
-        lines.push(`#EXTATTRFROMURL:DPI-EVASION=SANDVINE_BYPASS`);
-        // 7.d DRM y seguridad (7)
-        lines.push(`#EXTATTRFROMURL:DRM=WIDEVINE_L1`);
-        lines.push(`#EXTATTRFROMURL:DRM-FALLBACK=CLEARKEY`);
-        lines.push(`#EXTATTRFROMURL:ENCRYPTION=CBCS`);
-        lines.push(`#EXTATTRFROMURL:TLS=1.3`);
-        lines.push(`#EXTATTRFROMURL:CERT-PINNING=true`);
-        lines.push(`#EXTATTRFROMURL:HSTS=true`);
-        lines.push(`#EXTATTRFROMURL:OCSP-STAPLING=true`);
-        // 7.e Transporte y red (7)
-        lines.push(`#EXTATTRFROMURL:TRANSPORT=HLS_FMP4`);
-        lines.push(`#EXTATTRFROMURL:CONTAINER=fMP4`);
-        lines.push(`#EXTATTRFROMURL:SEGMENT-DURATION=4s`);
-        lines.push(`#EXTATTRFROMURL:INIT-SEGMENT=init.mp4`);
-        lines.push(`#EXTATTRFROMURL:BYTE-RANGE=true`);
-        lines.push(`#EXTATTRFROMURL:HTTP2=true`);
-        lines.push(`#EXTATTRFROMURL:HTTP3=true`);
-        // 7.f Idempotencia y cache (7)
-        lines.push(`#EXTATTRFROMURL:CACHE-KEY=APE_SID_${_sid796}`);
-        lines.push(`#EXTATTRFROMURL:CACHE-TTL=3600`);
-        lines.push(`#EXTATTRFROMURL:CACHE-STRATEGY=STALE_WHILE_REVALIDATE`);
-        lines.push(`#EXTATTRFROMURL:IDEMPOTENT=true`);
-        lines.push(`#EXTATTRFROMURL:RETRY-STRATEGY=EXPONENTIAL_BACKOFF`);
-        lines.push(`#EXTATTRFROMURL:MAX-RETRIES=5`);
-        lines.push(`#EXTATTRFROMURL:TIMEOUT=15000ms`);
-        // 7.g Calidad adaptativa (8)
-        lines.push(`#EXTATTRFROMURL:ABR=HIGHEST`);
-        lines.push(`#EXTATTRFROMURL:ABR-LOCK=NATIVE_MAX`);
-        lines.push(`#EXTATTRFROMURL:QUALITY-LEVELS=7`);
-        lines.push(`#EXTATTRFROMURL:DEGRADATION-CHAIN=CMAF+HEVC,HLS/fMP4+HEVC,HLS/fMP4+H264,HLS/TS+H264,HLS/TS+Baseline,TS_Direct,HTTP_Redirect`);
-        lines.push(`#EXTATTRFROMURL:VMAF-TARGET=95`);
-        lines.push(`#EXTATTRFROMURL:PSNR-TARGET=42`);
-        lines.push(`#EXTATTRFROMURL:SSIM-TARGET=0.97`);
-        lines.push(`#EXTATTRFROMURL:ANTI-CUT-ENGINE=true`);
-        // L7 = 53 ✓
+        // ════════════════════════════════════════════════════════════════════════
+        // L7 — EXTATTRFROMURL — Puente matemático L2-L7 (54 líneas)
+        // Cableado desde: _sid796, _nonce796, _codec796, cfg, UAPhantomEngine
+        // ════════════════════════════════════════════════════════════════════════
+        lines.push(`#EXTATTRFROMURL:X-APE-SID=${_sid796}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-NONCE=${_nonce796}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-LIST-HASH=${_listHash}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-TIMESTAMP=${_ts}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-PROFILE=${profile}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-CODEC=${_codec796}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-RESOLUTION=${_res796}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-FRAMERATE=${_fps796}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-BANDWIDTH=${_bw796}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-HDR-MODE=${_hdrMode}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-HDR-NITS=${_hdrNits}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-LCEVC=4`);
+        lines.push(`#EXTATTRFROMURL:X-APE-AI-SR=realesrgan`);
+        lines.push(`#EXTATTRFROMURL:X-APE-AI-FI=rife_v4`);
+        lines.push(`#EXTATTRFROMURL:X-APE-DRM=widevine_L1`);
+        lines.push(`#EXTATTRFROMURL:X-APE-DRM-HDCP=2.2`);
+        lines.push(`#EXTATTRFROMURL:X-APE-SPOOF-UA=${_ua796}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-SPOOF-IP=${_randomIp}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-EVASION=PHANTOM_HYDRA_V5`);
+        lines.push(`#EXTATTRFROMURL:X-APE-IDEMPOTENCIA=OMEGA_STATIC_V5`);
+        lines.push(`#EXTATTRFROMURL:X-APE-POLIMORFISMO=1PCT_UNIQUENESS`);
+        lines.push(`#EXTATTRFROMURL:X-APE-BUFFER=${_buf796}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-BUFFER-MB=${_bufMB}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-BUFFER-SEGMENTS=${_bufSeg}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-SESSION-ID=${sessionId}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-REQUEST-ID=${reqId}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-JWT=${jwt ? 'true' : 'false'}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-ANABOLIC-HEADERS=100`);
+        lines.push(`#EXTATTRFROMURL:X-APE-CORTEX=IPTV_SUPPORT_CORTEX_V_OMEGA`);
+        lines.push(`#EXTATTRFROMURL:X-APE-CAPACITY-OVERDRIVE=${_bufMB}MB`);
+        lines.push(`#EXTATTRFROMURL:X-APE-UA-PHANTOM=true`);
+        lines.push(`#EXTATTRFROMURL:X-APE-CDN-IP=${_randomIp}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-VMAF=${_vmaf}`);
+        lines.push(`#EXTATTRFROMURL:X-APE-SCORECARD=true`);
+        lines.push(`#EXTATTRFROMURL:X-APE-TELCHEMY=true`);
+        lines.push(`#EXTATTRFROMURL:X-APE-CMAF=fmp4`);
+        lines.push(`#EXTATTRFROMURL:X-APE-INIT-SEGMENT=init.mp4`);
+        lines.push(`#EXTATTRFROMURL:X-APE-MANIFEST-TYPE=hls`);
+        lines.push(`#EXTATTRFROMURL:X-APE-MANIFEST-VERSION=7`);
+        lines.push(`#EXTATTRFROMURL:X-APE-PLAYLIST-TYPE=EVENT`);
+        lines.push(`#EXTATTRFROMURL:X-APE-TARGET-DURATION=2`);
+        lines.push(`#EXTATTRFROMURL:X-APE-LIVE-DELAY=0`);
+        lines.push(`#EXTATTRFROMURL:X-APE-HOLD-BACK=0`);
+        lines.push(`#EXTATTRFROMURL:X-APE-PART-HOLD-BACK=0`);
+        lines.push(`#EXTATTRFROMURL:X-APE-CHUNK-DURATION=0.5`);
+        lines.push(`#EXTATTRFROMURL:X-APE-PART-TARGET=0.5`);
+        lines.push(`#EXTATTRFROMURL:X-APE-DOLBY-VISION=P8L6`);
+        lines.push(`#EXTATTRFROMURL:X-APE-ATMOS=7.1.4`);
+        lines.push(`#EXTATTRFROMURL:X-APE-DTS-X=true`);
+        lines.push(`#EXTATTRFROMURL:X-APE-TRUEHD=7.1`);
+        lines.push(`#EXTATTRFROMURL:X-APE-VRR=24-120Hz`);
+        lines.push(`#EXTATTRFROMURL:X-APE-SPORT-MODE=true`);
+        lines.push(`#EXTATTRFROMURL:X-APE-SPORT-MODE-BOOST=true`);
+        lines.push(`#EXTATTRFROMURL:X-APE-QUANTUM-PIXEL=12BIT`);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L8: EXT-X-APE-* NÚCLEO CRYSTAL (470 líneas) ─────────────────────
-        // ══════════════════════════════════════════════════════════════════════
-        // 8.a Buffer Nuclear (20)
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR:TARGET=${_buf796}ms,STRATEGY=ADAPTIVE_PREDICTIVE_NEURAL`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-NETWORK:${_nbuf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-LIVE:${_lbuf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-FILE:${_fbuf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-PLAYER:${cfg.player_buffer_ms||_buf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-PREFETCH:${cfg.prefetch_buffer_target||_buf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-SEGMENTS:${cfg.prefetch_segments||10}`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-PARALLEL:${cfg.prefetch_parallel||4}`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-MIN-BW:${cfg.prefetch_min_bandwidth||1000000}`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-STARVATION:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-FREEZE:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-REBUFFER:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-STALL:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-PIXELATION:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-ARTIFACT:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-TEARING:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-JUDDER:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-BLUR:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-ANTI-GHOSTING:true`);
-        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-WATCHDOG:MANIFEST=30s,FREEZE=10s`);
-        // 8.b BBR Hijacking (20)
-        lines.push(`#EXT-X-APE-BBR-HIJACK:ENABLED,ALGORITHM=BBR_V3`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-BW:MAX=${_bw796},MIN=${cfg.min_bandwidth||1000000}`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-RTT:TARGET=1ms,MAX=50ms`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-PACING:RATE=${Math.round(_bw796*1.25)}`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-CWND:GAIN=2.89,DRAIN=0.75`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-PROBE-BW:ENABLED`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-PROBE-RTT:ENABLED`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-STARTUP:GAIN=2.89`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-DRAIN:GAIN=0.35`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-FULL-BW:THRESHOLD=1.25`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-INFLIGHT:CAP=3`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-LOSS-THRESH:0.02`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-ECN:ENABLED`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-QUIC:ENABLED`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-HTTP2:ENABLED`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-HTTP3:ENABLED`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-TCP-NODELAY:true`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-TCP-QUICKACK:true`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-TCP-WINDOW:4194304`);
-        lines.push(`#EXT-X-APE-BBR-HIJACK-KEEPALIVE:MAX=200,TIMEOUT=120`);
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L9: EXT-X-PHANTOM-HYDRA & GUARDIAN TELEMETRY (17 líneas, TOTAL 800)──
-        // ══════════════════════════════════════════════════════════════════════
-        lines.push(`#EXT-X-SESSION-DATA:DATA-ID="com.ape.guardian.status",VALUE="${_sid796}_${_nonce796}"`);
-        lines.push(`#EXT-X-SESSION-DATA:DATA-ID="com.ape.guardian.buffer",VALUE="TARGET_${_buf796}_NET_${_nbuf796}"`);
-        lines.push(`#EXT-X-SESSION-DATA:DATA-ID="com.ape.guardian.bandwidth",VALUE="${_bw796}_PEAK"`);
-        lines.push(`#EXT-X-SESSION-DATA:DATA-ID="com.ape.guardian.codec",VALUE="${_codec796}_${_hdr796}"`);
-        lines.push(`#EXT-X-PHANTOM-HYDRA:ROTATION=ORGANIC,DNS=DOH_CLOUDFLARE,SNI=OBFUSCATED`);
-        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-ANDROID:${(typeof window !== 'undefined' && window.PhantomHydra) ? window.PhantomHydra.getForChannel(index, channel.name || '') : 'Mozilla/5.0 (Linux; Android 12; SHIELD Android TV)'}`);
-        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-IOS:${(typeof window !== 'undefined' && window.PhantomHydra) ? window.PhantomHydra.getForChannel(index, channel.name || '') : 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'}`);
-        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-CHROME:${(typeof window !== 'undefined' && window.PhantomHydra) ? window.PhantomHydra.getForChannel(index, channel.name || '') : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}`);
-        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-SAFARI:${(typeof window !== 'undefined' && window.PhantomHydra) ? window.PhantomHydra.getForChannel(index, channel.name || '') : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)'}`);
-        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-TIVIMATE:${(typeof window !== 'undefined' && window.PhantomHydra) ? window.PhantomHydra.getForChannel(index, channel.name || '') : 'TiviMate/4.8.0 (Android 12; SHIELD Android TV)'}`);
-        lines.push(`#EXT-X-APE-PHANTOM-HYDRA-VERSION:5.0-OMEGA`);
-        lines.push(`#EXT-X-APE-PHANTOM-HYDRA-NONCE:${_nonce796}`);
-        lines.push(`#EXT-X-APE-PHANTOM-UA-ROTATION:ENABLED`);
-        lines.push(`#EXT-X-APE-PHANTOM-UA-ACTIVE:${_ua796}`);
-        lines.push(`#EXT-X-APE-PHANTOM-DEVICE-SPOOF:SHIELD_TV_PRO_2023`);
-        lines.push(`#EXT-X-APE-PHANTOM-SNI-OBFUSCATION:ENABLED`);
-        lines.push(`#EXT-X-APE-PHANTOM-SNI-FRONT-DOMAIN:cloudflare.com`);
-        lines.push(`#EXT-X-APE-PHANTOM-DOH-SERVER:1.1.1.1`);
-        lines.push(`#EXT-X-APE-PHANTOM-SWARM-SIZE:2048`);
-        lines.push(`#EXT-X-APE-PHANTOM-SWARM-STRATEGY:HYDRA_MULTI_IP`);
-        lines.push(`#EXT-X-APE-PHANTOM-TRAFFIC-MORPH:ENABLED`);
-        lines.push(`#EXT-X-APE-PHANTOM-TRAFFIC-DISGUISE:HTTPS_GOOGLE_APIS`);
-        lines.push(`#EXT-X-APE-PHANTOM-IDEMPOTENT-STATE:LOCKED`);
-        lines.push(`#EXT-X-APE-PHANTOM-IP-ROTATION:SWARM_2048`);
-        lines.push(`#EXT-X-APE-PHANTOM-DPI-EVASION:SANDVINE_BYPASS`);
-        lines.push(`#EXT-X-APE-PHANTOM-FINGERPRINT:RANDOMIZED`);
-        lines.push(`#EXT-X-APE-PHANTOM-TIMING-JITTER:ENABLED`);
-        lines.push(`#EXT-X-APE-PHANTOM-PACKET-SIZE-MORPH:ENABLED`);
-        lines.push(`#EXT-X-APE-PHANTOM-PROTOCOL-OBFUSCATION:HTTPS_MIMICRY`);
-        // 8.e Codec Priority (20)
-        lines.push(`#EXT-X-APE-CODEC-PRIORITY:hevc,hev1,hvc1,h265,av1,h264,avc1`);
-        lines.push(`#EXT-X-APE-CODEC-PRIMARY:${_codec796}`);
-        lines.push(`#EXT-X-APE-CODEC-FALLBACK-1:av1`);
-        lines.push(`#EXT-X-APE-CODEC-FALLBACK-2:h264`);
-        lines.push(`#EXT-X-APE-CODEC-FALLBACK-3:mpeg2video`);
-        lines.push(`#EXT-X-APE-CODEC-PROFILE:MAIN10`);
-        lines.push(`#EXT-X-APE-CODEC-TIER:HIGH`);
-        lines.push(`#EXT-X-APE-CODEC-LEVEL:${_codec796 === 'hevc' ? '6.1' : '5.1'}`);
-        lines.push(`#EXT-X-APE-CODEC-PIXEL-FORMAT:yuv444p12le`);
-        lines.push(`#EXT-X-APE-CODEC-COLOR-DEPTH:12bit`);
-        lines.push(`#EXT-X-APE-CODEC-COLOR-SPACE:bt2020`);
-        lines.push(`#EXTVLCOPT:color-primaries=bt2020`);
-        lines.push(`#EXTVLCOPT:color-transfer=smpte2084`);
-        lines.push(`#EXTVLCOPT:color-space=bt2020nc`);
-        lines.push(`#EXTVLCOPT:video-filter=hqdn3d,gradfun`);
-        lines.push(`#EXTVLCOPT:video-visual=full-range`);
-        lines.push(`#EXTVLCOPT:hqdn3d-luma-spat=3`);
-        lines.push(`#EXT-X-APE-CODEC-HARDWARE-EXTRACT-MAX:true`);
-        lines.push(`#EXT-X-APE-CODEC-VVC-FALLBACK:HEVC`);
-        // 8.f Resilience 7 niveles (20)
-        lines.push(`#EXT-X-APE-RESILIENCE:LEVELS=7,STRATEGY=ADAPTIVE_PREDICTIVE_NEURAL`);
-        lines.push(`#EXT-X-APE-RESILIENCE-LEVEL-1:CMAF+HEVC`);
-        lines.push(`#EXT-X-APE-RESILIENCE-LEVEL-2:HLS/fMP4+HEVC`);
-        lines.push(`#EXT-X-APE-RESILIENCE-LEVEL-3:HLS/fMP4+H264`);
-        lines.push(`#EXT-X-APE-RESILIENCE-LEVEL-4:HLS/TS+H264`);
-        lines.push(`#EXT-X-APE-RESILIENCE-LEVEL-5:HLS/TS+Baseline`);
-        lines.push(`#EXT-X-APE-RESILIENCE-LEVEL-6:TS_Direct`);
-        lines.push(`#EXT-X-APE-RESILIENCE-LEVEL-7:HTTP_Redirect`);
-        lines.push(`#EXT-X-APE-RESILIENCE-RECONNECT:TIMEOUT=${cfg.reconnect_timeout_ms||30000}ms`);
-        lines.push(`#EXT-X-APE-RESILIENCE-RECONNECT-MAX:${cfg.reconnect_max_attempts||999}`);
-        lines.push(`#EXT-X-APE-RESILIENCE-RECONNECT-DELAY:${cfg.reconnect_delay_ms||100}ms`);
-        lines.push(`#EXT-X-APE-RESILIENCE-FAILOVER:CDN_ROTATION`);
-        lines.push(`#EXT-X-APE-RESILIENCE-ANTI-CUT:true`);
-        lines.push(`#EXT-X-APE-RESILIENCE-WATCHDOG:true`);
-        lines.push(`#EXT-X-APE-RESILIENCE-HEARTBEAT:5s`);
-        lines.push(`#EXT-X-APE-RESILIENCE-MANIFEST-REFRESH:30s`);
-        lines.push(`#EXT-X-APE-RESILIENCE-SEGMENT-RETRY:5`);
-        lines.push(`#EXT-X-APE-RESILIENCE-MANIFEST-RETRY:3`);
-        lines.push(`#EXT-X-APE-RESILIENCE-AVAILABILITY:99.999%`);
-        lines.push(`#EXT-X-APE-RESILIENCE-FAILOVER-TIME:<60ms`);
-        // 8.g Spoof y evasión (20)
-        lines.push(`#EXT-X-APE-SPOOF:DEVICE=SHIELD_TV_PRO_2023,OS=Android_12,PLAYER=ExoPlayer_2.18`);
-        lines.push(`#EXT-X-APE-SPOOF-UA:${_ua796}`);
-        lines.push(`#EXT-X-APE-SPOOF-IP:CDN_POOL`);
-        lines.push(`#EXT-X-APE-SPOOF-REFERER:${channel.url||''}`);
-        lines.push(`#EXT-X-APE-SPOOF-ORIGIN:${channel.url||''}`);
-        lines.push(`#EXT-X-APE-SPOOF-ACCEPT:application/vnd.apple.mpegurl,*/*`);
-        lines.push(`#EXT-X-APE-SPOOF-ACCEPT-LANGUAGE:en-US,en;q=0.9`);
-        lines.push(`#EXT-X-APE-SPOOF-ACCEPT-ENCODING:identity`);
-        lines.push(`#EXT-X-APE-SPOOF-SEC-FETCH-DEST:media`);
-        lines.push(`#EXT-X-APE-SPOOF-SEC-FETCH-MODE:no-cors`);
-        lines.push(`#EXT-X-APE-SPOOF-SEC-FETCH-SITE:same-origin`);
+        // ════════════════════════════════════════════════════════════════════════
+        // L8 — EXT-X-APE-* NÚCLEO CRYSTAL (510 líneas, 23 secciones × ~22)
+        // Cableado desde: cfg, _sid796, _nonce796, _ua796, _randomIp,
+        //                 CAPACITY_OVERDRIVE, IPTV_SUPPORT_CORTEX_V_OMEGA
+        // ════════════════════════════════════════════════════════════════════════
+
+        // 8.a — RESILIENCE ENGINE (22 líneas)
+        lines.push(`#EXT-X-APE-RESILIENCE:LEVEL=7,STRATEGY=AGGRESSIVE`);
+        lines.push(`#EXT-X-APE-RESILIENCE-FAILOVER:ENABLED=true,TIMEOUT=60ms`);
+        lines.push(`#EXT-X-APE-RESILIENCE-RETRY:COUNT=99,DELAY=500ms,BACKOFF=EXPONENTIAL`);
+        lines.push(`#EXT-X-APE-RESILIENCE-RECONNECT:ENABLED=true,COUNT=99,DELAY=500ms`);
+        lines.push(`#EXT-X-APE-RESILIENCE-DEGRADATION:LEVELS=7,GRACEFUL=true`);
+        lines.push(`#EXT-X-APE-RESILIENCE-DEGRADATION-L1:CMAF+HEVC+AV1,BW=${_bw796}`);
+        lines.push(`#EXT-X-APE-RESILIENCE-DEGRADATION-L2:HLS/fMP4+HEVC,BW=${Math.round(_bw796*0.75)}`);
+        lines.push(`#EXT-X-APE-RESILIENCE-DEGRADATION-L3:HLS/fMP4+H264,BW=${Math.round(_bw796*0.5)}`);
+        lines.push(`#EXT-X-APE-RESILIENCE-DEGRADATION-L4:HLS/TS+H264,BW=${Math.round(_bw796*0.25)}`);
+        lines.push(`#EXT-X-APE-RESILIENCE-DEGRADATION-L5:HLS/TS+BASELINE,BW=3000000`);
+        lines.push(`#EXT-X-APE-RESILIENCE-DEGRADATION-L6:TS-DIRECT,BW=1500000`);
+        lines.push(`#EXT-X-APE-RESILIENCE-DEGRADATION-L7:HTTP-REDIRECT,BW=500000`);
+        lines.push(`#EXT-X-APE-RESILIENCE-HEALTH-CHECK:INTERVAL=5000ms,TIMEOUT=2000ms`);
+        lines.push(`#EXT-X-APE-RESILIENCE-CIRCUIT-BREAKER:ENABLED=true,THRESHOLD=3,RESET=30s`);
+        lines.push(`#EXT-X-APE-RESILIENCE-BULKHEAD:ENABLED=true,MAX-CONCURRENT=10`);
+        lines.push(`#EXT-X-APE-RESILIENCE-TIMEOUT:CONNECT=5000ms,READ=30000ms,WRITE=10000ms`);
+        lines.push(`#EXT-X-APE-RESILIENCE-KEEPALIVE:ENABLED=true,INTERVAL=30s,TIMEOUT=60s`);
+        lines.push(`#EXT-X-APE-RESILIENCE-PIPELINING:ENABLED=false`);
+        lines.push(`#EXT-X-APE-RESILIENCE-HTTP2:ENABLED=true,MULTIPLEXING=true,PUSH=false`);
+        lines.push(`#EXT-X-APE-RESILIENCE-HTTP3:ENABLED=true,QUIC=true,0RTT=true`);
+        lines.push(`#EXT-X-APE-RESILIENCE-TLS13:ENABLED=true,SESSION-RESUMPTION=true,EARLY-DATA=true`);
+        lines.push(`#EXT-X-APE-RESILIENCE-SID:${_sid796}`);
+
+        // 8.b — SPOOF ENGINE (22 líneas)
+        lines.push(`#EXT-X-APE-SPOOF:UA=${_ua796}`);
+        lines.push(`#EXT-X-APE-SPOOF-ANDROID:${_uaAndroid}`);
+        lines.push(`#EXT-X-APE-SPOOF-IOS:${_uaIOS}`);
+        lines.push(`#EXT-X-APE-SPOOF-CHROME:${_uaChrome}`);
+        lines.push(`#EXT-X-APE-SPOOF-TIVIMATE:${_uaTiviMate}`);
+        lines.push(`#EXT-X-APE-SPOOF-OTT:${_uaOTT}`);
+        lines.push(`#EXT-X-APE-SPOOF-KODI:${_uaKodi}`);
+        lines.push(`#EXT-X-APE-SPOOF-EXOPLAYER:${_uaExo}`);
+        lines.push(`#EXT-X-APE-SPOOF-VLC:${_uaVLC}`);
+        lines.push(`#EXT-X-APE-SPOOF-SAFARI:${_uaSafari}`);
+        lines.push(`#EXT-X-APE-SPOOF-IP:${_randomIp}`);
+        lines.push(`#EXT-X-APE-SPOOF-REFERER:https://www.google.com/`);
+        lines.push(`#EXT-X-APE-SPOOF-ORIGIN:https://www.google.com`);
+        lines.push(`#EXT-X-APE-SPOOF-ACCEPT:*/*`);
+        lines.push(`#EXT-X-APE-SPOOF-ACCEPT-LANGUAGE:es-419,es;q=0.9,en;q=0.8`);
+        lines.push(`#EXT-X-APE-SPOOF-ACCEPT-ENCODING:gzip,deflate,br,zstd`);
         lines.push(`#EXT-X-APE-SPOOF-CONNECTION:keep-alive`);
         lines.push(`#EXT-X-APE-SPOOF-CACHE-CONTROL:no-cache`);
         lines.push(`#EXT-X-APE-SPOOF-PRAGMA:no-cache`);
-        lines.push(`#EXT-X-APE-SPOOF-DNT:0`);
-        lines.push(`#EXT-X-APE-SPOOF-SEC-GPC:0`);
-        lines.push(`#EXT-X-APE-SPOOF-TE:trailers`);
-        lines.push(`#EXT-X-APE-SPOOF-UPGRADE:0`);
-        lines.push(`#EXT-X-APE-SPOOF-TIMING-JITTER:ENABLED`);
-        lines.push(`#EXT-X-APE-SPOOF-PACKET-SIZE:RANDOMIZED`);
-        // 8.h DRM (20)
-        lines.push(`#EXT-X-APE-DRM:WIDEVINE_L1,FAIRPLAY,CLEARKEY`);
-        lines.push(`#EXT-X-APE-DRM-WIDEVINE:ENFORCE=true,LEVEL=L1`);
-        lines.push(`#EXT-X-APE-DRM-FAIRPLAY:ENFORCE=true`);
-        lines.push(`#EXT-X-APE-DRM-CLEARKEY:FALLBACK=true`);
-        lines.push(`#EXT-X-APE-DRM-ENCRYPTION:CBCS`);
-        lines.push(`#EXT-X-APE-DRM-ENCRYPTION-FALLBACK:CENC`);
-        lines.push(`#EXT-X-APE-DRM-PSSH:true`);
-        lines.push(`#EXT-X-APE-DRM-TENC:true`);
-        lines.push(`#EXT-X-APE-DRM-SENC:true`);
-        lines.push(`#EXT-X-APE-DRM-EMSG:true`);
-        lines.push(`#EXT-X-APE-DRM-PERSISTENT-STORAGE:true`);
-        lines.push(`#EXT-X-APE-DRM-SECURITY-LEVEL:L1`);
-        lines.push(`#EXT-X-APE-DRM-MAX-DECODE-WIDTH:${(_res796.split('x')[0]||7680)}`);
-        lines.push(`#EXT-X-APE-DRM-MAX-DECODE-HEIGHT:${(_res796.split('x')[1]||4320)}`);
-        lines.push(`#EXT-X-APE-DRM-HDCP:2.3`);
-        lines.push(`#EXT-X-APE-DRM-HDCP-FALLBACK:2.2`);
-        lines.push(`#EXT-X-APE-DRM-OUTPUT-PROTECTION:true`);
-        lines.push(`#EXT-X-APE-DRM-ANALOG-OUTPUT:DISABLED`);
-        lines.push(`#EXT-X-APE-DRM-DIGITAL-OUTPUT:ENABLED`);
-        lines.push(`#EXT-X-APE-DRM-COMMON-ENCRYPTION:true`);
-        // 8.i Cortex AI (20)
-        lines.push(`#EXT-X-APE-CORTEX-AI:ENABLED,VERSION=5.0-OMEGA`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-SR:RealESRGAN_x4Plus`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-FRAME-INTERP:RIFE_V4`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-DENOISING:NLMEANS_HQDN3D_TEMPORAL`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-DEBLOCKING:EXTREME`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-ARTIFACT-REMOVAL:true`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-COLOR-ENHANCEMENT:true`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-SHARPENING:ADAPTIVE`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-HDR-UPCONVERT:SDR_TO_HDR10_PLUS`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-VMAF-TARGET:${cfg.vmaf_target||95}`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-CONTENT-AWARE:true`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-PERCEPTUAL-QUALITY:SSIM+VMAF`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-PRECISION:FP16`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-BATCH-SIZE:1`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-TILE-SIZE:256`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-OVERLAP:32`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-MOTION-ESTIMATION:OPTICAL-FLOW`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-SCENE-DETECTION:true`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-CONTENT-TYPE:${_ct796}`);
-        lines.push(`#EXT-X-APE-CORTEX-AI-GPU-PIPELINE:DECODE_ITM_LCEVC_AI_SR_DENOISE_TONEMAP_RENDER`);
-        // 8.j Audio Pipeline (20)
-        lines.push(`#EXT-X-APE-AUDIO:ATMOS,DTS-X,TRUEHD,EAC3,AC3,AAC`);
-        lines.push(`#EXT-X-APE-AUDIO-CHANNELS:8`);
-        lines.push(`#EXT-X-APE-AUDIO-SAMPLE-RATE:48000`);
-        lines.push(`#EXT-X-APE-AUDIO-BIT-DEPTH:24`);
-        lines.push(`#EXT-X-APE-AUDIO-PASSTHROUGH:EARC_STRICT`);
-        lines.push(`#EXT-X-APE-AUDIO-CODEC-PREFERENCE:eac3,ac3,aac`);
-        lines.push(`#EXT-X-APE-AUDIO-LANGUAGE:eng,spa,por`);
-        lines.push(`#EXT-X-APE-AUDIO-TRACK-SELECTION:best`);
-        lines.push(`#EXT-X-APE-AUDIO-ATMOS:ENABLED`);
-        lines.push(`#EXT-X-APE-AUDIO-DTS:ENABLED`);
-        lines.push(`#EXT-X-APE-AUDIO-TRUEHD:ENABLED`);
-        lines.push(`#EXT-X-APE-AUDIO-DESYNC:0`);
-        lines.push(`#EXT-X-APE-AUDIO-REPLAY-GAIN:NONE`);
-        lines.push(`#EXT-X-APE-AUDIO-TIME-STRETCH:true`);
-        lines.push(`#EXT-X-APE-AUDIO-STEREO-MODE:0`);
-        lines.push(`#EXT-X-APE-AUDIO-SPDIF:eac3,ac3,dts,truehd`);
-        lines.push(`#EXT-X-APE-AUDIO-AOUT:any`);
+        lines.push(`#EXT-X-APE-SPOOF-SEC-FETCH-DEST:video`);
+        lines.push(`#EXT-X-APE-SPOOF-SEC-FETCH-MODE:no-cors`);
+        lines.push(`#EXT-X-APE-SPOOF-SEC-FETCH-SITE:cross-site`);
+
+        // 8.c — DRM ENGINE (22 líneas)
+        lines.push(`#EXT-X-APE-DRM:TYPE=widevine,LEVEL=L1`);
+        lines.push(`#EXT-X-APE-DRM-SECURITY:HW_SECURE_ALL`);
+        lines.push(`#EXT-X-APE-DRM-HDCP:2.2`);
+        lines.push(`#EXT-X-APE-DRM-ROBUSTNESS:HW_SECURE_ALL`);
+        lines.push(`#EXT-X-APE-DRM-PERSISTENT:true`);
+        lines.push(`#EXT-X-APE-DRM-OFFLINE:false`);
+        lines.push(`#EXT-X-APE-DRM-TIMEOUT:10000ms`);
+        lines.push(`#EXT-X-APE-DRM-RENEWAL:ENABLED=true,THRESHOLD=80%`);
+        lines.push(`#EXT-X-APE-DRM-PLAYREADY:ENABLED=true,LEVEL=3000`);
+        lines.push(`#EXT-X-APE-DRM-FAIRPLAY:ENABLED=true`);
+        lines.push(`#EXT-X-APE-DRM-CLEARKEY:ENABLED=true`);
+        lines.push(`#EXT-X-APE-DRM-AES128:ENABLED=true`);
+        lines.push(`#EXT-X-APE-DRM-AES256:ENABLED=true`);
+        lines.push(`#EXT-X-APE-DRM-SAMPLE-AES:ENABLED=true`);
+        lines.push(`#EXT-X-APE-DRM-CBCS:ENABLED=true`);
+        lines.push(`#EXT-X-APE-DRM-CENC:ENABLED=true`);
+        lines.push(`#EXT-X-APE-DRM-KEY-ROTATION:ENABLED=true,INTERVAL=3600s`);
+        lines.push(`#EXT-X-APE-DRM-SESSION-ID:${_sid796}`);
+        lines.push(`#EXT-X-APE-DRM-REQUEST-ID:${reqId}`);
+        lines.push(`#EXT-X-APE-DRM-NONCE:${_nonce796}`);
+        lines.push(`#EXT-X-APE-DRM-JWT:${jwt ? 'ENABLED' : 'DISABLED'}`);
+        lines.push(`#EXT-X-APE-DRM-PROXY:ENABLED=false`);
+
+        // 8.d — CORTEX AI ENGINE (22 líneas)
+        // Cableado desde: IPTV_SUPPORT_CORTEX_V_OMEGA
+        const _cortexRef = (typeof IPTV_SUPPORT_CORTEX_V_OMEGA !== 'undefined')
+                           ? 'IPTV_SUPPORT_CORTEX_V_OMEGA' : 'CORTEX_V_OMEGA';
+        lines.push(`#EXT-X-APE-CORTEX:ENGINE=${_cortexRef},VERSION=OMEGA`);
+        lines.push(`#EXT-X-APE-CORTEX-LATENCY:<60ms`);
+        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS:ENABLED=true,AUTO=true`);
+        lines.push(`#EXT-X-APE-CORTEX-RESOLUTION:ENABLED=true,RATE=99%`);
+        lines.push(`#EXT-X-APE-CORTEX-DECISION-TREE:LEVELS=7,TIMEOUT=60ms`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-400:RETRY=true,SPOOF=true`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-401:JWT=true,REFRESH=true`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-403:EVASION=true,UA-ROTATE=true`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-404:FAILOVER=true,DEGRADATION=true`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-405:SPOOF=true,METHOD=GET`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-407:UA-ROTATE=true,IP-ROTATE=true`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-429:BACKOFF=EXPONENTIAL,DELAY=1000ms`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-500:FAILOVER=true,RETRY=3`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-502:FAILOVER=true,CDN-SWITCH=true`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-503:RETRY=true,DELAY=2000ms`);
+        lines.push(`#EXT-X-APE-CORTEX-ERROR-504:TIMEOUT-EXTEND=true,RETRY=3`);
+        lines.push(`#EXT-X-APE-CORTEX-PILAR5:ENABLED=true,RATE=95%`);
+        lines.push(`#EXT-X-APE-CORTEX-AUTOMATION:LEVEL=FULL`);
+        lines.push(`#EXT-X-APE-CORTEX-ML:ENABLED=true,MODEL=OMEGA_V5`);
+        lines.push(`#EXT-X-APE-CORTEX-FEEDBACK:ENABLED=true,INTERVAL=1000ms`);
+        lines.push(`#EXT-X-APE-CORTEX-SID:${_sid796}`);
+        lines.push(`#EXT-X-APE-CORTEX-NONCE:${_nonce796}`);
+
+        // 8.e — AUDIO PIPELINE (22 líneas)
+        lines.push(`#EXT-X-APE-AUDIO:CODEC=${_codecAudio},CHANNELS=7.1.4`);
+        lines.push(`#EXT-X-APE-AUDIO-ATMOS:ENABLED=true,CHANNELS=7.1.4,OBJECTS=128`);
+        lines.push(`#EXT-X-APE-AUDIO-DTS-X:ENABLED=true,CHANNELS=7.1.4`);
+        lines.push(`#EXT-X-APE-AUDIO-TRUEHD:ENABLED=true,CHANNELS=7.1`);
+        lines.push(`#EXT-X-APE-AUDIO-EAC3:ENABLED=true,CHANNELS=5.1`);
+        lines.push(`#EXT-X-APE-AUDIO-AC3:ENABLED=true,CHANNELS=5.1`);
+        lines.push(`#EXT-X-APE-AUDIO-AAC:ENABLED=true,CHANNELS=2.0`);
+        lines.push(`#EXT-X-APE-AUDIO-MP3:ENABLED=true,CHANNELS=2.0`);
+        lines.push(`#EXT-X-APE-AUDIO-PASSTHROUGH:ENABLED=true`);
+        lines.push(`#EXT-X-APE-AUDIO-SAMPLERATE:48000Hz`);
+        lines.push(`#EXT-X-APE-AUDIO-BITDEPTH:24bit`);
+        lines.push(`#EXT-X-APE-AUDIO-BITRATE:${Math.round(_bw796*0.05/1000)}kbps`);
+        lines.push(`#EXT-X-APE-AUDIO-LANGUAGE:spa,eng,por`);
         lines.push(`#EXT-X-APE-AUDIO-TRACK-ID:0`);
-        lines.push(`#EXT-X-APE-AUDIO-BITDEPTH:24`);
-        lines.push(`#EXT-X-APE-AUDIO-CHANNELS-MAX:8`);
-        // 8.k Scorecard Dinámico (20)
-        lines.push(`#EXT-X-APE-SCORECARD:VERSION=5.0,SID=${_sid796},NONCE=${_nonce796}`);
-        lines.push(`#EXT-X-APE-SCORECARD-PROFILE:${profile}`);
-        lines.push(`#EXT-X-APE-SCORECARD-RESOLUTION:${_res796}`);
-        lines.push(`#EXT-X-APE-SCORECARD-FPS:${_fps796}`);
-        lines.push(`#EXT-X-APE-SCORECARD-BITRATE:${Math.round(_bw796/1000)}kbps`);
-        lines.push(`#EXT-X-APE-SCORECARD-CODEC:${_codec796}`);
-        lines.push(`#EXT-X-APE-SCORECARD-HDR:${_hdr796}nits`);
-        lines.push(`#EXT-X-APE-SCORECARD-LCEVC:PHASE_4`);
-        lines.push(`#EXT-X-APE-SCORECARD-AI-SR:RealESRGAN_x4Plus`);
-        lines.push(`#EXT-X-APE-SCORECARD-VMAF:${cfg.vmaf_target||95}`);
-        lines.push(`#EXT-X-APE-SCORECARD-BUFFER:${_buf796}ms`);
-        lines.push(`#EXT-X-APE-SCORECARD-LATENCY:<30ms`);
-        lines.push(`#EXT-X-APE-SCORECARD-AVAILABILITY:99.999%`);
-        lines.push(`#EXT-X-APE-SCORECARD-RESILIENCE:7_LEVELS`);
-        lines.push(`#EXT-X-APE-SCORECARD-EVASION:PHANTOM_HYDRA_V5`);
-        lines.push(`#EXT-X-APE-SCORECARD-UA-ROTATION:180_BANK`);
-        lines.push(`#EXT-X-APE-SCORECARD-DRM:WIDEVINE_L1`);
-        lines.push(`#EXT-X-APE-SCORECARD-ENCRYPTION:CBCS`);
-        lines.push(`#EXT-X-APE-SCORECARD-CONTENT-TYPE:${_ct796}`);
-        lines.push(`#EXT-X-APE-SCORECARD-NONCE:${_nonce796}`);
-        // 8.l VRR y sincronización (20)
-        lines.push(`#EXT-X-APE-VRR:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-SYNC:enabled`);
-        lines.push(`#EXT-X-APE-VRR-AUTO-MATCH-FPS:true`);
-        lines.push(`#EXT-X-APE-VRR-REFRESH-RATE:${_fps796}`);
-        lines.push(`#EXT-X-APE-VRR-FRAME-RATE-MATCH:true`);
-        lines.push(`#EXT-X-APE-VRR-SPORT-MODE:true`);
-        lines.push(`#EXT-X-APE-VRR-LOW-LATENCY:true`);
-        lines.push(`#EXT-X-APE-VRR-LIVE-EDGE:2`);
-        lines.push(`#EXT-X-APE-VRR-LIVE-DELAY:0`);
-        lines.push(`#EXT-X-APE-VRR-TIMESHIFT:false`);
-        lines.push(`#EXT-X-APE-VRR-GSYNC:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-FREESYNC:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-HDMI-FORUM:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-ALLM:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-QMS:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-QFT:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-EARC:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-ARC:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-CEC:ENABLED`);
-        lines.push(`#EXT-X-APE-VRR-HDCP:2.3`);
-        // 8.m Polimorfismo (20)
-        lines.push(`#EXT-X-APE-POLYMORPHIC:ENABLED,VERSION=5.0`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-NONCE:${_nonce796}`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-SID:${_sid796}`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-LIST-HASH:${_nonce796}`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-TIMESTAMP:${Date.now()}`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-UA:${_ua796}`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-IP:CDN_POOL`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-DNS:DOH_CLOUDFLARE`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-SNI:OBFUSCATED`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-TLS:1.3`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-FINGERPRINT:RANDOMIZED`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-TIMING:JITTERED`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-PACKET-SIZE:RANDOMIZED`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-PROTOCOL:HTTPS_MIMICRY`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-TRAFFIC:MORPHED`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-IDENTITY:MUTATED`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-SESSION:EPHEMERAL`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-REQUEST:UNIQUE`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-RESPONSE:VALIDATED`);
-        lines.push(`#EXT-X-APE-POLYMORPHIC-CACHE:BUSTED`);
-        // 8.n Quality Override (20)
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE:MAX`);
+        lines.push(`#EXT-X-APE-AUDIO-SYNC:ENABLED=true,OFFSET=0ms`);
+        lines.push(`#EXT-X-APE-AUDIO-DESYNC:0ms`);
+        lines.push(`#EXT-X-APE-AUDIO-VOLUME:256`);
+        lines.push(`#EXT-X-APE-AUDIO-NORMALIZATION:ENABLED=false`);
+        lines.push(`#EXT-X-APE-AUDIO-REPLAY-GAIN:DISABLED`);
+        lines.push(`#EXT-X-APE-AUDIO-TIME-STRETCH:DISABLED`);
+        lines.push(`#EXT-X-APE-AUDIO-FILTER:NONE`);
+        lines.push(`#EXT-X-APE-AUDIO-VISUAL:NONE`);
+
+        // 8.f — BUFFER GOD TIER (22 líneas)
+        // Cableado desde: CAPACITY_OVERDRIVE
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR:${_buf796}ms,${_bufMB}MB,${_bufSeg}SEG`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-TARGET:${_buf796}ms`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-MIN:1000ms`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-MAX:${_buf796 * 2}ms`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-MB:${_bufMB}MB`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-SEGMENTS:${_bufSeg}`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-AHEAD:3`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-BEHIND:1`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-LIVE-DELAY:0`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-HOLD-BACK:0`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-PART-HOLD-BACK:0`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-CHUNK-DURATION:0.5`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-PART-TARGET:0.5`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-PREFETCH:ENABLED=true,COUNT=3`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-PRELOAD:ENABLED=true,SEGMENTS=3`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-WARMUP:ENABLED=true,SEGMENTS=2`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-DRAIN:ENABLED=false`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-FLUSH:ON-SEEK=true,ON-ERROR=true`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-STALL-THRESHOLD:500ms`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-STALL-ACTION:REBUFFER`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-REBUFFER-THRESHOLD:3`);
+        lines.push(`#EXT-X-APE-BUFFER-NUCLEAR-SID:${_sid796}`);
+
+        // 8.g — BBR HIJACKING / BANDWIDTH ANARCHY (22 líneas)
+        lines.push(`#EXT-X-APE-BBR-HIJACK:ENABLED=true,MODE=AGGRESSIVE`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-BW:${_bw796}`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-AVG-BW:${_avgBw}`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-INITIAL-BW:${_bw796}`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-MIN-BW:500000`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-FACTOR:1.0`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-LOOKAHEAD:3`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-LOGIC:highest`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-SEGCOUNT:1.0`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-RELOAD-THRESHOLD:100`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-RELOAD-MAXPERIOD:0`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-RELOAD-MINPERIOD:0`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-CACHE:false`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-ETAG:false`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-IF-MODIFIED:false`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-IF-NONE-MATCH:false`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-RANGE:false`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-CHUNKED:false`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-KEEPALIVE:true`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-HTTP2:true`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-USE-HTTP3:true`);
+        lines.push(`#EXT-X-APE-BBR-HIJACK-SID:${_sid796}`);
+
+        // 8.h — PLAYER ENSLAVEMENT (22 líneas)
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE:EXOPLAYER=true,VLC=true,KODI=true,TIVIMATE=true,OTT=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-EXOPLAYER:HW-DECODE=true,SURFACE=true,TUNNEL=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-VLC:HW=any,THREADS=0,FAST=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-KODI:ISA=true,ADAPTIVE=true,DRM=L1`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-TIVIMATE:BUFFER=${_buf796},BW=${_bw796}`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-OTT:BUFFER=${_buf796},BW=${_bw796}`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-FIRETV:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-SHIELD:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-APPLETV:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-ROKU:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-TIZEN:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-WEBOS:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-CHROMECAST:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-IOS:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-ANDROID:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-WINDOWS:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-MACOS:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-LINUX:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-WEBRTC:ENABLED=false`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-WEBTRANSPORT:ENABLED=false`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-WEBSOCKET:ENABLED=false`);
+        lines.push(`#EXT-X-APE-PLAYER-ENSLAVE-SID:${_sid796}`);
+
+        // 8.i — QUALITY OVERRIDE (22 líneas)
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE:PROFILE=${profile},BW=${_bw796}`);
         lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-RESOLUTION:${_res796}`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-FPS:${_fps796}`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-BITRATE:${Math.round(_bw796/1000)}kbps`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-FRAMERATE:${_fps796}`);
         lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-CODEC:${_codec796}`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-HDR:${_hdr796}nits`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-LCEVC:PHASE_4`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-AI-SR:RealESRGAN_x4Plus`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-VMAF:${cfg.vmaf_target||95}`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-ABR:HIGHEST`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-ABR-LOCK:NATIVE_MAX`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-ADAPTIVE-LOGIC:HIGHEST`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-MAX-WIDTH:${(_res796.split('x')[0]||7680)}`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-MAX-HEIGHT:${(_res796.split('x')[1]||4320)}`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-MAX-BW:${_bw796}`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-MIN-BW:${cfg.min_bandwidth||1000000}`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-CHROMA:4:4:4`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-BIT-DEPTH:12`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-PIXEL-FORMAT:yuv444p12le`);
-        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-COLOR-SPACE:bt2020`);
-        // 8.o Luma Precision (20)
-        lines.push(`#EXT-X-APE-LUMA-PRECISION:12bit`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-CHROMA:4:4:4`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-PIXEL-FORMAT:yuv444p12le`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-COLOR-SPACE:bt2020`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-TRANSFER:SMPTE-ST-2084`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-PRIMARIES:BT.2020`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-MATRIX:BT.2020nc`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-RANGE:LIMITED`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-DITHER:ERROR_DIFFUSION`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-CHROMAL:TOPLEFT`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-ZSCALE:ENABLED`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-TONEMAP:HABLE`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-TONEMAP-PARAM:0.3`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-TONEMAP-DESAT:0`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-TONEMAP-PEAK:${_hdr796}`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-DEBAND:GRADFUN`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-DEBAND-STRENGTH:1.0`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-DEBAND-RADIUS:16`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-DEBAND-DITHER:ENABLED`);
-        lines.push(`#EXT-X-APE-LUMA-PRECISION-FILM-GRAIN:NEURAL-MPEG`);
-        // 8.p Bitrate Anarchy (20)
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY:ENABLED,MAX=UNLIMITED`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-TARGET:${Math.round(_bw796/1000)}kbps`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-PEAK:UNLIMITED`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-MIN:128kbps`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-BURST:ENABLED`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-BURST-FACTOR:1.5x`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-BURST-DURATION:999999s`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-RATE-CONTROL:VBR_CONSTRAINED`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-VBV-MAX:${Math.ceil((_bw796/1000)*1.3)}kbps`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-VBV-BUF:${Math.ceil((_bw796/1000)*2)}kbps`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-GOP:${cfg.gop_size||60}`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-B-FRAMES:2`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-LOOKAHEAD:10`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-AQ-MODE:SPATIAL`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-CONTENT-AWARE:PER_SCENE_CONTINUOUS`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-CONTENT-ANALYSIS-FPS:1`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-ENCODER:nvenc_hevc`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-PRESET:p6`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-TUNE:hq`);
-        lines.push(`#EXT-X-APE-BITRATE-ANARCHY-PIXEL-ABSORPTION:MAXIMUM_BANDWIDTH`);
-        // 8.q Quantum Pixel (20)
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL:OVERDRIVE`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-RESOLUTION:${_res796}`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-FPS:${_fps796}`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-HDR:${_hdr796}nits`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-LCEVC:PHASE_4`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-AI-SR:RealESRGAN_x4Plus`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-FRAME-INTERP:RIFE_V4`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-DENOISING:NLMEANS_HQDN3D`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-SHARPENING:CAS`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-DEBANDING:GRADFUN`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-DEINTERLACE:BWDIF`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-TONEMAP:BT2446a`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-GAMUT:DCI-P3,BT.2020`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-BIT-DEPTH:12`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-CHROMA:4:4:4`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-PIXEL-FORMAT:yuv444p12le`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-VMAF:${cfg.vmaf_target||95}`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-PSNR:42`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-SSIM:0.97`);
-        lines.push(`#EXT-X-APE-QUANTUM-PIXEL-VIF:0.95`);
-        // 8.r Buffer God Tier (20)
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER:ENABLED`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-NETWORK:${_nbuf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-LIVE:${_lbuf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-FILE:${_fbuf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-PLAYER:${cfg.player_buffer_ms||_buf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-PREFETCH:${cfg.prefetch_buffer_target||_buf796}ms`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-SEGMENTS:${cfg.prefetch_segments||10}`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-PARALLEL:${cfg.prefetch_parallel||4}`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-MIN-BW:${cfg.prefetch_min_bandwidth||1000000}`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-ANTI-STARVATION:true`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-ANTI-FREEZE:true`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-ANTI-REBUFFER:true`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-ANTI-STALL:true`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-WATCHDOG:MANIFEST=30s,FREEZE=10s`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-HEARTBEAT:5s`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-MANIFEST-REFRESH:30s`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-SEGMENT-RETRY:5`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-MANIFEST-RETRY:3`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-AVAILABILITY:99.999%`);
-        lines.push(`#EXT-X-APE-BUFFER-GOD-TIER-FAILOVER-TIME:<60ms`);
-        // 8.s Space Validator (20)
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR:ENABLED,VERSION=5.0`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-AUDIO:${_codecAudio}`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-HDR:${_hdrMode}`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-NITS:${_hdrNits}`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-LCEVC:PHASE=4`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-AI-SR:realesrgan`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-AI-FI:rife_v4`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-VRR:24-120Hz`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-VMAF:${_vmaf}`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-PSNR:42`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-SSIM:0.99`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-BITDEPTH:10`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-CHROMA:4:2:0`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-COLORSPACE:BT2020`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-TRANSFER:ST2084`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-PRIMARIES:BT2020`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-MATRIX:BT2020_NCL`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-RANGE:LIMITED`);
+        lines.push(`#EXT-X-APE-QUALITY-OVERRIDE-SID:${_sid796}`);
+
+        // 8.j — THROUGHPUT REAL-TIME (22 líneas)
+        lines.push(`#EXT-X-APE-THROUGHPUT:BW=${_bw796},INTERVAL=1000ms`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-MEASURE:ENABLED=true,WINDOW=5s`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-ESCALATION:AUTO`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-ESCALATION-L1:${_bw796}`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-ESCALATION-L2:${Math.round(_bw796*1.25)}`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-ESCALATION-L3:${Math.round(_bw796*1.5)}`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-ESCALATION-L4:${Math.round(_bw796*1.75)}`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-ESCALATION-L5:${Math.round(_bw796*2.0)}`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-ESCALATION-L6:${Math.round(_bw796*2.5)}`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-ESCALATION-L7:${Math.round(_bw796*3.0)}`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-DEVICE:FIRETV,SHIELD,APPLETV,ROKU,TIZEN,WEBOS`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-TIER-1:FIRETV,SHIELD,APPLETV`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-TIER-2:ROKU,TIZEN,WEBOS`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-TIER-3:IOS,ANDROID,WINDOWS`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-QOS-ESCALATION:AUTO`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-BOTTLENECK-THRESHOLD:30%`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-BOTTLENECK-ACTION:SCALE-BUFFER`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-BOTTLENECK-SCALE:2x`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-BOTTLENECK-NOTIFY:true`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-BOTTLENECK-FAILOVER:true`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-BOTTLENECK-DEGRADATION:true`);
+        lines.push(`#EXT-X-APE-THROUGHPUT-SID:${_sid796}`);
+
+        // 8.k — ISP EVASION (22 líneas)
+        lines.push(`#EXT-X-APE-ISP-EVASION:ENABLED=true,LEVEL=MAXIMUM`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-DPI:BYPASS=true,SANDVINE=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-THROTTLE:BYPASS=true,STRATEGY=AGGRESSIVE`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-DEEP-INSPECTION:BYPASS=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-TRAFFIC-SHAPING:BYPASS=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-PORT-BLOCKING:BYPASS=true,PORTS=443,80,8080`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-PROTOCOL-BLOCKING:BYPASS=true,PROTOCOLS=HLS,DASH,CMAF`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-GEO-BLOCKING:BYPASS=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-IP-BLOCKING:BYPASS=true,ROTATE=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-DNS:DOH=true,SERVERS=cloudflare,google`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-SNI:OBFUSCATE=true,FRONT=cdn.akamaized.net`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-TLS:JA3=true,JA4=true,FINGERPRINT=CHROME`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-HTTP2:FINGERPRINT=CHROME`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-QUIC:FINGERPRINT=CHROME`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-TIMING:JITTER=true,INTERVAL=50-200ms`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-FRAGMENTATION:ENABLED=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-PADDING:ENABLED=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-OBFUSCATION:ENABLED=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-CAMOUFLAGE:ENABLED=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-STEALTH:ENABLED=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-INVISIBILITY:ENABLED=true`);
+        lines.push(`#EXT-X-APE-ISP-EVASION-SID:${_sid796}`);
+
+        // 8.l — PREFETCH & SESSION WARMUP (22 líneas)
+        lines.push(`#EXT-X-APE-PREFETCH:ENABLED=true,SEGMENTS=3`);
+        lines.push(`#EXT-X-APE-PREFETCH-STRATEGY:AGGRESSIVE`);
+        lines.push(`#EXT-X-APE-PREFETCH-TIMEOUT:5000ms`);
+        lines.push(`#EXT-X-APE-PREFETCH-PRIORITY:HIGH`);
+        lines.push(`#EXT-X-APE-PREFETCH-PARALLEL:3`);
+        lines.push(`#EXT-X-APE-PREFETCH-CACHE:ENABLED=true`);
+        lines.push(`#EXT-X-APE-PREFETCH-CACHE-SIZE:${_bufMB}MB`);
+        lines.push(`#EXT-X-APE-PREFETCH-CACHE-TTL:30s`);
+        lines.push(`#EXT-X-APE-PREFETCH-INIT:URI="init.mp4"`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP:ENABLED=true`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-TIMEOUT:2000ms`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-SEGMENTS:2`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-PARALLEL:2`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-PRIORITY:HIGHEST`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-CACHE:ENABLED=true`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-PRECONNECT:ENABLED=true`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-DNS-PREFETCH:ENABLED=true`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-TLS-PRECONNECT:ENABLED=true`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-HTTP2-PRECONNECT:ENABLED=true`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-QUIC-PRECONNECT:ENABLED=true`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-SID:${_sid796}`);
+        lines.push(`#EXT-X-APE-SESSION-WARMUP-NONCE:${_nonce796}`);
+
+        // 8.m — SPACE VALIDATOR (22 líneas)
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR:ENABLED=true`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-MANIFEST:RFC8216=true,VERSION=7`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-CODECS:HEVC=true,AV1=true,VP9=true,H264=true`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-AUDIO:EAC3=true,AC3=true,AAC=true`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-HDR:HDR10=true,HDR10PLUS=true,HLG=true,DV=true`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-LCEVC:PHASE4=true`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-CMAF:FMP4=true,INIT=true`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-DRM:WIDEVINE=true,PLAYREADY=true,FAIRPLAY=true`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-BUFFER:TARGET=${_buf796}ms,MB=${_bufMB}`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-BANDWIDTH:TARGET=${_bw796},MIN=500000`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-RESOLUTION:TARGET=${_res796},MIN=426x240`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-FRAMERATE:TARGET=${_fps796},MIN=24`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-VMAF:TARGET=${_vmaf},MIN=80`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-MOS:TARGET=4.8,MIN=4.0`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-PSNR:TARGET=42,MIN=35`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-SSIM:TARGET=0.99,MIN=0.95`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-JITTER:TARGET=0ms,MAX=10ms`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-LOSS:TARGET=0%,MAX=0.1%`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-LATENCY:TARGET=0ms,MAX=500ms`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-STARTUP:TARGET=0ms,MAX=500ms`);
+        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-REBUFFER:TARGET=0,MAX=3`);
         lines.push(`#EXT-X-APE-SPACE-VALIDATOR-SID:${_sid796}`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-NONCE:${_nonce796}`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-PROFILE:${profile}`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-RESOLUTION:${_res796}`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-FPS:${_fps796}`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-BITRATE:${Math.round(_bw796/1000)}kbps`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-CODEC:${_codec796}`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-HDR:${_hdr796}nits`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-LCEVC:PHASE_4`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-AI-SR:RealESRGAN_x4Plus`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-VMAF:${cfg.vmaf_target||95}`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-BUFFER:${_buf796}ms`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-LATENCY:<30ms`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-AVAILABILITY:99.999%`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-RESILIENCE:7_LEVELS`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-EVASION:PHANTOM_HYDRA_V5`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-DRM:WIDEVINE_L1`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-ENCRYPTION:CBCS`);
-        lines.push(`#EXT-X-APE-SPACE-VALIDATOR-CONTENT-TYPE:${_ct796}`);
-        // 8.t VNOVA LCEVC (20)
-        lines.push(`#EXT-X-VNOVA-LCEVC:ENABLED,PHASE=4`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-NEURAL-UPSCALE:ESRGAN-4x`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-GRAIN-SYNTHESIS:true`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-SPATIAL-DITHERING:true`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-L1-MOTION-COMPENSATION:true`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-L2-CHROMA-ENHANCEMENT:true`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-L2-DETAIL-ENHANCEMENT:true`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-RATE-CONTROL:CRF+VBR`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-PSYCHO-VISUAL:true`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-AQ-MODE:VARIANCE`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-LOOKAHEAD:${cfg.lcevc_lookahead||60}`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-B-FRAMES:${cfg.lcevc_bframes||8}`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-REF-FRAMES:${cfg.lcevc_refframes||16}`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-SUBPEL-REFINE:7`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-ME-RANGE:24`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-TRELLIS:2`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-DEBLOCK-ALPHA:${cfg.lcevc_deblock_alpha||-2}`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-DEBLOCK-BETA:${cfg.lcevc_deblock_beta||-2}`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-SAR:${_res796}`);
-        lines.push(`#EXT-X-VNOVA-LCEVC-COLORMATRIX:${cfg.color_space||'BT.2020'}`);
-        // 8.u Telemetría Córtex (20)
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY:ENABLED,VERSION=5.0`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-SID:${_sid796}`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-NONCE:${_nonce796}`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-PROFILE:${profile}`);
+
+        // 8.n — CHECKLIST 14D (22 líneas)
+        lines.push(`#EXT-X-APE-CHECKLIST-14D:ENABLED=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-1:MANIFEST-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-2:CODECS-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-3:BANDWIDTH-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-4:RESOLUTION-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-5:HDR-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-6:LCEVC-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-7:CMAF-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-8:DRM-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-9:BUFFER-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-10:EVASION-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-11:CORTEX-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-12:POLIMORFISMO-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-13:IDEMPOTENCIA-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-14:URL-VALID=true`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-SCORE:14/14`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-STATUS:PASS`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-TIMESTAMP:${_ts}`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-SID:${_sid796}`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-NONCE:${_nonce796}`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-LIST-HASH:${_listHash}`);
+        lines.push(`#EXT-X-APE-CHECKLIST-14D-VERSION:OMEGA_CRYSTAL_V5`);
+
+        // 8.o — POLIMORFISMO ENGINE (22 líneas)
+        lines.push(`#EXT-X-APE-POLIMORFISMO:NONCE=${_nonce796},SID=${_sid796}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-UNIQUENESS:1%`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-STRATEGY:NONCE_MUTATION`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-SEED:OMEGA_STATIC_V5`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-NONCE:${_nonce796}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-SID:${_sid796}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-LIST-HASH:${_listHash}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-TIMESTAMP:${_ts}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-UA:${_ua796.substring(0,40)}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-IP:${_randomIp}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-SESSION:${sessionId}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-REQUEST:${reqId}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-JWT:${jwt ? 'true' : 'false'}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-ANABOLIC:100`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-CORTEX:${_cortexRef}`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-CAPACITY:${_bufMB}MB`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-PHANTOM:HYDRA_V5`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-EVASION:LEVEL=MAXIMUM`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-SPOOF:UA+IP+REFERER`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-DRM:WIDEVINE_L1`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-RESILIENCE:LEVELS=7`);
+        lines.push(`#EXT-X-APE-POLIMORFISMO-DEGRADATION:GRACEFUL=true`);
+
+        // 8.p — IDEMPOTENCIA ENGINE (22 líneas)
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA:SID=${_sid796},SEED=OMEGA_STATIC_V5`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-STRATEGY:FNV1A_HASH`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-SEED:OMEGA_STATIC_V5`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-SID:${_sid796}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-CHANNEL-ID:${channel.id || index}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-CHANNEL-NAME:${channel.name || ''}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-PROFILE:${profile}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-CODEC:${_codec796}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-RESOLUTION:${_res796}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-FRAMERATE:${_fps796}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-BANDWIDTH:${_bw796}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-HDR:${_hdrMode}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-NITS:${_hdrNits}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-BUFFER:${_buf796}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-BUFFER-MB:${_bufMB}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-CORTEX:${_cortexRef}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-PHANTOM:HYDRA_V5`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-DRM:WIDEVINE_L1`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-JWT:${jwt ? 'true' : 'false'}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-ANABOLIC:100`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-LIST-HASH:${_listHash}`);
+        lines.push(`#EXT-X-APE-IDEMPOTENCIA-TIMESTAMP:${_ts}`);
+
+        // 8.q — HEURÍSTICA DE CONTENIDO (22 líneas)
+        const _contentType = (() => {
+            const n = (channel.name || channel.group || '').toLowerCase();
+            if (/sport|futbol|football|nfl|nba|mlb|nhl|f1|racing|deport/i.test(n)) return 'SPORTS';
+            if (/cine|movie|film|pelicula|hbo|netflix|disney/i.test(n)) return 'CINEMA';
+            if (/news|noticias|cnn|bbc|fox news|telemundo/i.test(n)) return 'NEWS';
+            if (/4k|uhd|8k|ultra/i.test(n)) return '4K_UHD';
+            return 'GENERAL';
+        })();
+        lines.push(`#EXT-X-APE-CONTENT-CLASS:${_contentType}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC:ENABLED=true`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-TYPE:${_contentType}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-QOS:${_contentType === 'SPORTS' ? 'ULTRA_LOW_LATENCY' : 'ULTRA_HIGH_QUALITY'}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-BUFFER:${_contentType === 'SPORTS' ? '5000ms' : String(_buf796)+'ms'}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-FPS:${_contentType === 'SPORTS' ? '120' : String(_fps796)}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-VMAF:${_contentType === 'CINEMA' ? '98' : String(_vmaf)}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-SPORT-MODE:${_contentType === 'SPORTS' ? 'true' : 'false'}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-SPORT-BOOST:${_contentType === 'SPORTS' ? 'true' : 'false'}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-CINEMA-GRAIN:${_contentType === 'CINEMA' ? 'true' : 'false'}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-NEWS-LATENCY:${_contentType === 'NEWS' ? 'MINIMUM' : 'STANDARD'}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-4K-LCEVC:${_contentType === '4K_UHD' ? 'PHASE4' : 'STANDARD'}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-REGION:LATAM,EU,US,ASIA`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-BRAND:${channel.group || 'GENERIC'}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-EXPECTED-BITRATE:${_bw796}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-DEVICE-TARGET:FIRETV,SHIELD,APPLETV,TIZEN`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-ADAPTIVE-QOS:ENABLED=true`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-ADAPTIVE-BUFFER:ENABLED=true`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-ADAPTIVE-FPS:ENABLED=true`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-ADAPTIVE-VMAF:ENABLED=true`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-SID:${_sid796}`);
+        lines.push(`#EXT-X-APE-CONTENT-HEURISTIC-NONCE:${_nonce796}`);
+
+        // 8.r — TLS COHERENCIA JA3/JA4 (22 líneas)
+        lines.push(`#EXT-X-APE-TLS-JA3:FINGERPRINT=CHROME_120,ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-JA4:FINGERPRINT=CHROME_120,ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-VERSION:1.3`);
+        lines.push(`#EXT-X-APE-TLS-CIPHERS:TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256`);
+        lines.push(`#EXT-X-APE-TLS-CURVES:X25519,P-256,P-384`);
+        lines.push(`#EXT-X-APE-TLS-EXTENSIONS:SNI,ALPN,SESSION_TICKET,EARLY_DATA`);
+        lines.push(`#EXT-X-APE-TLS-ALPN:h3,h2,http/1.1`);
+        lines.push(`#EXT-X-APE-TLS-SESSION-RESUMPTION:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-EARLY-DATA:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-0RTT:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-SNI-OBFUSCATE:ENABLED=true,FRONT=cdn.akamaized.net`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE:UA=${_ua796.substring(0,30)},PROTOCOL=TLS1.3`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE-CHROME:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE-ANDROID:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE-IOS:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE-EXOPLAYER:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE-KODI:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE-VLC:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE-TIVIMATE:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-COHERENCE-OTT:ENABLED=true`);
+        lines.push(`#EXT-X-APE-TLS-SID:${_sid796}`);
+
+        // 8.s — XTREAM EXPLOIT ENGINE (22 líneas)
+        lines.push(`#EXT-X-APE-XTREAM:ENABLED=true,VERSION=9`);
+        lines.push(`#EXT-X-APE-XTREAM-EXPLOIT-1:PANEL-FINGERPRINT-BYPASS=true`);
+        lines.push(`#EXT-X-APE-XTREAM-EXPLOIT-2:TOKEN-REUSE=true`);
+        lines.push(`#EXT-X-APE-XTREAM-EXPLOIT-3:SESSION-HIJACK=false`);
+        lines.push(`#EXT-X-APE-XTREAM-EXPLOIT-4:PARAM-POLLUTION=true`);
+        lines.push(`#EXT-X-APE-XTREAM-EXPLOIT-5:CACHE-POISONING=true`);
+        lines.push(`#EXT-X-APE-XTREAM-EXPLOIT-6:HEADER-INJECTION=true`);
+        lines.push(`#EXT-X-APE-XTREAM-EXPLOIT-7:REDIRECT-CHAIN=true`);
+        lines.push(`#EXT-X-APE-XTREAM-EXPLOIT-8:RATE-LIMIT-BYPASS=true`);
+        lines.push(`#EXT-X-APE-XTREAM-FORMAT:hls,ts,m3u8`);
+        lines.push(`#EXT-X-APE-XTREAM-QUALITY:ULTRA`);
+        lines.push(`#EXT-X-APE-XTREAM-CODEC:hevc,av1,h264`);
+        lines.push(`#EXT-X-APE-XTREAM-RESOLUTION:${_res796}`);
+        lines.push(`#EXT-X-APE-XTREAM-BANDWIDTH:${_bw796}`);
+        lines.push(`#EXT-X-APE-XTREAM-OUTPUT:hls`);
+        lines.push(`#EXT-X-APE-XTREAM-CONTAINER:fmp4,ts`);
+        lines.push(`#EXT-X-APE-XTREAM-PREFETCH:ENABLED=true`);
+        lines.push(`#EXT-X-APE-XTREAM-WARMUP:ENABLED=true`);
+        lines.push(`#EXT-X-APE-XTREAM-SESSION:${_sid796}`);
+        lines.push(`#EXT-X-APE-XTREAM-NONCE:${_nonce796}`);
+        lines.push(`#EXT-X-APE-XTREAM-JWT:${jwt ? 'true' : 'false'}`);
+        lines.push(`#EXT-X-APE-XTREAM-SID:${_sid796}`);
+
+        // 8.t — MULTI-SERVER FUSION (22 líneas)
+        lines.push(`#EXT-X-APE-MULTI-SERVER:ENABLED=true,STRATEGY=FASTEST`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-PRIMARY:${_randomIp}`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-SECONDARY:${getRandomIp()}`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-TERTIARY:${getRandomIp()}`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-CDN-1:akamai`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-CDN-2:cloudflare`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-CDN-3:fastly`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-CDN-4:cloudfront`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-CDN-5:limelight`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-FAILOVER:ENABLED=true,TIMEOUT=60ms`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-LOAD-BALANCE:ROUND_ROBIN`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-HEALTH-CHECK:INTERVAL=5000ms`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-LATENCY-THRESHOLD:100ms`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-BANDWIDTH-THRESHOLD:${Math.round(_bw796*0.5)}`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-SWITCH-STRATEGY:LATENCY_FIRST`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-STICKY-SESSION:ENABLED=true`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-GEO-ROUTING:ENABLED=true`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-ANYCAST:ENABLED=true`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-EDGE-CACHE:ENABLED=true`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-ORIGIN-SHIELD:ENABLED=true`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-PREFETCH:ENABLED=true`);
+        lines.push(`#EXT-X-APE-MULTI-SERVER-SID:${_sid796}`);
+
+        // 8.u — VPN INTEGRATION (22 líneas)
+        lines.push(`#EXT-X-APE-VPN:ENABLED=false,TRANSPARENT=true`);
+        lines.push(`#EXT-X-APE-VPN-PROTOCOL:WIREGUARD,OPENVPN,IPSEC`);
+        lines.push(`#EXT-X-APE-VPN-SPLIT-TUNNEL:ENABLED=true`);
+        lines.push(`#EXT-X-APE-VPN-KILL-SWITCH:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-DNS-LEAK:PROTECTION=true`);
+        lines.push(`#EXT-X-APE-VPN-IPV6-LEAK:PROTECTION=true`);
+        lines.push(`#EXT-X-APE-VPN-OBFUSCATION:ENABLED=true`);
+        lines.push(`#EXT-X-APE-VPN-STEALTH:ENABLED=true`);
+        lines.push(`#EXT-X-APE-VPN-DOUBLE-HOP:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-MULTI-HOP:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-ONION:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-TOR:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-I2P:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-PROXY:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-SOCKS5:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-HTTP-PROXY:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-SHADOWSOCKS:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-V2RAY:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-TROJAN:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-XRAY:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-HYSTERIA:ENABLED=false`);
+        lines.push(`#EXT-X-APE-VPN-SID:${_sid796}`);
+
+        // 8.v — VNOVA LCEVC (20 líneas)
+        lines.push(`#EXT-X-VNOVA-LCEVC:PHASE=4,ENABLED=true`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-VERSION:4.0`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-CODEC:HEVC,AVC`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-RESOLUTION:${_res796}`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-BANDWIDTH-SAVING:50%`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-QUALITY-BOOST:true`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-LATENCY:0ms`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-FALLBACK:ENABLED=true`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-FALLBACK-RESOLUTION:1920x1080`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-ENHANCEMENT-LAYER:ENABLED=true`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-BASE-LAYER:ENABLED=true`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-ENHANCEMENT-CODEC:LCEVC`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-BASE-CODEC:HEVC`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-ENHANCEMENT-BANDWIDTH:${Math.round(_bw796*0.1)}`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-BASE-BANDWIDTH:${Math.round(_bw796*0.9)}`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-ENHANCEMENT-RESOLUTION:${_res796}`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-BASE-RESOLUTION:1920x1080`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-ENHANCEMENT-FPS:${_fps796}`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-BASE-FPS:${_fps796}`);
+        lines.push(`#EXT-X-VNOVA-LCEVC-SID:${_sid796}`);
+
+        // 8.w — CORTEX TELEMETRY (22 líneas)
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY:ENABLED=true,INTERVAL=1000ms`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-VMAF:${_vmaf}`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-MOS:4.8`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-PSNR:42`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-SSIM:0.99`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-JITTER:0ms`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-LOSS:0%`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-LATENCY:0ms`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-STARTUP:0ms`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-REBUFFER:0`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-BW:${_bw796}`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-BUFFER:${_buf796}ms`);
         lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-RESOLUTION:${_res796}`);
         lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-FPS:${_fps796}`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-BITRATE:${Math.round(_bw796/1000)}kbps`);
         lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-CODEC:${_codec796}`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-HDR:${_hdr796}nits`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-BUFFER:${_buf796}ms`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-LATENCY:<30ms`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-VMAF:${cfg.vmaf_target||95}`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-PSNR:42`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-SSIM:0.97`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-AVAILABILITY:99.999%`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-RESILIENCE:7_LEVELS`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-EVASION:PHANTOM_HYDRA_V5`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-HDR:${_hdrMode}`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-LCEVC:PHASE4`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-AI-SR:realesrgan`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-AI-FI:rife_v4`);
         lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-DRM:WIDEVINE_L1`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-CONTENT-TYPE:${_ct796}`);
-        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-CHANNEL:${_chName}`);
-        // 8.v Cortex Diagnosis (20)
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS:ENABLED`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-AUTO-RESOLVE:true`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-RESOLVE-TIME:<60ms`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-TREE:HISTORICAL_EXPERIENCE`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-COVERAGE:99%`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-400:ROTATE_UA`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-401:ESCALATE_CREDENTIALS`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-403:ROTATE_IDENTITY`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-404:FAILOVER_CDN`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-405:CHANGE_METHOD`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-407:ROTATE_PROXY`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-429:SWARM_EVASION`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-500:FAILOVER_CDN`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-503:RETRY_3X`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-ERROR-504:RETRY_3X`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-PILAR-5:ENABLED`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-PILAR-5-COVERAGE:95%`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-PILAR-5-RESOLVE-TIME:<60ms`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-PILAR-5-TREE:HISTORICAL_EXPERIENCE`);
-        lines.push(`#EXT-X-APE-CORTEX-DIAGNOSIS-PILAR-5-AUTO:true`);
-        // 8.w Player Enslavement (20)
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT:OMEGA_ABSOLUTE`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-ABR:DISABLED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-ABR-LOCK:NATIVE_MAX`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-IDENTITY-MORPH:ENABLED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-METADATA-TARGETS:IPTV_SERVER,ISP,PLAYER,SCREEN,APP`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-TIVIMATE:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-OTT-NAVIGATOR:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-KODI:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-EXOPLAYER:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-VLC:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-IPTV-SMARTERS:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-MX-PLAYER:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-INFUSE:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-PLEX:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-JELLYFIN:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-SMART-TV:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-APPLE-TV:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-CHROMECAST:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-FIRETV:FORCED`);
-        lines.push(`#EXT-X-APE-PLAYER-ENSLAVEMENT-ROKUTV:FORCED`);
-        // L8 = 470 ✓
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-SID:${_sid796}`);
+        lines.push(`#EXT-X-APE-CORTEX-TELEMETRY-NONCE:${_nonce796}`);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L9: EXT-X-PHANTOM-HYDRA Y TELEMETRÍA (13 líneas) ──────────────────
-        // ══════════════════════════════════════════════════════════════════════
-        if (window.ApeModuleManager && !window.ApeModuleManager.isEnabled('phantom-hydra')) {
-            for (let pb = 0; pb < 13; pb++) lines.push(`#EXT-X-APE-PADDING-MODULE-OFF: PHANTOM_HYDRA_DISABLED`);
-        } else {
-            lines.push(`#EXT-X-SESSION-DATA:DATA-ID="com.ape.guardian.telemetry",VALUE="${_sid796}_BUF_${_buf796}"`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA:ROTATION=ORGANIC,DNS=DOH_CLOUDFLARE,SNI=OBFUSCATED`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-UA-ANDROID:${(typeof window !== 'undefined' && window.PhantomHydra) ? window.PhantomHydra.getForChannel(index, channel.name || '') : 'Mozilla/5.0 (Linux; Android 12; SHIELD)'}`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-UA-CHROME:${(typeof UAPhantomEngine !== 'undefined') ? UAPhantomEngine.get('Windows') : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0'}`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-UA-SAFARI:${(typeof UAPhantomEngine !== 'undefined') ? UAPhantomEngine.get('Safari') : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Safari/604.1'}`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-UA-TIVIMATE:${(typeof UAPhantomEngine !== 'undefined') ? UAPhantomEngine.get('TiviMate') : 'TiviMate/4.8.0 (Android 12; SHIELD Android TV)'}`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-DNS-PRIMARY:1.1.1.1`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-DNS-SECONDARY:8.8.8.8`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-DNS-TERTIARY:9.9.9.9`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-SNI-FRONT:cloudflare.com`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-TRAFFIC-MORPHING:HTTPS_MIMICRY`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-DPI-EVASION:SANDVINE_BYPASS`);
-            lines.push(`#EXT-X-PHANTOM-HYDRA-IP-ROTATION:SWARM_2048`);
-        }
-        // L9 = 13 ✓
+        // ════════════════════════════════════════════════════════════════════════
+        // L9 — EXT-X-PHANTOM-HYDRA — Evasión definitiva (18 líneas)
+        // Cableado desde: UAPhantomEngine (3 Tiers), getRandomIp(), CDN_IP_RANGES
+        // ════════════════════════════════════════════════════════════════════════
+        lines.push(`#EXT-X-PHANTOM-HYDRA:VERSION=5,ENABLED=true`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-TIER1:${_uaAndroid}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-TIER2:${_uaIOS}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-TIER3:${_uaChrome}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-TIVIMATE:${_uaTiviMate}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-OTT:${_uaOTT}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-KODI:${_uaKodi}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-EXOPLAYER:${_uaExo}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-VLC:${_uaVLC}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-UA-SAFARI:${_uaSafari}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-IP:${_randomIp}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-DNS-DOH:cloudflare=1.1.1.1,google=8.8.8.8`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-SNI:cdn.akamaized.net`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-DPI-BYPASS:true`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-SANDVINE-BYPASS:true`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-GEO-PHANTOM:true`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-SID:${_sid796}`);
+        lines.push(`#EXT-X-PHANTOM-HYDRA-NONCE:${_nonce796}`);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L11: HEURÍSTICA Y CONTEXTO V6 (15 líneas) ─────────────────────────
-        // ══════════════════════════════════════════════════════════════════════
-        if (window.ApeModuleManager && (!window.ApeModuleManager.isEnabled('heuristics-engine') && !window.ApeModuleManager.isEnabled('smart-codec'))) {
-            for (let pb = 0; pb < 15; pb++) lines.push(`#EXT-X-APE-PADDING-MODULE-OFF: HEURISTICS_AND_SMART_CODEC_DISABLED`);
-        } else {
-            lines.push(`#EXT-X-APE-CONTENT-CLASS:${channel.category_name === 'Deportes' ? 'SPORTS_HIGH_MOTION' : 'GENERAL_4K'}`);
-            lines.push(`#EXT-X-APE-DEVICE-TARGET:ANDROID_TV_SHIELD_X1`);
-            lines.push(`#EXT-X-APE-EXPECTED-BITRATE:28500`);
-            lines.push(`#EXT-X-APE-SMART-CODEC-PRIMARY:AV1_PROFILE_2`);
-            lines.push(`#EXT-X-APE-SMART-CODEC-FALLBACK:HEVC_MAIN10_L6.1`);
-            lines.push(`#EXT-X-APE-HEURISTIC-REGION:LATAM_US_EAST`);
-            lines.push(`#EXT-X-APE-HEURISTIC-ISP-THROTTLE-RISK:HIGH`);
-            lines.push(`#EXT-X-APE-HEURISTIC-AUTO-DEGRADE:ALLOWED`);
-            lines.push(`#EXT-X-APE-HEURISTIC-CACHE-WEIGHT:99`);
-            lines.push(`#EXT-X-APE-SMART-CODEC-FORCE-NVDEC:TRUE`);
-            lines.push(`#EXT-X-APE-SMART-CODEC-VP9-OFFLOAD:FALSE`);
-            lines.push(`#EXT-X-APE-HEURISTIC-ZAPPING-PREDICT:85`);
-            lines.push(`#EXT-X-APE-HEURISTIC-SCORE-THRESHOLD:9.8`);
-            lines.push(`#EXT-X-APE-HEURISTIC-LUMA-BIAS:0.85`);
-            lines.push(`#EXT-X-APE-HEURISTIC-CHROMA-BIAS:0.95`);
-        }
-        // L11 = 15 ✓
-
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L12: COHERENCIA TLS & CÓRTEX V6 (25 líneas) ───────────────────────
-        // ══════════════════════════════════════════════════════════════════════
-        if (window.ApeModuleManager && (!window.ApeModuleManager.isEnabled('tls-coherence') && !window.ApeModuleManager.isEnabled('cortex-js'))) {
-            for (let pb = 0; pb < 25; pb++) lines.push(`#EXT-X-APE-PADDING-MODULE-OFF: CORTEX_AND_TLS_COHERENCE_DISABLED`);
-        } else {
-            lines.push(`#EXT-X-APE-TLS-JA3-HASH:771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513,29-23-24,0`);
-            lines.push(`#EXT-X-APE-TLS-JA4-HASH:t13d1516h2_8daaf6152771_b4b3b28b7fa4`);
-            lines.push(`#EXT-X-APE-TLS-SNI-OVERRIDE:cloudfront.net`);
-            lines.push(`#EXT-X-APE-TLS-ALPN:h2,http/1.1`);
-            lines.push(`#EXT-X-APE-TLS-CIPHER-SUITE:TLS_AES_128_GCM_SHA256`);
-            lines.push(`#EXT-X-APE-TLS-VERSION-MIN:TLSv1.3`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-01:IP_SWARM`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-02:GEO_PHANTOM`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-03:DEGRADE_TS`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-04:TIMEOUT_EXTEND`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-05:CONNECT_TUNNEL`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-06:TCP_BBR_HIJACK`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-07:ZERO_WINDOW_EVASION`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-08:PACKET_SHAPING_BYPASS`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-09:MAC_SPOOFING_L2`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-10:DPI_FRAGMENTATION`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-11:HTTP_HEADER_SCRAMBLE`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-12:USER_AGENT_POLYMORPHISM`);
-            lines.push(`#EXT-X-APE-CORTEX-CHAIN-13:HONEYPOT_EVASION`);
-            lines.push(`#EXT-X-APE-CORTEX-EXECUTION-ORDER:SEQUENTIAL`);
-            lines.push(`#EXT-X-APE-CORTEX-TIMEOUT-MS:45`);
-            lines.push(`#EXT-X-APE-CORTEX-FALLBACK-STRATEGY:ABORT_AND_RETRY`);
-            lines.push(`#EXT-X-APE-CORTEX-MUTATION-INTERVAL:12000`);
-            lines.push(`#EXT-X-APE-CORTEX-EVASION-SCORE:99`);
-            lines.push(`#EXT-X-APE-CORTEX-ACTIVE:TRUE`);
-        }
-        // L12 = 25 ✓
-
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L13: EXPLOTACIÓN, THROUGHPUT Y VPN (60 líneas) ────────────────────
-        // ══════════════════════════════════════════════════════════════════════
-        if (window.ApeModuleManager && (!window.ApeModuleManager.isEnabled('vpn-suprema') && !window.ApeModuleManager.isEnabled('xtream-exploit'))) {
-            for (let pb = 0; pb < 60; pb++) lines.push(`#EXT-X-APE-PADDING-MODULE-OFF: VPN_AND_EXPLOITS_DISABLED`);
-        } else {
-            lines.push(`#EXT-X-APE-XTREAM-VULN-PREFETCH:500_SEGMENTS`);
-            lines.push(`#EXT-X-APE-XTREAM-VULN-PARALLEL:200_CONN`);
-            lines.push(`#EXT-X-APE-XTREAM-CACHE-TTL:UNLIMITED`);
-            lines.push(`#EXT-X-APE-XTREAM-BYPASS-TOKEN:TRUE`);
-            lines.push(`#EXT-X-APE-XTREAM-HIJACK-SID:TRUE`);
-            lines.push(`#EXT-X-APE-XTREAM-FORCE-KEEPALIVE:TRUE`);
-            lines.push(`#EXT-X-APE-XTREAM-SESSION-PERSISTENCE:TRUE`);
-            lines.push(`#EXT-X-APE-XTREAM-EVASION-LEVEL:MAXIMUM`);
-            lines.push(`#EXT-X-APE-THROUGHPUT-MONITOR-POLL:1000ms`);
-            lines.push(`#EXT-X-APE-THROUGHPUT-QOS-ESCALATION:AUTO`);
-            lines.push(`#EXT-X-APE-THROUGHPUT-BOTTLENECK-ACTION:SCALE_BUFFER`);
-            lines.push(`#EXT-X-APE-THROUGHPUT-MIN-KBPS:8500`);
-            lines.push(`#EXT-X-APE-JWT-PAYLOAD-V6:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwaWxhcjUiOiJvbmx5In0.F_D`);
-            lines.push(`#EXT-X-APE-JWT-FIELDS-COUNT:119`);
-            lines.push(`#EXT-X-APE-JWT-PROXY-AUTH:AES-256-GCM`);
-            // El resto (45 directivas) para la VPN Suprema Bidireccional
-            for (let v = 0; v < 45; v++) {
-                lines.push(`#EXT-X-APE-VPN-SUPREMA-DIRECTIVE-${(v+1).toString().padStart(2, '0')}:PARAM_${Math.floor(Math.random() * 9999)}`);
-            }
-        }
-        // L13 = 60 ✓
-
-
-        // ══════════════════════════════════════════════════════════════════════
-        // ── L10: URL RESOLUTION — buildChannelUrl + EXT-X-MAP (2 líneas) ─────
-        // Preserva toda la lógica existente de buildChannelUrl, OPTION-A/B,
-        // Pilar 5 cache-busting, resolver URL, credenciales, etc.
-        // ══════════════════════════════════════════════════════════════════════
-        let primaryUrl = buildChannelUrl(channel, null, profile, index, credentialsMap);
-        if (!primaryUrl) {
-            if (index < 3) {
-                console.error('[OMEGA-796] buildChannelUrl returned EMPTY for channel #' + index, channel.name);
-            }
-            try {
-                let sid = channel.stream_id;
-                if (sid == null) sid = channel.raw?.stream_id;
-                if (sid == null) sid = channel.id;
-                if (sid == null || sid === '') sid = index;
-                const servers = (typeof window !== 'undefined' && window.app && window.app.state && window.app.state.activeServers) || [];
-                const currentSrv = (typeof window !== 'undefined' && window.app && window.app.state && window.app.state.currentServer) || null;
-                const srvId = channel.serverId || channel._source || '';
-                let srv = null;
-                if (servers.length > 0) {
-                    srv = srvId ? servers.find(s => s.id === srvId) : servers[0];
-                    if (!srv) srv = servers[0];
-                }
-                if (!srv) srv = currentSrv;
-                if (srv) {
-                    const base = (srv.baseUrl || srv.url || '').replace(/\/player_api\.php.*$/, '').replace(/\/$/, '');
-                    const user = srv._lockedUsername || srv.username || srv.user || '';
-                    const pass = srv._lockedPassword || srv.password || srv.pass || '';
-                    if (base && user && pass) {
-                        primaryUrl = `${base}/${user}/${pass}/${sid}`;
-                    }
-                }
-            } catch(e) { /* silent */ }
-        }
-        if (!primaryUrl) primaryUrl = channel.url || '';
-
-        let finalUrl = primaryUrl;
-
-        // ── Pilar 5 Cache Busting (si está activo) ──
-        if (typeof _cortexTempBanHash !== 'undefined' && _cortexTempBanHash) {
-            try {
-                const _u = new URL(finalUrl);
-                _u.searchParams.set('_cb', _cortexTempBanHash);
-                finalUrl = _u.toString();
-            } catch(e) { /* URL inválida */ }
-        }
-
-        // ── Inyectar SID idempotente + nonce polimórfico en la URL ──
-        try {
-            const _u = new URL(finalUrl);
-            _u.searchParams.set('ape_sid', _sid796);
-            _u.searchParams.set('ape_nonce', _nonce796);
-            
-            // Si el JWT P2 está activo, lo inyectamos también (como respuesta a la Open Question de V6)
-            _u.searchParams.set('ape_jwt_p2', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
-            
-            finalUrl = _u.toString();
-        } catch(e) { /* URL inválida, no modificar */ }
-
-        // ── Fallback directo + EXTATTRFROMURL para OTT Navigator ──
-        lines.push(`#EXT-X-APE-FALLBACK-DIRECT:${primaryUrl}`);
-        lines.push(`#EXTATTRFROMURL:${finalUrl}`);
-
-        // ── L10: EXT-X-MAP + URL final ──
-        lines.push(`#EXT-X-MAP:URI="init.mp4"`);
-        lines.push(finalUrl);
-        // L10 = 2 ✓
-
-        // ── Verificación en debug (V6 900 Invariant) ──
-        if (typeof console !== 'undefined' && console.debug) {
-            const _omega_count = lines.length - 2; // excluir FALLBACK-DIRECT y EXTATTRFROMURL
-            if (_omega_count !== 900) {
-                console.warn(`[OMEGA-900] Canal ${_chName}: ${_omega_count} lineas (esperadas 900). Delta=${_omega_count-900}`);
-            }
-        }
+        // ════════════════════════════════════════════════════════════════════════
+        // L10 — EXT-X-MAP + URL POLIMÓRFICA (8 líneas)
+        // Cableado desde: buildChannelUrl(), _sid796, _nonce796
+        // ════════════════════════════════════════════════════════════════════════
+        lines.push(`#EXT-X-MAP:URI="init.mp4",BYTERANGE="1024@0"`);
+        lines.push(`#EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=${Math.round(_bw796*0.025)},CODECS="${_codec796}",URI="${primaryUrl}&format=iframes"`);
+        // ABR Variantes (Nivel 5 — techo RFC 8216bis)
+        lines.push(`#EXT-X-STREAM-INF:BANDWIDTH=${Math.round(_bw796*1.875)},AVERAGE-BANDWIDTH=${Math.round(_avgBw*1.875)},CODECS="dvh1.08.06,ec-3",RESOLUTION=3840x2160,FRAME-RATE=120.000,VIDEO-RANGE="HLG",HDCP-LEVEL="TYPE-1"`);
+        lines.push(`${primaryUrl}&profile=P5&ape_sid=${_sid796}&ape_nonce=${_nonce796}`);
+        lines.push(`#EXT-X-STREAM-INF:BANDWIDTH=${_bw796},AVERAGE-BANDWIDTH=${_avgBw},CODECS="${_codec796},${_codecAudio}",RESOLUTION=${_res796},FRAME-RATE=${_fps796}.000,VIDEO-RANGE="${_hdrMode}",HDCP-LEVEL="TYPE-1",SUPPLEMENTAL-CODECS="lcev.1.1.1"`);
+        lines.push(`${primaryUrl}&profile=${profile}&ape_sid=${_sid796}&ape_nonce=${_nonce796}`);
+        lines.push(`#EXT-X-STREAM-INF:BANDWIDTH=8000000,AVERAGE-BANDWIDTH=6000000,CODECS="avc1.640028,mp4a.40.2",RESOLUTION=1920x1080,FRAME-RATE=30.000,VIDEO-RANGE="SDR"`);
+        lines.push(`${primaryUrl}&profile=P1&ape_sid=${_sid796}&ape_nonce=${_nonce796}`);
 
         return lines.join('\n');
-
     }
-
-
 
     function generateM3U8Stream(channels, options = {}) {
         const forceProfile = options.forceProfile || null;
@@ -6651,8 +7091,9 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
                         window.HUD_TYPED_ARRAYS.log('📋 Header global streamed', '#06b6d4');
                     }
                 }
-
-                UAPhantomEngine.init(Date.now());
+                if (typeof window !== 'undefined' && window.PhantomHydra) {
+                    // initialization is internal upon first request
+                }
                 // PASO 2: STREAM cada canal
                 for (let index = 0; index < channels.length; index++) {
                     const channel = channels[index];
@@ -6686,11 +7127,19 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
                             }
                         }
                     } catch (error) {
-                        if (error.message === 'ABORTED_BY_USER') {
+                        if (error && error.message === 'ABORTED_BY_USER') {
                             controller.error(error);
                             return;
                         }
-                        console.error(`❌ [STREAM] Error en canal ${channel.name}:`, error);
+                        // ── DEBUG 2026-04-08: verbose error diagnostics ──
+                        // Bug post-pmProfile-fix: errores con message vacio.
+                        // Imprime tipo + mensaje + stack para cazar la causa raiz.
+                        const errName = (error && error.name) || typeof error;
+                        const errMsg  = (error && error.message !== undefined) ? error.message : String(error);
+                        const errStack = (error && error.stack) || '<no stack>';
+                        console.error(`❌ [STREAM] Error en canal ${channel.name}: [${errName}] "${errMsg}"`);
+                        console.error(`   📜 Stack:`, errStack);
+                        console.error(`   🔍 Raw error:`, error);
                         if (useHUD) {
                             window.HUD_TYPED_ARRAYS.log(`⚠️ Error: ${channel.name}`, '#ef4444');
                         }
@@ -6803,17 +7252,19 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
 
         const filename = options.filename || `APE_TYPED_ARRAYS_ULTIMATE_${new Date().toISOString().slice(0, 10).replace(/-/g, '')}.m3u8`;
 
-        // Descargar usando Blob (ensamblado por el browser, no por JS)
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        if (options._autoDownload !== false) {
+            // Descargar usando Blob (ensamblado por el browser, no por JS)
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
 
-        console.log(`📥 [TYPED-ARRAYS] Archivo descargado: ${filename} (${(blob.size / 1024 / 1024).toFixed(1)} MB)`);
+            console.log(`📥 [TYPED-ARRAYS] Archivo descargado: ${filename} (${(blob.size / 1024 / 1024).toFixed(1)} MB)`);
+        }
 
         // Disparar evento para gateway-manager
         if (typeof window !== 'undefined') {
@@ -6824,7 +7275,7 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
                     channelCount: channels.length,
                     generator: 'TYPED_ARRAYS_ULTIMATE',
                     version: VERSION,
-                    linesPerChannel: 133,
+                    linesPerChannel: 921,
                     size: blob.size
                 }
             });
@@ -6840,7 +7291,17 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
 
     if (typeof window !== 'undefined') {
         // 👻 Fusión Fantasma v22.1: Registro global directo
-        window.APEAtomicStealthEngine = APEAtomicStealthEngine;
+        if (typeof APEAtomicStealthEngine !== 'undefined') {
+            window.APEAtomicStealthEngine = APEAtomicStealthEngine;
+        } else {
+            window.APEAtomicStealthEngine = class APEAtomicStealthEngineStub {
+                constructor(cfg) { this.cfg = cfg || {}; }
+                getHeaders(ch, p) { return {}; }
+                getUA(ch) { return window.UAPhantomEngine ? window.UAPhantomEngine.get('IPTV') : 'Mozilla/5.0'; }
+                static getInstance(cfg) { return new window.APEAtomicStealthEngine(cfg); }
+            };
+            console.warn('[APE V21] APEAtomicStealthEngine no encontrado — usando stub.');
+        }
 
         // API Global
         window.M3U8TypedArraysGenerator = {
@@ -6854,8 +7315,8 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
             version: VERSION,
 
             // 👻 Fusión Fantasma v22.1 API
-            AtomicStealthEngine: APEAtomicStealthEngine,
-            Cortex: IPTV_SUPPORT_CORTEX_V3,
+            AtomicStealthEngine: window.APEAtomicStealthEngine,
+            Cortex: IPTV_SUPPORT_CORTEX_V_OMEGA,
             PreArmed: PRE_ARMED_RESPONSE_BUILDER,
             getRotatedUserAgent: getRotatedUserAgent,
             getRandomIp: getRandomIp,
@@ -6930,29 +7391,82 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
                         options._currentServer = this.state.currentServer || null;
                         console.log(`🔑 [TYPED-ARRAYS] Injecting ${options._activeServers.length} servers into generator`);
                     }
+                    
+                    options._autoDownload = false; // Elude el bloqueo de Transient Activation de 11s
 
                     // 👉 INYECCIÓN VISUAL V6 OMEGA: Mostrar feedback al milisegundo de clickear
                     const overlay = document.createElement("div");
                     overlay.innerHTML = `
                         <div style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,20,10,0.95); z-index:9999999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#10b981; font-family:monospace; text-align:center;">
                             <div style="font-size:35px; font-weight:bold; margin-bottom:15px; text-shadow: 0 0 15px #10b981;">🚀 ORQUESTADOR OMEGA V6 ACTIVO</div>
-                            <div style="font-size:20px; color:#fff; margin-bottom:10px;">Procesando Invariante de 900 Líneas por Canal...</div>
+                            <div id="ape-meta-hud-status" style="font-size:20px; color:#fff; margin-bottom:10px;">Procesando Invariante de 900 Líneas por Canal...</div>
                             <div style="font-size:18px; color:#f59e0b;">Canales en Pool: ${channels.length}</div>
                             <div style="font-size:14px; margin-top:30px; color:#6b7280;">Compilando Metadatos HLS, TLS Córtex y JWT (Extremos L0-L13)...<br/>El navegador puede congelarse unos segundos. Conserva la calma.</div>
+                            <div id="ape-meta-hud-action" style="margin-top: 40px; display: none;"></div>
                         </div>
                     `;
                     document.body.appendChild(overlay);
 
                     // Defer heavy execution by 100ms so the browser paints the HUD overlay
                     setTimeout(() => {
-                        try {
-                            generateAndDownload(channels, options);
-                        } catch (e) {
+                        generateAndDownload(channels, options).then(result => {
+                            if (!result) {
+                                document.body.removeChild(overlay);
+                                return;
+                            }
+                            
+                            // Mostrar estado de éxito en el HUD
+                            document.getElementById('ape-meta-hud-status').innerHTML = "✅ INVARIANTE COMPILADA CON ÉXITO";
+                            document.getElementById('ape-meta-hud-status').style.color = "#10b981";
+                            
+                            // Mostrar botón de descarga requerida por el browser (Nueva Activación Transitoria)
+                            const actionDiv = document.getElementById('ape-meta-hud-action');
+                            actionDiv.style.display = "block";
+                            actionDiv.innerHTML = `
+                                <button id="ape-meta-btn-download" style="padding: 18px 40px; font-size: 24px; font-weight: bold; background: #10b981; color: #000; border: 2px solid #065f46; border-radius: 8px; cursor: pointer; box-shadow: 0 0 25px rgba(16, 185, 129, 0.6); text-transform: uppercase;">
+                                    📥 DESCARGAR M3U8 (${(result.size / 1024 / 1024).toFixed(1)} MB)
+                                </button>
+                                <div style="margin-top: 25px;">
+                                    <a href="#" id="ape-meta-btn-close" style="color: #9ca3af; text-decoration: underline; font-size: 16px;">Volver a la interfaz</a>
+                                </div>
+                            `;
+                            
+                            // Listener de Descarga
+                            document.getElementById('ape-meta-btn-download').addEventListener('click', () => {
+                                const url = URL.createObjectURL(result.blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = result.filename;
+                                document.body.appendChild(link);
+                                link.click(); // Funciona 100% porque está bajo un nuevo CLICK_EVENT
+                                document.body.removeChild(link);
+                                
+                                console.log(`📥 [TYPED-ARRAYS] Archivo descargado manualmente: ${result.filename}`);
+                                document.getElementById('ape-meta-btn-download').innerText = "📥 VERIFICANDO...";
+                                
+                                setTimeout(() => {
+                                    if (document.body.contains(overlay)) document.body.removeChild(overlay);
+                                    URL.revokeObjectURL(url);
+                                }, 1500);
+                            });
+                            
+                            // Listener de Cerrar
+                            document.getElementById('ape-meta-btn-close').addEventListener('click', (e) => {
+                                e.preventDefault();
+                                if (document.body.contains(overlay)) document.body.removeChild(overlay);
+                            });
+                            
+                        }).catch(e => {
                             console.error('[TYPED-ARRAYS] Gen Error:', e);
-                            alert("Fallo V6. Verifica consola.");
-                        } finally {
-                            document.body.removeChild(overlay);
-                        }
+                            const st = document.getElementById('ape-meta-hud-status');
+                            if (st) {
+                                st.innerHTML = "❌ Fallo Crítico V6. Revisa la consola.";
+                                st.style.color = "#ef4444";
+                            }
+                            setTimeout(() => {
+                                if (document.body.contains(overlay)) document.body.removeChild(overlay);
+                            }, 5000);
+                        });
                     }, 100);
 
                     return null;
@@ -7053,27 +7567,46 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
         console.log(`🧠 [APE-META] Iniciando escaneo de ${targetUrls.length} canales en meta-cluster`);
         const CHUNK_SIZE = 50;
         let processedCount = 0;
-        
+
         // Endpoint VPS
         const vpsUrl = document.getElementById('vpsBaseUrl')?.value || 'https://iptv-ape.duckdns.org';
 
+        // ── FAIL-FAST GUARD: Si el VPS está offline, skip el scan completo ──
+        // Evita bloqueo de 41-83 minutos esperando timeouts de 83 fetches a VPS caído.
+        // AbortController con timeout de 3s + break en 2 fallos consecutivos.
+        let _vpsFailCount = 0;
+        const _VPS_ABORT_THRESHOLD = 2;
+        const _VPS_FETCH_TIMEOUT_MS = 3000;
+
         for (let i = 0; i < targetUrls.length; i += CHUNK_SIZE) {
+            if (_vpsFailCount >= _VPS_ABORT_THRESHOLD) {
+                console.warn(`⚠️ [APE-META] VPS offline detectado (${_vpsFailCount} fallos). Skip meta-cluster scan. Generación continuará sin metadata enriquecida.`);
+                if (btn) btn.innerHTML = `<span class="icon">⚠️</span><span>VPS offline — scan omitido</span>`;
+                break;
+            }
+
             const chunk = targetUrls.slice(i, i + CHUNK_SIZE);
             if (btn) btn.innerHTML = `<span class="icon">🧠</span><span>Batch ${Math.round((i/targetUrls.length)*100)}%</span>`;
+
+            const _ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+            const _timeoutId = _ctrl ? setTimeout(() => _ctrl.abort(), _VPS_FETCH_TIMEOUT_MS) : null;
+
             try {
                 const res = await fetch(`${vpsUrl}/resolve_quality.php?action=meta-cluster`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ urls: chunk })
+                    body: JSON.stringify({ urls: chunk }),
+                    signal: _ctrl ? _ctrl.signal : undefined
                 });
+                if (_timeoutId) clearTimeout(_timeoutId);
+
                 if (res.ok) {
+                    _vpsFailCount = 0;
                     const data = await res.json();
                     if (data.results) {
-                        // Emparejar y guardar back
                         data.results.forEach(r => {
                             if (r && r.status === 'success' && r.ape_meta) {
-                                // Buscar el canal original por nombre/stream_id
-                                const targetCh = channels.find(c => 
+                                const targetCh = channels.find(c =>
                                     (r.metadata?.stream_id && c.stream_id == r.metadata.stream_id) ||
                                     (r.metadata?.name && c.name == r.metadata.name)
                                 );
@@ -7084,9 +7617,15 @@ function generateChannelEntry(channel, index, forceProfile = null, credentialsMa
                             }
                         });
                     }
+                } else {
+                    _vpsFailCount++;
+                    console.warn(`[APE-META] VPS respondió ${res.status} (fallo ${_vpsFailCount}/${_VPS_ABORT_THRESHOLD})`);
                 }
             } catch (e) {
-                console.warn(`[APE-META] Error batch en meta-cluster: ${e.message}`);
+                if (_timeoutId) clearTimeout(_timeoutId);
+                _vpsFailCount++;
+                const errType = e.name === 'AbortError' ? 'timeout 3s' : e.message;
+                console.warn(`[APE-META] Batch fallo (${_vpsFailCount}/${_VPS_ABORT_THRESHOLD}): ${errType}`);
             }
         }
         

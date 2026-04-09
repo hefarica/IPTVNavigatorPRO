@@ -534,9 +534,11 @@
                         <button class="pm9-btn pm9-btn-upload" onclick="window.ProfileManagerV9.importTemplate()" title="Subir plantilla JSON para cargar al perfil actual">
                             📤 Subir Plantilla
                         </button>
-                        <button class="pm9-btn pm9-btn-export" onclick="window.ProfileManagerV9.exportTemplate()" title="Exportar perfil actual como JSON">
+                        
+                        <button class="pm9-btn pm9-btn-export" onclick="window.ProfileManagerV9.toggleExportMenu()" title="Opciones de Exportación/Importación">
                             📥 Exportar
                         </button>
+
                         <button class="pm9-btn pm9-btn-secondary" onclick="window.ProfileManagerV9.duplicateProfile()">
                             📋 Duplicar
                         </button>
@@ -550,6 +552,15 @@
                             💾 Guardar
                         </button>
                     </div>
+
+                    <!-- Menú Flotante de Opciones Extras -->
+                    <div id="ape-floating-export-menu" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999999; flex-direction: column; gap: 10px; background: rgba(15, 23, 42, 0.95); padding: 15px; border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.4); box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(10px);">
+                        <div style="color: #c4b5fd; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; text-align: center;">💾 Export &amp; Import</div>
+                        <button onclick="window.ProfileManagerV9.exportTemplate(); window.ProfileManagerV9.toggleExportMenu()" style="background: rgba(6, 182, 212, 0.2); color: rgb(6, 182, 212); border: 1px solid rgba(6, 182, 212, 0.4); padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 13px;" onmouseover="this.style.background='rgba(6, 182, 212, 0.4)'" onmouseout="this.style.background='rgba(6, 182, 212, 0.2)'">📥 Exportar Actual</button>
+                        <button onclick="window.ProfileManagerV9.exportAllProfiles(); window.ProfileManagerV9.toggleExportMenu()" style="background: rgba(139, 92, 246, 0.2); color: rgb(196, 181, 253); border: 1px solid rgba(139, 92, 246, 0.4); padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 13px;" onmouseover="this.style.background='rgba(139, 92, 246, 0.4)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.2)'">📦 Exportar Todos</button>
+                        <button onclick="window.ProfileManagerV9.importAllProfiles(); window.ProfileManagerV9.toggleExportMenu()" style="background: rgba(16, 185, 129, 0.2); color: rgb(16, 185, 129); border: 1px solid rgba(16, 185, 129, 0.4); padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 13px; margin-top: 5px;" onmouseover="this.style.background='rgba(16, 185, 129, 0.4)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.2)'">📤 Importar Todos</button>
+                    </div>
+
                 </div>
             `;
 
@@ -2541,6 +2552,20 @@
         }
 
         /**
+         * 🔽 Alternar la visibilidad del menú flotante de exportación
+         */
+        toggleExportMenu() {
+            const menu = document.getElementById('ape-floating-export-menu');
+            if (menu) {
+                if (menu.style.display === 'none') {
+                    menu.style.display = 'flex';
+                } else {
+                    menu.style.display = 'none';
+                }
+            }
+        }
+
+        /**
          * 📥 EXPORTAR perfil activo como JSON
          */
         exportTemplate() {
@@ -2602,6 +2627,68 @@
             URL.revokeObjectURL(url);
 
             console.log(`📥 Perfil ${profileId} exportado como JSON`);
+        }
+
+        /**
+         * 📦 EXPORTAR TODOS los perfiles como JSON
+         */
+        exportAllProfiles() {
+            const exportData = {
+                _meta: {
+                    type: 'all_profiles',
+                    exported: new Date().toISOString(),
+                    version: 'APE_v9.0'
+                },
+                profiles: this.config.getAllProfiles()
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `APE_ALL_PROFILES_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            console.log(`📦 Todos los perfiles exportados exitosamente`);
+        }
+
+        /**
+         * 🔄 IMPORTAR TODOS los perfiles desde un JSON
+         */
+        importAllProfiles() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.style.display = 'none';
+            document.body.appendChild(input);
+
+            input.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+
+                    if (data._meta && data._meta.type === 'all_profiles' && data.profiles) {
+                        this.config.profiles = data.profiles;
+                        this.config.save();
+                        this.render();
+                        console.log(`✅ Todos los perfiles restaurados correctamente.`);
+                        alert(`✅ Todos los perfiles han sido reemplazados y restaurados exitosamente.`);
+                    } else {
+                        throw new Error("El archivo no tiene el formato correcto de 'Todos los Perfiles' (APE_ALL_PROFILES).");
+                    }
+                } catch (err) {
+                    console.error('❌ Error al importar todos los perfiles:', err);
+                    alert(`❌ Error al leer la plantilla:\n${err.message}\n\nAsegúrate de que sea un JSON válido exportado con la opción 'Todos los Perfiles'.`);
+                } finally {
+                    input.remove();
+                }
+            });
+
+            input.click();
         }
 
         saveAndClose() {

@@ -182,7 +182,7 @@
             }
 
             // ═══════════════════════════════════════════════════════════════════
-            // PASO 1: UPLOAD
+            // PASO 1: UPLOAD (XHR DIRECTO A UPLOAD.PHP)
             // ═══════════════════════════════════════════════════════════════════
             this.state.uploadInProgress = true;
             this._setState('UPLOAD_IN_PROGRESS');
@@ -196,7 +196,7 @@
                 await new Promise((resolve, reject) => {
                     const xhr = new XMLHttpRequest();
                     const formData = new FormData();
-                    // Sanitizar nombre: guiones bajos, sin espacios ni paréntesis
+                    // Sanitizar nombre: guiones bajos, sin espacios ni paréntesis (REGLA 1 y 2)
                     const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '_');
                     formData.append('file', file, safeName);
 
@@ -240,7 +240,11 @@
                     };
 
                     xhr.timeout = 3600 * 1000; // 1 hora
-                    xhr.open('POST', `${CONFIG.vps_url}${CONFIG.endpoints.upload}`, true);
+                    xhr.open('POST', `${CONFIG.vps_url}/upload.php`, true);
+                    
+                    // Asegurar compatibilidad para bypassear preflights innecesarios
+                    // No enviar Authorization si no hay un endpoint auth
+                    
                     xhr.send(formData);
                 });
 

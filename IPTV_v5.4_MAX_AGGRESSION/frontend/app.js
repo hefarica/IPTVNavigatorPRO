@@ -6163,6 +6163,11 @@ El servidor analizará 26,000+ canales en ~10 minutos.
         let library = [];
         try {
             library = JSON.parse(localStorage.getItem('iptv_server_library') || '[]');
+            const filtered = library.filter(s => !(s.baseUrl || '').includes('candycloud8k.biz'));
+            if (filtered.length !== library.length) {
+                library = filtered;
+                localStorage.setItem('iptv_server_library', JSON.stringify(library));
+            }
         } catch (e) { library = []; }
 
         // Update stats
@@ -6242,6 +6247,12 @@ El servidor analizará 26,000+ canales en ~10 minutos.
         let library = [];
         try {
             library = JSON.parse(localStorage.getItem('iptv_server_library') || '[]');
+            // Eliminar servidor muerto reportado por el usuario
+            const filtered = library.filter(s => !(s.baseUrl || '').includes('candycloud8k.biz'));
+            if (filtered.length !== library.length) {
+                library = filtered;
+                localStorage.setItem('iptv_server_library', JSON.stringify(library));
+            }
         } catch (e) { return; }
 
         if (library.length === 0) return;

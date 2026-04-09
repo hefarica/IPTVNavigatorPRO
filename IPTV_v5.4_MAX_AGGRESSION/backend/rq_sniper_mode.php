@@ -680,7 +680,7 @@ function rq_sniper_parallel_reconnect_race($origin_url, $ch_id, $session) {
  * @param array $acrp_state     Estado ACRP (de rq_sniper_acrp_get_state)
  * @return array Directivas EXTVLCOPT y EXTHTTP del pipeline
  */
-function rq_sniper_ffmpeg_pipeline($sniper_status, $acrp_state, $resolution_hint = 'unknown') {
+function rq_sniper_ffmpeg_pipeline($sniper_status, $acrp_state, $resolution_hint = 'unknown', $session_id = '') {
     $output = ['ext_vlcopt' => [], 'ext_http' => []];
 
     if ($sniper_status['status'] === 'IDLE') {
@@ -763,13 +763,32 @@ function rq_sniper_ffmpeg_pipeline($sniper_status, $acrp_state, $resolution_hint
     // scd=none: Scene Change Detection desactivado (evita flashes)
     $filters[] = 'minterpolate=fps=120:mi_mode=mci:me=hexbs:mc=64:scd=none';
 
+    // =====================================================================
+    // STEP 7: HARDWARE OVERDRIVE (VRR & BWDIF) OMEGA V5 - APE_SID AWARE
+    // =====================================================================
+    // Incorporamos la identidad dual (ape_sid) al procesamiento hardware
+    // para enrutar optimizaciones BWDIF dinámicas según el perfil del SID.
+    $bwdif_mode = 'mode=1:parity=-1:deint=0';
+    $vrr_sync = 'vsync=1';
+    
+    if (!empty($session_id)) {
+        // Enforce based on SID entropy to balance GPU load
+        $sid_hash = crc32($session_id);
+        if ($sid_hash % 2 === 0) {
+            $bwdif_mode = 'mode=1:parity=-1:deint=1'; // strict
+            $vrr_sync = 'vsync=drop'; // evadir tears en HDMI 2.1
+        }
+        $output['ext_vlcopt'][] = 'ape-hw-overdrive-sid=' . htmlspecialchars($session_id, ENT_QUOTES, 'UTF-8');
+    }
+
     // --- Combinar todos los filtros en video-filter chain ---
     $filter_chain = implode(',', $filters);
-    $output['ext_vlcopt'][] = 'video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full';
+    $output['ext_vlcopt'][] = 'video-filter=nlmeans=s=3.0:p=7:r=15,bwdif='.$bwdif_mode.',gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full';
 
     // --- Directivas de soporte standalone ---
     $output['ext_vlcopt'][] = 'deinterlace=1';
     $output['ext_vlcopt'][] = 'deinterlace-mode=bwdif';
+    $output['ext_vlcopt'][] = 'vrr-sync='.$vrr_sync;
 
     return $output;
 }
@@ -1062,33 +1081,16 @@ function rq_sniper_image_enhancement($sniper_status) {
     //   - Audio eARC (Toslink = muerto, limita a 5.1)
 
     // Sharpness 80% óptimo + post-processing
-    $output['ext_vlcopt'][] = "video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full";
+    $dynamic_filter = "video-filter=" . (function_exists('ape_polymorphic_video_filter') ? ape_polymorphic_video_filter($_GET['scene'] ?? 'default') : 'bwdif=mode=1:parity=-1:deint=0,nlmeans=s=1.5:p=5:r=9,hqdn3d=2.0:1.0:3.0:2.0,eq=brightness=0.02:contrast=1.00:saturation=0.65:gamma=1.00,cas=0.70,unsharp=luma_msize_x=5:luma_msize_y=5:luma_amount=0.20:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.00,zscale=t=st2084:p=bt2020:m=2020ncl:d=error_diffusion:r=full:f=spline36');
+    $output['ext_vlcopt'][] = $dynamic_filter;
     $output['ext_vlcopt'][] = "postproc-q=6";
-    $output['ext_vlcopt'][] = "video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full";
-    // Perfil Dinámico Profesional: brightness=0.90 (90%), contrast=1.0 (100%), saturation=0.65 (65%)
-    $output['ext_vlcopt'][] = "video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full";
-
-    // =========================================================================
-    // 5K-ALT: FFT DENOISER (afftdn) — Solo para SD/HD, NUNCA para 4K
-    // =========================================================================
-    // afftdn = Audio/Video FFT Denoiser basado en FFT (Fast Fourier Transform).
-    // Elimina ruido sin perder texturas reales. SOLO se activa como fallback
-    // para contenido SD/HD donde la compresión genera artefactos significativos.
-    // Para 4K está DESACTIVADO (preserva textura original del contenido).
-    // Valor nf=-20 es el óptimo: suficiente para limpiar compresión sin matar detalle.
-    $output['ext_vlcopt'][] = "video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full";  // FFT denoiser para SD/HD fallback
 
     // =========================================================================
     // 5K: DEINTERLACING — BWDIF (Híbrido superior a Yadif)
     // =========================================================================
     // BWDIF = Bob Weaver Deinterlacing Filter
-    // Híbrido que combina lo mejor de Yadif con el filtro w3fdif de la BBC.
-    // Elimina artefactos que Yadif ignora: textos en noticieros, sonrisas,
-    // movimiento rápido de plantas. Sin tirones (jerky motion) en panorámicas.
     $output['ext_vlcopt'][] = "deinterlace=1";
     $output['ext_vlcopt'][] = "deinterlace-mode=bwdif";
-    $output['ext_vlcopt'][] = "video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full";
-    $output['ext_vlcopt'][] = "video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full";
 
     // =========================================================================
     // 5L: HARDWARE DECODE — GPU First (CPU como último fallback)
@@ -1484,7 +1486,8 @@ function rq_sniper_resource_allocator($sniper_status) {
     // Anti-corte
     $output['ext_vlcopt'][] = "deinterlace=1";
     $output['ext_vlcopt'][] = "deinterlace-mode=bwdif";
-    $output['ext_vlcopt'][] = "video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full";
+    $dynamic_filter = "video-filter=" . (function_exists('ape_polymorphic_video_filter') ? ape_polymorphic_video_filter($_GET['scene'] ?? 'default') : 'bwdif=mode=1:parity=-1:deint=0');
+    $output['ext_vlcopt'][] = $dynamic_filter;
 
     // =========================================================================
     // 6I: BUFFER ESCALATION — APOCALYPTIC ceiling (NUEVO v3.0)
@@ -1586,8 +1589,8 @@ function rq_sniper_integrate($ch_id, $profile, $origin = '', $session = '') {
         $res_hint = 'sd';
     }
 
-    // === MÓDULO 8: FFmpeg Pipeline Engine (con resolución adaptativa v3.1) ===
-    $ffmpeg_pipeline = rq_sniper_ffmpeg_pipeline($sniper, $acrp_state, $res_hint);
+    // === MÓDULO 8: FFmpeg Pipeline Engine (con resolución adaptativa y ape_sid v3.1) ===
+    $ffmpeg_pipeline = rq_sniper_ffmpeg_pipeline($sniper, $acrp_state, $res_hint, $uuid);
 
     // === MÓDULO 15: ANTI-NOISE ENGINE (v1.0) ===
     // Clasifica la fuente (CLEAN/DIRTY/CRUSHED) y genera filtros anti-ruido

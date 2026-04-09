@@ -18,11 +18,110 @@ if (!defined('RQ_MAX_NITS')) {
 // These stubs are ONLY defined when the APCu extension is NOT loaded (local dev).
 // On the VPS, the real APCu extension provides these functions.
 if (!extension_loaded('apcu')) {
-    /** @return bool */ function apcu_enabled(): bool { return false; }
-    /** @return mixed */ function apcu_fetch(string $key, ?bool &$success = null): mixed { $success = false; return false; }
-    /** @return bool */ function apcu_store(string $key, mixed $var, int $ttl = 0): bool { return false; }
-    /** @return array|false */ function apcu_cache_info(bool $limited = false): array|false { return []; }
-    /** @return bool */ function apcu_delete(string $key): bool { return false; }
+    /** @return bool */ function apcu_enabled(): bool
+    {
+        return false;
+    }
+    /** @return mixed */ function apcu_fetch(string $key, &$success = null)
+    {
+        $success = false;
+        return false;
+    }
+    /** @return bool */ function apcu_store(string $key, $var, int $ttl = 0): bool
+    {
+        return false;
+    }
+    /** @return array|false */ function apcu_cache_info(bool $limited = false)
+    {
+        return [];
+    }
+    /** @return bool */ function apcu_delete(string $key): bool
+    {
+        return false;
+    }
+}
+
+// === APE POLYMORPHIC & IDEMPOTENT ENGINE ===
+if (!function_exists('ape_polymorphic_video_filter')) {
+    function ape_polymorphic_video_filter($scene = 'default')
+    {
+        $prep = ['fieldmatch', 'decimate=cycle=5:dupthresh=255', 'bwdif=mode=1:parity=-1:deint=0'];
+
+        $spatial = [];
+        $color_fps = [
+            'zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full:chromal=topleft',
+            'chroma_I444'
+        ];
+
+        switch ($scene) {
+            case 'sports':
+                $spatial = [
+                    'nlmeans=s=2.0:p=5:r=11', // Lower denoise to keep grass texture
+                    'hqdn3d=2:1:4:2',
+                    'unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.6:chroma_amount=0.0', // Sharper lines
+                    'pp=al' // Auto levels
+                ];
+                $color_fps[] = 'fps=fps=60:round=near';
+                $color_fps[] = 'minterpolate=fps=120:mi_mode=mci:mc_mode=aobmc:vsbmc=1:me=epzs';
+                break;
+            case 'movies':
+                $spatial = [
+                    'nlmeans=s=3.0:p=7:r=15',
+                    'deband=1thr=0.02:2thr=0.02:3thr=0.02:4thr=0.02:blur=2', // Heavy deband for dark scenes and compression blocks
+                    'hqdn3d=4:3:12:9'
+                ];
+                $color_fps[] = 'fps=fps=24:round=near'; // Cinema retention, strict 24fps, NO soap opera effect
+                break;
+            case 'animation':
+                $spatial = [
+                    'nlmeans=s=5.0:p=9:r=25', // Massive destruction of noise to keep flat colors absolute
+                    'deband=1thr=0.025:2thr=0.025:3thr=0.025:4thr=0.025:blur=1',
+                    'unsharp=luma_msize_x=5:luma_msize_y=5:luma_amount=1.5:chroma_amount=0.0' // Crispier edges for cel-shading
+                ];
+                $color_fps[] = 'fps=fps=60:round=near';
+                $color_fps[] = 'minterpolate=fps=120:mi_mode=mci:mc_mode=aobmc:vsbmc=1:me=epzs';
+                break;
+            case 'news':
+                $spatial = [
+                    'nlmeans=s=2.0:p=5:r=15',
+                    'unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.8:chroma_amount=0.0' // Maximize text legibility (headlines, tickers)
+                ];
+                $color_fps[] = 'fps=fps=60:round=near';
+                break;
+            default:
+                $spatial = [
+                    'nlmeans=s=3.0:p=7:r=15',
+                    'deband=1thr=0.015:2thr=0.015:3thr=0.015:4thr=0.015:blur=1',
+                    'pp=ac/dr/ci',
+                    'unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_amount=0.0',
+                    'hqdn3d=4:3:12:9'
+                ];
+                $color_fps[] = 'fps=fps=60:round=near';
+                $color_fps[] = 'minterpolate=fps=120:mi_mode=mci:mc_mode=aobmc:vsbmc=1:me=epzs';
+                break;
+        }
+
+        shuffle($spatial); // Morphological layer 7 mutation (evade DPI signatures)
+
+        return 'video-filter=' . implode(',', array_merge($prep, $spatial, $color_fps));
+    }
+}
+
+if (!function_exists('ape_inject_vlopt_idempotent')) {
+    function ape_inject_vlopt_idempotent(&$vlcopts, $directive)
+    {
+        $dir_clean = str_replace('#EXTVLCOPT:', '', $directive);
+        $key_clean = explode('=', $dir_clean)[0] . '=';
+
+        foreach ($vlcopts as $idx => $opt) {
+            $opt_clean = str_replace('#EXTVLCOPT:', '', $opt);
+            if (strpos($opt_clean, $key_clean) === 0) {
+                // Idempotencia: Si ya existe la llave, la respetamos y bloqueamos duplicidades destructivas.
+                return;
+            }
+        }
+        $vlcopts[] = $directive;
+    }
 }
 
 // === APE MODULE LOADER — BULLETPROOF ===
@@ -95,7 +194,8 @@ if (class_exists('ApeJwtAuth')) {
 // ============================================================================
 // DEPENDENCIAS FALTANTES (SCOPE RESOLVER COMPLETION)
 // ============================================================================
-function ape_decode_token(string $token): ?string {
+function ape_decode_token(string $token): ?string
+{
     if (class_exists('ApeJwtAuth') && method_exists('ApeJwtAuth', 'verify')) {
         $payload = ApeJwtAuth::verify($token);
         if ($payload && isset($payload['channel'])) {
@@ -111,7 +211,8 @@ function ape_decode_token(string $token): ?string {
 }
 
 if (!function_exists('rq_sniper_integrate')) {
-    function rq_sniper_integrate($ch_id, $profile, $host, $sessionId): array {
+    function rq_sniper_integrate($ch_id, $profile, $host, $sessionId): array
+    {
         return [
             'effective_profile' => $profile ?? 'P3',
             'sniper' => ['status' => 'ACTIVE_DOMINANT', 'label' => 'OMEGA_SNIPER', 'sniper' => true, 'prefetch_mult' => 1.5, 'buffer_mult' => 2],
@@ -131,7 +232,8 @@ if (!function_exists('rq_sniper_integrate')) {
 // GUARDIAN TELEMETRY HOOK (PIPELINE ENTRY)
 // ============================================================================
 if (!function_exists('get_correlated_channel_id')) {
-    function get_correlated_channel_id(): string {
+    function get_correlated_channel_id(): string
+    {
         $uri = $_SERVER['REQUEST_URI'] ?? '';
         if (preg_match('/\/resolve\/t_([a-zA-Z0-9]+)\.m3u8/i', $uri, $matches)) {
             $decoded = ape_decode_token($matches[1]);
@@ -140,11 +242,17 @@ if (!function_exists('get_correlated_channel_id')) {
         }
         if (!empty($_SERVER['HTTP_X_APE_CHANNEL'])) return $_SERVER['HTTP_X_APE_CHANNEL'];
         if (!empty($_SERVER['HTTP_X_APE_CHANNEL_NAME'])) return $_SERVER['HTTP_X_APE_CHANNEL_NAME'];
-        
+
         $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
         if (preg_match('/APE-Channel:\s*([^\s\)]+)/i', $ua, $matches)) {
             return $matches[1];
         }
+
+        // --- 🔑 OMEGA CRYSTAL V5: DUAL IDENTITY CORE LECTURA ---
+        if (!empty($_GET['ape_sid'])) {
+            return $_GET['ape_sid']; // El SID FNV32 absoluto es el único que manda si está presente
+        }
+
         $c = $_GET['channel'] ?? $_GET['c'] ?? $_GET['id'] ?? $_GET['ch'] ?? $_GET['stream'] ?? $_GET['name'] ?? null;
         if ($c) return $c;
         if (preg_match('/\/([^\/]+)\.m3u8/i', $uri, $matches)) {
@@ -168,16 +276,16 @@ if ($ch_global !== 'UNKNOWN') {
     $p = $_GET['p'] ?? 'P3';
     $bw = $_GET['bw_kbps'] ?? 'Auto';
     $qosMode = $_GET['qos_mode'] ?? 'Default';
-    
+
     $logLine = "PLAY|{$p}|{$ch_global}|" . round($latencyMs) . "ms|{$bw}|{$qosMode}\n";
     @file_put_contents('/dev/shm/guardian_telemetry_v16.log', $logLine, FILE_APPEND | LOCK_EX);
-    
+
     // Si la clase ya fue cargada arriba por file_exists
     if (class_exists('GuardianTelemetry')) {
         GuardianTelemetry::log(trim($logLine));
         $telemetry_name = isset($_GET['name']) ? "ID: {$ch_global} - " . urldecode($_GET['name']) : "CH: {$ch_global}";
         GuardianTelemetry::sessionPing($latencyMs, false, $ch_global, $telemetry_name);
-        
+
         // --- INICIO MOTOR DE EXTRAPOLACIÓN (42 DIMENSIONES L7) ---
         $client_ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
@@ -188,7 +296,7 @@ if ($ch_global !== 'UNKNOWN') {
         $last_req_ms = $now_ms;
         $buffer_sim = 0;
         $stall_count = 0;
-        
+
         if (file_exists($ramMemFile)) {
             $sessData = @json_decode(file_get_contents($ramMemFile), true);
             if ($sessData) {
@@ -197,9 +305,9 @@ if ($ch_global !== 'UNKNOWN') {
                 $stall_count = $sessData['stall_count'] ?? 0;
             }
         }
-        
+
         $delta_gap_ms = $now_ms - $last_req_ms;
-        $chunk_duration_sec = isset($_GET['pfseg']) ? (float)$_GET['pfseg']/10 : 2.5; // Inferido del EXTATTRFROMURL
+        $chunk_duration_sec = isset($_GET['pfseg']) ? (float)$_GET['pfseg'] / 10 : 2.5; // Inferido del EXTATTRFROMURL
         if ($delta_gap_ms > 0 && $delta_gap_ms < 60000) {
             $buffer_gained = ($chunk_duration_sec * 1000) - $delta_gap_ms;
             $buffer_sim += $buffer_gained;
@@ -230,12 +338,12 @@ if ($ch_global !== 'UNKNOWN') {
 
             // Red y Entorno TCP/Edge
             'server_latency_ms' => $latencyMs,
-            'tcp_socket_time_ms' => defined('TCP_TIME_EST') ? TCP_TIME_EST : $latencyMs * 1.5,
+            'tcp_socket_time_ms' => defined('TCP_TIME_EST') ? constant('TCP_TIME_EST') : $latencyMs * 1.5,
             'jitter_ms' => rand(2, 18),
-            'download_speed_kbps' => rand(1500, 4500), 
+            'download_speed_kbps' => rand(1500, 4500),
             'upload_speed_kbps' => rand(1500, 4500),
             'http_status_origin' => 200,
-            'cdn_edge_hit' => (rand(0,10) > 2) ? 'HIT' : 'MISS',
+            'cdn_edge_hit' => (rand(0, 10) > 2) ? 'HIT' : 'MISS',
             'bytes_transferred' => 1024 * rand(800, 2500),
             'tcp_window_scaling' => 'ON',
             'protocol_version' => $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1',
@@ -271,7 +379,7 @@ if ($ch_global !== 'UNKNOWN') {
             'api_vendor_latency' => $latencyMs * 0.8,
             'overall_stream_health' => ($buffer_sim < 2000) ? 'DEGRADED' : 'GOOD'
         ];
-        
+
         GuardianTelemetry::historicPing($m42);
         // --- FIN MOTOR ---
     }
@@ -641,7 +749,8 @@ function rq_fetch(string $url, int $timeoutSec = RQ_FETCH_TIMEOUT): ?string
         $result407 = ApeAnti407::resolverFetch($url, $chId);
         $httpStatus = $result407['status'] ?? 0;
         if ($httpStatus === 403 || $httpStatus === 407) {
-            @file_put_contents('/dev/shm/ape_anti407_critical.log',
+            @file_put_contents(
+                '/dev/shm/ape_anti407_critical.log',
                 date('c') . " CRITICAL HTTP-{$httpStatus} after {$result407['attempts']} attempts: {$url}\n",
                 FILE_APPEND | LOCK_EX
             );
@@ -704,7 +813,7 @@ function ape_validate_manifest_rfc8216(string $manifest): array
             // La línea siguiente debe ser una URL, no otra directiva
             if (str_starts_with($nextLine, '#')) {
                 $errors[] = "RFC 8216 VIOLATION en línea " . ($i + 1)
-                          . ": '{$nextLine}' entre EXT-X-STREAM-INF y URL";
+                    . ": '{$nextLine}' entre EXT-X-STREAM-INF y URL";
             }
         }
     }
@@ -2474,7 +2583,8 @@ class PremiumDirectiveInjector
         $fileMs = $config['buffer_file_ms'];
 
         // Directivas de cache de red (VLC soporta estas)
-        $directives[] = "#EXTVLCOPT:network-caching={$networkMs}";
+        $polyCaching = $networkMs + mt_rand(1, 299);
+        $directives[] = "#EXTVLCOPT:network-caching={$polyCaching}";
         $directives[] = "#EXTVLCOPT:live-caching={$liveMs}";
         $directives[] = "#EXTVLCOPT:file-caching={$fileMs}";
 
@@ -3035,7 +3145,9 @@ class StreamSignatureCache
         ];
 
         if ($this->apcuAvailable) {
-            if (function_exists('apcu_store')) { apcu_store($signature, $cacheEntry, $ttlSeconds); }
+            if (function_exists('apcu_store')) {
+                apcu_store($signature, $cacheEntry, $ttlSeconds);
+            }
             return;
         }
 
@@ -3062,7 +3174,9 @@ class StreamSignatureCache
                 foreach ($info['cache_list'] as $entry) {
                     $key = is_array($entry) ? ($entry['info'] ?? '') : (string) $entry;
                     if (str_contains($key, $pattern)) {
-                        if (function_exists('apcu_delete')) { apcu_delete($key); }
+                        if (function_exists('apcu_delete')) {
+                            apcu_delete($key);
+                        }
                     }
                 }
             }
@@ -3893,7 +4007,7 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
         'cooldown_period'      => 0,
         'dscp'                 => 'AF31',
         'prefetch_segments'    => 6,
-        'aggression_multiplier'=> 2,
+        'aggression_multiplier' => 2,
         'escalation_level'     => 'STRONG',
         'rate_control'         => 'CBR',
     ], $p);
@@ -4100,7 +4214,7 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
     // === PLAYER DETECTION ===
     $isKodi = (stripos($playerUA, 'Kodi') !== false);
     $isTiviMate = (stripos($playerUA, 'TiviMate') !== false || stripos($playerUA, 'ExoPlayer') !== false);
-    
+
     // ══════════════════════════════════════════════════════════════════
     // ██████ NEURO-ADAPTIVE ESCALATOR (STRIKE TRACKER) ██████
     // Lee la memoria RAM para detectar micro-cortes (Re-conexión < 12s)
@@ -4108,7 +4222,7 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
     $clientIp = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
     $ch_id_str = (string)$ch_id;
     $strikes = 0;
-    
+
     if ($clientIp !== '0.0.0.0' && $ch_id > 0) {
         $trackerFile = '/dev/shm/ape_neuro_tracker.json';
         $now = time();
@@ -4116,14 +4230,14 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
         if (file_exists($trackerFile)) {
             $trackerData = json_decode(file_get_contents($trackerFile), true) ?: [];
         }
-        
+
         $key = md5($clientIp . '_' . $ch_id_str);
         $traumaLevel = 0;
         if (isset($trackerData[$key])) {
             $lastHit = $trackerData[$key]['ts'];
             $currentStrikes = $trackerData[$key]['strikes'] ?? 0;
             $traumaLevel = $trackerData[$key]['trauma'] ?? 0;
-            
+
             // Si hace Zapping/Reinicia el MISMO canal en menos de 12 segundos -> ASUMIR MICRO-CORTE
             if (($now - $lastHit) < 12) {
                 // Motor de Ansiedad: Si ya sufrió caídas graves antes, salta directo al máximo castigo recordado.
@@ -4132,53 +4246,78 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
                 if ($strikes == 0) $strikes = 1;
             } else {
                 // Pasó el peligro o zapping limpio: Se relaja visualmente (Vuelve a x2)
-                $strikes = 0; 
+                $strikes = 0;
             }
         }
-        
+
         // Nivel implacable: Limitamos a 4 strikes (Multiplicador x16 de buffer)
         if ($strikes > 4) $strikes = 4;
-        
+
         $trackerData[$key] = [
             'ts' => $now,
             'strikes' => $strikes,
             'trauma' => max($strikes, $traumaLevel)
         ];
-        
+
         // Memoria del Trauma: Mantenemos la ansiedad guardada por 6 HORAS (21600 segundos)
         foreach ($trackerData as $k => $v) {
             if (($now - $v['ts']) > 21600) unset($trackerData[$k]);
         }
         @file_put_contents($trackerFile, json_encode($trackerData), LOCK_EX);
     }
-    
+
     // ══════════════════════════════════════════════════════════════════
     // MOTOR OLED SHOWROOM SUPREMACY & PRE-EMPTION
     // No solo asumimos hostilidad (x2 baseline), sino que forzamos la supremacía 
     // gráfica absoluta ignorando el perfíl o las capacidades dudosas del origen.
     // ══════════════════════════════════════════════════════════════════
-    
-    // Inyectores Visuales God-Tier para ExoPlayer/VLC
-    $anti_cut['extvlcopt'][] = "avcodec-hw=any";
-    $anti_cut['extvlcopt'][] = "deinterlace=1";
-    $anti_cut['extvlcopt'][] = "deinterlace-mode=bwdif";
-    $anti_cut['extvlcopt'][] = "codec=hevc,av1,h264"; // Esto erradica MPEG2 explícitamente
-    
-    // PURIFICACIÓN Y UPSCALING NEURAL (Técnicas God-Tier 2026)
-    $anti_cut['extvlcopt'][] = "avcodec-skiploopfilter=0"; // In-Loop Filter: Cero pixelamiento cuadriculado.
-    $anti_cut['extvlcopt'][] = "avcodec-fast=0";           // Busca calidad cristalina exacta bit a bit.
-    $anti_cut['extvlcopt'][] = "swscale-mode=lanczos";     // Upscaling Lanczos 2025+ (Retención térmica de bordes).
-    $anti_cut['extvlcopt'][] = "postproc-q=6";             // De-ringing paranoico algorítmico.
-    $anti_cut['extvlcopt'][] = "avcodec-error-resilience=1"; // Error concealment ocultando frames rotos.
-    // MODULADOR DE INTENSIDAD (Simulación de 5000 Peak Nits SDR-to-HDR WCG sin Clipping + Denoise/Debanding)
-    $anti_cut['extvlcopt'][] = "video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full"; 
-    $anti_cut['extvlcopt'][] = "avcodec-threads=0";        // Desata el 100% de los núcleos GPU/CPU para renderizar estos filtros.
+
+    $dfcKey = "ape_v16_static_filters_v4_poly";
+    $cachedFilters = function_exists('apcu_fetch') && apcu_enabled() ? apcu_fetch($dfcKey) : false;
+
+    if ($cachedFilters !== false && is_array($cachedFilters)) {
+        foreach ($cachedFilters as $f) {
+            $anti_cut['extvlcopt'][] = $f;
+        }
+    } else {
+        $static_filters = [];
+        // Inyectores Visuales God-Tier para ExoPlayer/VLC
+        $static_filters[] = "avcodec-hw=any";
+        $static_filters[] = "deinterlace=1";
+        $static_filters[] = "deinterlace-mode=bwdif";
+        $static_filters[] = "codec=hevc,av1,h264"; // Esto erradica MPEG2 explicitamente
+
+        // PURIFICACION Y UPSCALING NEURAL (Tecnicas God-Tier 2026)
+        $static_filters[] = "avcodec-skiploopfilter=0"; // In-Loop Filter: Cero pixelamiento cuadriculado.
+        $static_filters[] = "avcodec-fast=0";           // Busca calidad cristalina exacta bit a bit.
+        $static_filters[] = "swscale-mode=lanczos";     // Upscaling Lanczos 2025+ (Retencion termica de bordes).
+        $static_filters[] = "postproc-q=6";             // De-ringing paranoico algoritmico.
+        $static_filters[] = "avcodec-error-resilience=1"; // Error concealment ocultando frames rotos.
+        // B-Frame Pyramid L4 - Eliminacion de Open GOP
+        $static_filters[] = "bf=3";
+        $static_filters[] = "b_strategy=1";
+        $static_filters[] = "b-pyramid=strict";
+        $static_filters[] = "avcodec-flags=+cgop";
+        $static_filters[] = "g=60";
+        $static_filters[] = "keyint_min=60";
+        $static_filters[] = "avcodec-threads=0";        // Desata el 100% de los nucleos GPU/CPU
+
+        foreach ($static_filters as $f) {
+            $anti_cut['extvlcopt'][] = $f;
+        }
+        if (function_exists('apcu_store') && apcu_enabled()) {
+            apcu_store($dfcKey, $static_filters, 3600);
+        }
+    }
+
+    // POLIMORFISMO Y L7 IDEMPOTENCIA INYECCION ESTATICA
+    ape_inject_vlopt_idempotent($anti_cut['extvlcopt'], ape_polymorphic_video_filter());
 
     // ESTABILIZADOR INICIAL & PARALELISMO GESTIONADO (Zapping Mode)
     $multiplier = 2; // Sostenido Sano 
-    $parallelStreams = 3; 
+    $parallelStreams = 3;
     $forceDSCP = 'AF41';
-    
+
     if ($strikes == 0) {
         // [Fase de Impulso] El reproductor acaba de hacer Zapping.
         // EVITAMOS EL FREEZE MORTAL DE 5-10 SEGUNDOS INDUCIDO POR EL PESO DEL ZSCALE/LANCZOS
@@ -4200,31 +4339,31 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
         $parallelStreams = 10;
         $forceDSCP = 'CS7'; // Network Control (Cruel y absoluto)
     }
-    
+
     // Sobreescritura de Variables Hacia el Output
     $p['buffer_ms'] = ($p['buffer_ms'] ?? 8000) * $multiplier;
     $p['network_cache'] = ($p['network_cache'] ?? 12000) * $multiplier;
     $p['max_bitrate'] = ($p['max_bitrate'] ?? 5000000) * $multiplier;
-    
+
     // Inyección de Motores de Forzado de ISP
     $anti_cut['exthttp']['X-Media-Parallel-Downloads'] = (string)$parallelStreams;
     $anti_cut['exthttp']['X-Neuromotor-Strikes'] = (string)$strikes;
     $anti_cut['exthttp']['X-Neuromotor-Multiplier'] = "x{$multiplier}";
     $anti_cut['exthttp']['X-Network-QoS-DSCP'] = $forceDSCP;
     $anti_cut['exthttp']['X-Network-Caching-Live'] = (string)$p['network_cache'];
-    
+
     // === UMBRAL DE PÁNICO ANTICIPADO (EXOPLAYER PRE-EMPTION) ===
     // Obligamos al player a asustarse mucho antes de que el buffer llegue a cero,
     // forzándolo a abrir las conexiones paralelas sin que exista un freeze en pantalla.
     $anti_cut['exthttp']['X-Buffer-Panic-Threshold'] = '35000'; // Se activa alarma a 35 segs del vacío
-    
+
     // Inyección VLC
     $anti_cut['extvlcopt'][] = "network-caching=" . $p['network_cache'];
     $anti_cut['extvlcopt'][] = "http-reconnect=true";
 
     if ($isTiviMate) {
         $anti_cut['exthttp']['X-ExoPlayer-Buffer-Strategy'] = 'Pre-emptive';
-        $anti_cut['exthttp']['X-ExoPlayer-Min-Load'] = (string)(35000 * $multiplier); 
+        $anti_cut['exthttp']['X-ExoPlayer-Min-Load'] = (string)(35000 * $multiplier);
         $anti_cut['exthttp']['X-ExoPlayer-Max-Load'] = (string)(120000 * $multiplier);
     }
 
@@ -4417,6 +4556,8 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
                 $enriched[] = '#KODIPROP:inputstream.adaptive.preferred_color_space=bt2020';
                 $enriched[] = '#KODIPROP:inputstream.adaptive.preferred_hdr_types=hdr10,hdr10plus,dolby_vision,hlg';
                 $enriched[] = '#KODIPROP:inputstream.adaptive.ignore_display_resolution=true';
+                // ExoPlayer hardware bypass (Evasión UI Layer / Capability #15)
+                $enriched[] = '#EXTHTTP:{"exo_tunneled_playback":"true"}';
                 // Headers stealth
                 $enriched[] = '#KODIPROP:inputstream.adaptive.stream_headers=User-Agent=Mozilla/5.0 (Linux; Android 14; SHIELD Android TV) Chrome/124.0';
             }
@@ -4458,11 +4599,17 @@ function rq_enrich_channel_output(string $output, string $playerUA, string $host
             }
 
             // === QUANTUM TACTIC 1: Fusión BWDIF + Extreme Denoise/Deblock ===
-            // Cumpliendo instrucción de máxima calidad visual humana (cero artefactos MPEG/MPEG2)
-            if (!in_array('video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full', $vlcopts)) {
-                $vlcopts[] = 'video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full';
+            // Cumpliendo instrucción de máxima calidad visual humana y Polimorfismo Absoluto Identopotente
+            ape_inject_vlopt_idempotent($vlcopts, ape_polymorphic_video_filter());
+            if (!in_array('postproc-q=6', $vlcopts)) {
                 $vlcopts[] = 'postproc-q=6'; // Nivel de deblock máximo para barrer artefactos
-                $vlcopts[] = 'hqdn3d=5:4:6:4.5'; // Denoising agresivo (luma/chroma spatial/temporal)
+                // B-Frame Pyramid L4
+                $vlcopts[] = 'bf=3';
+                $vlcopts[] = 'b_strategy=1';
+                $vlcopts[] = 'b-pyramid=strict';
+                $vlcopts[] = 'avcodec-flags=+cgop';
+                $vlcopts[] = 'g=60';
+                $vlcopts[] = 'keyint_min=60';
             }
 
             // === ANTI-407 STEALTH FINGERPRINT (Capa 1: EXTVLCOPT) ===
@@ -4518,7 +4665,8 @@ function rq_get_stealth_ua(string $playerType): string
 // 🧠 FASE 2: MOTOR DE EXPANSIÓN OMEGA ABSOLUTO (INYECCIÓN > 600 DIRECTIVAS)
 // ==============================================================================
 if (!function_exists('rq_enrich_raw_m3u_omega')) {
-    function rq_enrich_raw_m3u_omega($m3uContent, $payload = []) {
+    function rq_enrich_raw_m3u_omega($m3uContent, $payload = [])
+    {
         try {
             $url = "http://server/live/test";
             $lines = explode("\n", trim($m3uContent));
@@ -4529,7 +4677,7 @@ if (!function_exists('rq_enrich_raw_m3u_omega')) {
             }
             $reconstructor = new OmegaAbsoluteReconstructor();
             $blocks = $reconstructor->reconstruct($payload, $url);
-            
+
             $out = "#EXTM3U\n";
             $out .= implode("\n", $blocks) . "\n";
             $out .= $url . "\n";
@@ -4547,7 +4695,7 @@ class OmegaAbsoluteReconstructor
         'cinema'     => ['profile' => 'P1_CINEMA_8K_HDR',     'fps' => 60,  'buffer' => 60000,  'bw' => 80000000],
         'news'       => ['profile' => 'P2_NEWS_4K_HDR',       'fps' => 60,  'buffer' => 30000,  'bw' => 40000000],
         'kids'       => ['profile' => 'P3_KIDS_4K_HDR',       'fps' => 60,  'buffer' => 30000,  'bw' => 40000000],
-        'documentary'=> ['profile' => 'P4_DOCU_8K_HDR',       'fps' => 60,  'buffer' => 60000,  'bw' => 80000000],
+        'documentary' => ['profile' => 'P4_DOCU_8K_HDR',       'fps' => 60,  'buffer' => 60000,  'bw' => 80000000],
         'default'    => ['profile' => 'P0_ULTRA_SPORTS_8K',   'fps' => 120, 'buffer' => 60000,  'bw' => 80000000],
     ];
 
@@ -4639,7 +4787,7 @@ class OmegaAbsoluteReconstructor
             'X-Display-Color-Depth' => '12',
             'X-Display-Color-Space' => 'BT2020',
             'X-Display-Color-Gamut' => 'P3_D65',
-            'X-Display-Refresh-Rate'=> (string)$profile['fps'],
+            'X-Display-Refresh-Rate' => (string)$profile['fps'],
 
             // ── Información de red declarada al servidor ──────────────────────
             'X-Throughput-Kbps'     => '100000',
@@ -4649,7 +4797,7 @@ class OmegaAbsoluteReconstructor
             'X-Bandwidth-Floor'     => (string)(RQ_MAX_BW / 2),
             'X-Bandwidth-Ceiling'   => '0',
             'X-Bandwidth-Burst-Factor' => '100',
-            'X-Parallel-Connections'=> (string)RQ_PARALLEL_CONNS,
+            'X-Parallel-Connections' => (string)RQ_PARALLEL_CONNS,
             'X-TCP-Window-Size'     => '512MB',
             'X-MTU'                 => '9000',
 
@@ -4767,7 +4915,7 @@ class OmegaAbsoluteReconstructor
 
         return [
             // ── Red y Caché ───────────────────────────────────────────────────
-            '#EXTVLCOPT:network-caching=' . RQ_BUFFER_BASE,
+            '#EXTVLCOPT:network-caching=' . (RQ_BUFFER_BASE + mt_rand(50, 499)), // Polimorfismo Dinamico
             '#EXTVLCOPT:live-caching=' . RQ_BUFFER_BASE,
             '#EXTVLCOPT:disc-caching=' . RQ_BUFFER_BASE,
             '#EXTVLCOPT:file-caching=' . RQ_BUFFER_BASE,
@@ -4801,8 +4949,8 @@ class OmegaAbsoluteReconstructor
             '#EXTVLCOPT:avcodec-vismv=0',
             '#EXTVLCOPT:avcodec-lowres=0',
 
-            // ── Filtros de Video (Máxima Calidad) ─────────────────────────────
-            '#EXTVLCOPT:video-filter=nlmeans=s=3.0:p=7:r=15,bwdif=mode=1:parity=-1:deint=0,gradfun=radius=16:strength=1.0,unsharp=luma_msize_x=3:luma_msize_y=3:luma_amount=0.4:chroma_msize_x=0:chroma_msize_y=0:chroma_amount=0.0,zscale=transfer=st2084:primaries=bt2020:matrix=2020ncl:dither=error_diffusion:range=full',
+            // ── Filtros de Video (Máxima Calidad Polimorfica) ─────────────────────────────
+            '#EXTVLCOPT:' . ape_polymorphic_video_filter(),
             '#EXTVLCOPT:deinterlace-mode=yadif2x',
             '#EXTVLCOPT:deinterlace=auto',
             '#EXTVLCOPT:deblock=-4',
@@ -5195,8 +5343,8 @@ class OmegaAbsoluteReconstructor
         $fps = $profile['fps'];
         $bw  = RQ_MAX_BW;
         return "#EXT-X-STREAM-INF:BANDWIDTH={$bw},AVERAGE-BANDWIDTH={$bw},RESOLUTION=7680x4320,FRAME-RATE={$fps}.000,"
-             . 'CODECS="hvc1.2.4.L183.B0,mp4a.40.2",HDR=PQ,VIDEO-RANGE=PQ,AUDIO="aac_atmos",'
-             . 'CLOSED-CAPTIONS=NONE,SUBTITLES="subs"';
+            . 'CODECS="hvc1.2.4.L183.B0,mp4a.40.2",HDR=PQ,VIDEO-RANGE=PQ,AUDIO="aac_atmos",'
+            . 'CLOSED-CAPTIONS=NONE,SUBTITLES="subs"';
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -5307,7 +5455,7 @@ function rq_handle_request(): void
     if (!empty($_GET['ctx'])) {
         $ctx = $_GET['ctx'];
         $profile = $_GET['profile'] ?? 'DEFAULT';
-        
+
         $ctx = str_pad($ctx, strlen($ctx) % 4, '=', STR_PAD_RIGHT);
         $json_payload = base64_decode(strtr($ctx, '-_', '+/'));
         if (!$json_payload) {
@@ -5317,7 +5465,7 @@ function rq_handle_request(): void
         if (!is_array($payload)) {
             $payload = [];
         }
-        
+
         $origin_url = $_GET['url'] ?? '';
         if (empty($origin_url)) {
             die("#EXTM3U\n#EXTINF:-1, [⚠️ APE ERROR] ADN DE CANAL CORRUPTO (SIN URL)\nhttp://localhost/error.ts\n");
@@ -5325,7 +5473,7 @@ function rq_handle_request(): void
         $best_quality_url = $origin_url;
         $cache_key = 'probe_' . md5($origin_url . $profile);
         $cached_url = function_exists('apcu_fetch') && apcu_enabled() ? apcu_fetch($cache_key) : false;
-        
+
         if ($cached_url) {
             $best_quality_url = $cached_url;
         } else {
@@ -5335,7 +5483,7 @@ function rq_handle_request(): void
                 $codecs_to_try[] = ['ext' => '&video_codec=av1',  'id' => 'AV1_Profile0'];
             }
             $codecs_to_try[] = ['ext' => '', 'id' => 'H264_Base'];
-            
+
             $player_ua = $_SERVER['HTTP_USER_AGENT'] ?? "VLC/3.0.21 LibVLC/3.0.21";
             foreach ($codecs_to_try as $codec) {
                 $test_url = $origin_url . $codec['ext'];
@@ -5363,7 +5511,7 @@ function rq_handle_request(): void
                 }
             }
         }
-        
+
         $extension = strtolower(pathinfo(parse_url($best_quality_url, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
         if ($extension !== 'm3u8') {
             // No podemos envolver un binario crudo (.ts, .mp4, etc.) en un playlist HLS sin proxying de ancho de banda.
@@ -5371,20 +5519,20 @@ function rq_handle_request(): void
             header("Location: " . $best_quality_url, true, 302);
             exit;
         }
-        
+
         header('Content-Type: application/vnd.apple.mpegurl');
         header('Cache-Control: no-cache, no-store, must-revalidate');
         header('Pragma: no-cache');
         header('Expires: 0');
         http_response_code(200);
-        
+
         $output = "#EXTM3U\n";
         $output .= "#EXT-X-VERSION:6\n";
         $output .= "#EXT-X-INDEPENDENT-SEGMENTS\n"; // Optimize for ExoPlayer
         $output .= "#EXT-X-APE-RESOLVER: POLYMORPHIC_200_OK_HYDRA_SSOT\n";
         if ($profile === 'SPORTS') $output .= "#EXT-X-APE-PROFILE-LOCK: 8K_120FPS\n";
         elseif ($profile === 'CINEMA') $output .= "#EXT-X-APE-PROFILE-LOCK: 4K_HDR\n";
-        
+
         // 📊 APE STREAMING HEALTH ENGINE (GOD-TIER ZERO-PIXEL INJECTION)
         if (class_exists('OmegaStreamingHealthEngine')) {
             $healthConfig = [
@@ -5431,10 +5579,10 @@ function rq_handle_request(): void
             );
             foreach ($aiDirectives as $dir) {
                 // Inyectar antes del EXTINF
-                $output = preg_replace('/(#EXTM3U\r?\n)/i', "$1" . addcslashes((str_starts_with($dir, '#') ? $dir : '#'.$dir) . "\n", '\\$'), $output, 1);
+                $output = preg_replace('/(#EXTM3U\r?\n)/i', "$1" . addcslashes((str_starts_with($dir, '#') ? $dir : '#' . $dir) . "\n", '\\$'), $output, 1);
             }
         }
-        
+
         $violations = ape_validate_manifest_rfc8216($output);
         if (!empty($violations)) {
             foreach ($violations as $v) {
@@ -5451,7 +5599,7 @@ function rq_handle_request(): void
         header('Content-Type: text/plain; charset=utf-8');
         header('X-Resolver-Version: 5.0.0-OMEGA');
         header('X-APE-Omega-State: ACTIVE');
-        
+
         $test_payload = [
             'paradigm' => 'OMNI-ORCHESTRATOR-V5-OMEGA',
             'version' => '5.0.0-OMEGA',
@@ -5463,17 +5611,17 @@ function rq_handle_request(): void
             'uniqueness_hash' => 'hash123',
             'uniqueness_nonce' => 'nonce456'
         ];
-        
+
         echo rq_enrich_raw_m3u_omega("#EXTINF:-1 tvg-id=\"TEST\",Canal Prueba\nhttp://server/live/test", $test_payload);
         exit;
     }
 
     // Pipeline entry trace
     rq_pipeline_trace(['event' => 'entry', 'method' => $_SERVER['REQUEST_METHOD'] ?? '?', 'params' => array_keys($_GET)]);
-    
+
     // Guardian Engine Telemetry Hook (Session Tracking)
     $p = $_GET['p'] ?? 'P3';
-    
+
     if (isset($ch_global) && $ch_global !== 'UNKNOWN') {
         // Obviamos todo lo demás porque ya se procesó en el Pipeline Entry (arriba)
     }
@@ -5706,25 +5854,44 @@ function rq_handle_request(): void
                 'providers'        => array_values($providers),
                 'timestamp'        => time(),
             ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        // ═══════════════════════════════════════════════════════════════
-        // FASE 5: METADATA INTELLIGENCE ENGINE — 5 Endpoints
-        // Zero-playback analysis via MetadataEngine class.
-        // ═══════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════
+            // FASE 5: METADATA INTELLIGENCE ENGINE — 5 Endpoints
+            // Zero-playback analysis via MetadataEngine class.
+            // ═══════════════════════════════════════════════════════════════
         } elseif ($action === 'meta' && class_exists('MetadataEngine')) {
-            if (!rq_check_rate_limit('meta')) { echo json_encode(['error' => 'rate_limited']); return; }
+            if (!rq_check_rate_limit('meta')) {
+                echo json_encode(['error' => 'rate_limited']);
+                return;
+            }
             $channelId = q('ch', '0');
             $metaEngine = new MetadataEngine();
             // Build stream URL from default credentials
             $apeCredsFile = __DIR__ . '/ape_credentials.php';
-            $mHost = 'http://line.tivi-ott.net'; $mUser = '3JHFTC'; $mPass = 'U56BDP';
-            if (file_exists($apeCredsFile)) { require_once $apeCredsFile; if (class_exists('ApeCredentials')) { $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass); $mHost = 'http://' . $rc['host']; $mUser = $rc['user']; $mPass = $rc['pass']; } }
+            $mHost = 'http://line.tivi-ott.net';
+            $mUser = '3JHFTC';
+            $mPass = 'U56BDP';
+            if (file_exists($apeCredsFile)) {
+                require_once $apeCredsFile;
+                if (class_exists('ApeCredentials')) {
+                    $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass);
+                    $mHost = 'http://' . $rc['host'];
+                    $mUser = $rc['user'];
+                    $mPass = $rc['pass'];
+                }
+            }
             $streamUrl = rtrim($mHost, '/') . "/live/{$mUser}/{$mPass}/{$channelId}.m3u8";
             $manifest = $metaEngine->fetchManifest($streamUrl);
-            if (!$manifest['is_valid']) { echo json_encode(['error' => 'manifest_unavailable', 'status' => $manifest['status'], 'latency_ms' => $manifest['latency_ms']]); return; }
+            if (!$manifest['is_valid']) {
+                echo json_encode(['error' => 'manifest_unavailable', 'status' => $manifest['status'], 'latency_ms' => $manifest['latency_ms']]);
+                return;
+            }
             $parsed = $metaEngine->parseMasterPlaylist($manifest['body']);
             $attrs = $metaEngine->extractStreamInfAttributes($parsed);
             $merged = array_merge($parsed, $attrs);
-            if ($parsed['playlist_type'] === 'media') { $mediaParsed = $metaEngine->parseMediaPlaylist($manifest['body']); $merged = array_merge($merged, $mediaParsed); }
+            if ($parsed['playlist_type'] === 'media') {
+                $mediaParsed = $metaEngine->parseMediaPlaylist($manifest['body']);
+                $merged = array_merge($merged, $mediaParsed);
+            }
             $score = $metaEngine->calculateMetadataScore($merged);
             $classification = $metaEngine->classifyContentType($merged);
             $hdr = $metaEngine->detectHDR($merged);
@@ -5733,55 +5900,99 @@ function rq_handle_request(): void
             $streamType = $metaEngine->detectLiveVsVOD($merged);
             $fingerprint = $metaEngine->generateStreamFingerprint($merged);
             echo json_encode([
-                'channel_id' => $channelId, 'verified' => true, 'verified_at' => time(),
-                'parsed' => $merged, 'score' => $score, 'classification' => $classification,
-                'hdr' => $hdr, 'audio' => $audio, 'stability' => $stability,
-                'stream_type' => $streamType, 'fingerprint' => $fingerprint,
+                'channel_id' => $channelId,
+                'verified' => true,
+                'verified_at' => time(),
+                'parsed' => $merged,
+                'score' => $score,
+                'classification' => $classification,
+                'hdr' => $hdr,
+                'audio' => $audio,
+                'stability' => $stability,
+                'stream_type' => $streamType,
+                'fingerprint' => $fingerprint,
                 'manifest_latency_ms' => $manifest['latency_ms'],
             ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
         } elseif ($action === 'meta-score' && class_exists('MetadataEngine')) {
-            if (!rq_check_rate_limit('meta-score')) { echo json_encode(['error' => 'rate_limited']); return; }
+            if (!rq_check_rate_limit('meta-score')) {
+                echo json_encode(['error' => 'rate_limited']);
+                return;
+            }
             $channelId = q('ch', '0');
             $metaEngine = new MetadataEngine();
             $apeCredsFile = __DIR__ . '/ape_credentials.php';
-            $mHost = 'http://line.tivi-ott.net'; $mUser = '3JHFTC'; $mPass = 'U56BDP';
-            if (file_exists($apeCredsFile)) { require_once $apeCredsFile; if (class_exists('ApeCredentials')) { $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass); $mHost = 'http://' . $rc['host']; $mUser = $rc['user']; $mPass = $rc['pass']; } }
+            $mHost = 'http://line.tivi-ott.net';
+            $mUser = '3JHFTC';
+            $mPass = 'U56BDP';
+            if (file_exists($apeCredsFile)) {
+                require_once $apeCredsFile;
+                if (class_exists('ApeCredentials')) {
+                    $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass);
+                    $mHost = 'http://' . $rc['host'];
+                    $mUser = $rc['user'];
+                    $mPass = $rc['pass'];
+                }
+            }
             $streamUrl = rtrim($mHost, '/') . "/live/{$mUser}/{$mPass}/{$channelId}.m3u8";
             $manifest = $metaEngine->fetchManifest($streamUrl);
-            if (!$manifest['is_valid']) { echo json_encode(['error' => 'manifest_unavailable']); return; }
+            if (!$manifest['is_valid']) {
+                echo json_encode(['error' => 'manifest_unavailable']);
+                return;
+            }
             $parsed = $metaEngine->parseMasterPlaylist($manifest['body']);
             $attrs = $metaEngine->extractStreamInfAttributes($parsed);
             $merged = array_merge($parsed, $attrs);
-            if ($parsed['playlist_type'] === 'media') { $merged = array_merge($merged, $metaEngine->parseMediaPlaylist($manifest['body'])); }
+            if ($parsed['playlist_type'] === 'media') {
+                $merged = array_merge($merged, $metaEngine->parseMediaPlaylist($manifest['body']));
+            }
             $score = $metaEngine->calculateMetadataScore($merged);
             echo json_encode([
-                'channel_id' => $channelId, 'score' => $score,
+                'channel_id' => $channelId,
+                'score' => $score,
                 'recommendation' => $score['grade'] === 'S' ? 'PREMIUM' : ($score['grade'] === 'A' ? 'HIGH' : ($score['grade'] === 'B' ? 'GOOD' : 'STANDARD')),
             ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
         } elseif ($action === 'meta-duplicates' && class_exists('MetadataEngine')) {
-            if (!rq_check_rate_limit('meta-duplicates')) { echo json_encode(['error' => 'rate_limited']); return; }
+            if (!rq_check_rate_limit('meta-duplicates')) {
+                echo json_encode(['error' => 'rate_limited']);
+                return;
+            }
             $channelId = q('ch', '0');
             $metaEngine = new MetadataEngine();
             $apeCredsFile = __DIR__ . '/ape_credentials.php';
-            $mHost = 'http://line.tivi-ott.net'; $mUser = '3JHFTC'; $mPass = 'U56BDP';
-            if (file_exists($apeCredsFile)) { require_once $apeCredsFile; if (class_exists('ApeCredentials')) { $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass); $mHost = 'http://' . $rc['host']; $mUser = $rc['user']; $mPass = $rc['pass']; } }
+            $mHost = 'http://line.tivi-ott.net';
+            $mUser = '3JHFTC';
+            $mPass = 'U56BDP';
+            if (file_exists($apeCredsFile)) {
+                require_once $apeCredsFile;
+                if (class_exists('ApeCredentials')) {
+                    $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass);
+                    $mHost = 'http://' . $rc['host'];
+                    $mUser = $rc['user'];
+                    $mPass = $rc['pass'];
+                }
+            }
             $streamUrl = rtrim($mHost, '/') . "/live/{$mUser}/{$mPass}/{$channelId}.m3u8";
             $manifest = $metaEngine->fetchManifest($streamUrl);
-            if (!$manifest['is_valid']) { echo json_encode(['error' => 'manifest_unavailable']); return; }
+            if (!$manifest['is_valid']) {
+                echo json_encode(['error' => 'manifest_unavailable']);
+                return;
+            }
             $parsed = $metaEngine->parseMasterPlaylist($manifest['body']);
             $attrs = $metaEngine->extractStreamInfAttributes($parsed);
             $merged = array_merge($parsed, $attrs);
             $fingerprint = $metaEngine->generateStreamFingerprint($merged);
             $duplicates = $metaEngine->findDuplicateGroup($channelId, $channelId, $merged);
             echo json_encode([
-                'channel_id' => $channelId, 'fingerprint' => $fingerprint,
-                'duplicate_count' => count($duplicates), 'duplicates' => $duplicates,
+                'channel_id' => $channelId,
+                'fingerprint' => $fingerprint,
+                'duplicate_count' => count($duplicates),
+                'duplicates' => $duplicates,
             ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
         } elseif ($action === 'meta-cluster' && class_exists('MetadataEngine')) {
-            if (!rq_check_rate_limit('meta-cluster')) { echo json_encode(['error' => 'rate_limited']); return; }
+            if (!rq_check_rate_limit('meta-cluster')) {
+                echo json_encode(['error' => 'rate_limited']);
+                return;
+            }
             $input = json_decode(file_get_contents('php://input'), true);
             if (!is_array($input) || empty($input)) {
                 echo json_encode([
@@ -5793,11 +6004,21 @@ function rq_handle_request(): void
             }
 
             $input = array_slice($input, 0, 50); // Strict MAX 50 channels per cluster request to avoid server choke
-            
+
             $apeCredsFile = __DIR__ . '/ape_credentials.php';
-            $mHost = 'http://line.tivi-ott.net'; $mUser = '3JHFTC'; $mPass = 'U56BDP';
-            if (file_exists($apeCredsFile)) { require_once $apeCredsFile; if (class_exists('ApeCredentials')) { $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass); $mHost = 'http://' . $rc['host']; $mUser = $rc['user']; $mPass = $rc['pass']; } }
-            
+            $mHost = 'http://line.tivi-ott.net';
+            $mUser = '3JHFTC';
+            $mPass = 'U56BDP';
+            if (file_exists($apeCredsFile)) {
+                require_once $apeCredsFile;
+                if (class_exists('ApeCredentials')) {
+                    $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass);
+                    $mHost = 'http://' . $rc['host'];
+                    $mUser = $rc['user'];
+                    $mPass = $rc['pass'];
+                }
+            }
+
             $mh = curl_multi_init();
             $chArr = [];
             $metaEngine = new MetadataEngine();
@@ -5822,7 +6043,7 @@ function rq_handle_request(): void
                 curl_multi_add_handle($mh, $ch);
                 $chArr[$idx] = ['ch' => $ch, 'cid' => $cid];
             }
-            
+
             $active = null;
             do {
                 $mrc = curl_multi_exec($mh, $active);
@@ -5833,7 +6054,9 @@ function rq_handle_request(): void
             } while ($mrc == CURLM_CALL_MULTI_PERFORM);
 
             while ($active && $mrc == CURLM_OK) {
-                if (connection_aborted()) { break; }
+                if (connection_aborted()) {
+                    break;
+                }
                 if (curl_multi_select($mh) != -1) {
                     do {
                         $mrc = curl_multi_exec($mh, $active);
@@ -5849,18 +6072,18 @@ function rq_handle_request(): void
                 $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_multi_remove_handle($mh, $ch);
                 curl_close($ch);
-                
+
                 $isValid = ($status >= 200 && $status < 300) && is_string($body) && str_contains($body, '#EXTM3U');
                 if (!$isValid) {
                     $results[$cid] = ['channel_id' => $cid, 'error' => 'manifest_unavailable', 'status' => $status];
                     continue;
                 }
-                
+
                 $parsed = $metaEngine->parseMasterPlaylist($body);
                 $attrs = $metaEngine->extractStreamInfAttributes($parsed);
                 $merged = array_merge($parsed, $attrs);
-                if ($parsed['playlist_type'] === 'media') { 
-                    $merged = array_merge($merged, $metaEngine->parseMediaPlaylist($body)); 
+                if ($parsed['playlist_type'] === 'media') {
+                    $merged = array_merge($merged, $metaEngine->parseMediaPlaylist($body));
                 }
                 $score = $metaEngine->calculateMetadataScore($merged);
                 $merged['channel_name'] = $req['channel_name'] ?? ('CH ' . $cid);
@@ -5868,7 +6091,7 @@ function rq_handle_request(): void
                 $streamType = $metaEngine->detectLiveVsVOD($merged);
                 $audio = $metaEngine->detectAudioQuality($merged);
                 $hdr = $metaEngine->detectHDR($merged);
-                
+
                 $results[$cid] = [
                     'channel_id' => $cid,
                     'verified' => true,
@@ -5881,27 +6104,44 @@ function rq_handle_request(): void
                 ];
             }
             curl_multi_close($mh);
-            
-            echo json_encode(['status' => 'success', 'timestamp' => time(), 'results' => $results], JSON_UNESCAPED_UNICODE);
 
+            echo json_encode(['status' => 'success', 'timestamp' => time(), 'results' => $results], JSON_UNESCAPED_UNICODE);
         } elseif ($action === 'meta-stability' && class_exists('MetadataEngine')) {
-            if (!rq_check_rate_limit('meta-stability')) { echo json_encode(['error' => 'rate_limited']); return; }
+            if (!rq_check_rate_limit('meta-stability')) {
+                echo json_encode(['error' => 'rate_limited']);
+                return;
+            }
             $channelId = q('ch', '0');
             $metaEngine = new MetadataEngine();
             $apeCredsFile = __DIR__ . '/ape_credentials.php';
-            $mHost = 'http://line.tivi-ott.net'; $mUser = '3JHFTC'; $mPass = 'U56BDP';
-            if (file_exists($apeCredsFile)) { require_once $apeCredsFile; if (class_exists('ApeCredentials')) { $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass); $mHost = 'http://' . $rc['host']; $mUser = $rc['user']; $mPass = $rc['pass']; } }
+            $mHost = 'http://line.tivi-ott.net';
+            $mUser = '3JHFTC';
+            $mPass = 'U56BDP';
+            if (file_exists($apeCredsFile)) {
+                require_once $apeCredsFile;
+                if (class_exists('ApeCredentials')) {
+                    $rc = ApeCredentials::resolve('line.tivi-ott.net', $mUser, $mPass);
+                    $mHost = 'http://' . $rc['host'];
+                    $mUser = $rc['user'];
+                    $mPass = $rc['pass'];
+                }
+            }
             $streamUrl = rtrim($mHost, '/') . "/live/{$mUser}/{$mPass}/{$channelId}.m3u8";
             $manifest = $metaEngine->fetchManifest($streamUrl);
-            if (!$manifest['is_valid']) { echo json_encode(['error' => 'manifest_unavailable']); return; }
+            if (!$manifest['is_valid']) {
+                echo json_encode(['error' => 'manifest_unavailable']);
+                return;
+            }
             $parsed = $metaEngine->parseMasterPlaylist($manifest['body']);
             $merged = $parsed;
-            if ($parsed['playlist_type'] === 'media') { $merged = array_merge($merged, $metaEngine->parseMediaPlaylist($manifest['body'])); }
+            if ($parsed['playlist_type'] === 'media') {
+                $merged = array_merge($merged, $metaEngine->parseMediaPlaylist($manifest['body']));
+            }
             $stability = $metaEngine->estimateStability($merged);
             echo json_encode([
-                'channel_id' => $channelId, 'stability' => $stability,
+                'channel_id' => $channelId,
+                'stability' => $stability,
             ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
         } else {
             http_response_code(400);
             echo json_encode(['error' => 'unknown action']);
@@ -6175,7 +6415,7 @@ function rq_handle_request(): void
                         $apiHost = 'http://' . $apiHost;
                     }
                     $apiUrl = rtrim($apiHost, '/') . '/player_api.php?username=' . urlencode($user)
-                            . '&password=' . urlencode($pass) . '&action=get_live_streams';
+                        . '&password=' . urlencode($pass) . '&action=get_live_streams';
 
 
                     $apiCh = @curl_init($apiUrl);
@@ -6411,6 +6651,40 @@ function rq_handle_request(): void
             }
         }
 
+        // ══════════════════════════════════════════════════════════════════
+        // === AI SCENE DETECTION (PER-SCENE PIPELINE SWITCHING) ===
+        // Recuperar directamente del Crawler Local Frontal (Zero Probe L7).
+        // Si no está, hacemos Regex como Fallback de emergencia.
+        // ══════════════════════════════════════════════════════════════════
+        $detected_scene = 'default';
+        if (isset($_GET['scene']) && !empty($_GET['scene']) && $_GET['scene'] !== 'null') {
+            $detected_scene = strtolower(trim($_GET['scene']));
+        } else if (preg_match('/#EXTINF:.*?(?:tvg-name|group-title)="([^"]+)"/i', $raw, $matches)) {
+            $meta = strtolower($matches[1]);
+            if (preg_match('/sport|deporte|espn|fox|bein|premier|laliga|ufc|wwe|nba|nfl/i', $meta)) {
+                $detected_scene = 'sports';
+            } elseif (preg_match('/cine|movie|film|hbo|cinema|studio|premium/i', $meta)) {
+                $detected_scene = 'movies';
+            } elseif (preg_match('/anim|kid|cartoon|disney|nick|toon/i', $meta)) {
+                $detected_scene = 'animation';
+            } elseif (preg_match('/news|noticias|bbc|cnn|24h|info/i', $meta)) {
+                $detected_scene = 'news';
+            }
+        }
+
+        // === SUPREMACIA POLIMORFICA INYECTADA EN RAW Y OUTPUT ===
+        // Reemplazar si existe el stub, sino se inyecta de base
+        if (strpos($raw, '#EXTVLCOPT:video-filter') !== false) {
+            $raw = preg_replace('/#EXTVLCOPT:video-filter=[^\r\n]*/i', '#EXTVLCOPT:' . ape_polymorphic_video_filter($detected_scene), $raw);
+        } else {
+            // Anexar filtro polimórfico y Directivas FFmpeg Cuánticas Llevadas al Límite (Skills 001-068)
+            $raw .= "\n#EXTVLCOPT:" . ape_polymorphic_video_filter($detected_scene) . "\n";
+            $raw .= "#EXTVLCOPT:avformat-options={analyzeduration:10000000,probesize:10000000,fflags:+genpts+igndts+discardcorrupt}\n";
+            $raw .= "#EXTVLCOPT:avcodec-error-resilience=1\n";
+            $raw .= "#EXTVLCOPT:avcodec-workaround-bugs=1\n";
+            $raw .= "#EXTVLCOPT:postproc-quality=6\n";
+        }
+
         $output = $pipeline->process(raw: $raw, context: [
             'server_headers' => $serverHeaders,
             'get_params'     => $getParams,
@@ -6418,6 +6692,11 @@ function rq_handle_request(): void
             'qos_ref'        => $qosRef,
             'ctx_data'       => $ctxData,
         ]);
+
+        // === SUPREMACIA POLIMORFICA ABSOLUTA ===
+        // Destruimos fisicamente cuelquier preexistencia de video-filter herectico
+        // (que haya logrado filtrarse desde plugins o LCEVC) y lo reemplazamos con la Semilla Polimorfica
+        $output = preg_replace('/#EXTVLCOPT:video-filter=[^\r\n]*/i', '#EXTVLCOPT:' . ape_polymorphic_video_filter($detected_scene), $output);
 
         // === FALLBACK: nunca devolver vacío en modo canal ===
         // Trace pipeline output quality
@@ -6512,7 +6791,7 @@ function rq_handle_request(): void
                 $profile ?? 'P0'
             );
             foreach ($aiDirectives as $dir) {
-                $output = preg_replace('/(#EXTM3U\r?\n)/i', "$1" . addcslashes((str_starts_with($dir, '#') ? $dir : '#'.$dir) . "\n", '\\$'), $output, 1);
+                $output = preg_replace('/(#EXTM3U\r?\n)/i', "$1" . addcslashes((str_starts_with($dir, '#') ? $dir : '#' . $dir) . "\n", '\\$'), $output, 1);
             }
         }
 
@@ -6575,31 +6854,31 @@ function rq_handle_request(): void
             $streamInfo = ['width' => 1920, 'height' => 1080, 'hdr_type' => 'sdr'];
             $visualConfig = VisualSupremacyOrchestrator::process('GLOBAL', $healthMetrics, $streamInfo, 'default');
             foreach ($visualConfig['directives'] as $dir) {
-                $output = preg_replace('/(#EXTM3U\r?\n)/i', "$1" . addcslashes((str_starts_with($dir, '#') ? $dir : '#'.$dir) . "\n", '\\$'), $output, 1);
+                $output = preg_replace('/(#EXTM3U\r?\n)/i', "$1" . addcslashes((str_starts_with($dir, '#') ? $dir : '#' . $dir) . "\n", '\\$'), $output, 1);
             }
         }
     }
 
-        // 🔮 APE INVISIBLE AI ENGINE v4.0.0-OMNISCIENT
-        if (class_exists('ApeInvisibleAiEngine') && isset($output)) {
-            $aiDirectives = ApeInvisibleAiEngine::process(
-                $channelId ?? '',
-                '',
-                'default',
-                $profile ?? 'P0'
-            );
-            foreach ($aiDirectives as $dir) {
-                $output = preg_replace('/(#EXTM3U\r?\n)/i', "$1" . addcslashes((str_starts_with($dir, '#') ? $dir : '#'.$dir) . "\n", '\\$'), $output, 1);
-            }
+    // 🔮 APE INVISIBLE AI ENGINE v4.0.0-OMNISCIENT
+    if (class_exists('ApeInvisibleAiEngine') && isset($output)) {
+        $aiDirectives = ApeInvisibleAiEngine::process(
+            $channelId ?? '',
+            '',
+            'default',
+            $profile ?? 'P0'
+        );
+        foreach ($aiDirectives as $dir) {
+            $output = preg_replace('/(#EXTM3U\r?\n)/i', "$1" . addcslashes((str_starts_with($dir, '#') ? $dir : '#' . $dir) . "\n", '\\$'), $output, 1);
         }
+    }
 
-        $violations = ape_validate_manifest_rfc8216($output);
-        if (!empty($violations)) {
-            foreach ($violations as $v) {
-                rq_log("RFC8216 VIOLATION: {$v}");
-            }
+    $violations = ape_validate_manifest_rfc8216($output);
+    if (!empty($violations)) {
+        foreach ($violations as $v) {
+            rq_log("RFC8216 VIOLATION: {$v}");
         }
-        echo $output;
+    }
+    echo $output;
 }
 
 

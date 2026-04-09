@@ -14,11 +14,11 @@
 // ============================================
 
 $CONFIG = [
-    'upload_dir' => '/mnt/data/iptv-lists/',
+    'upload_dir' => '/var/www/lists/',
     'max_size' => 512 * 1024 * 1024, // 512MB
     'allowed_extensions' => ['m3u8', 'm3u', 'gz'],
     'base_url' => 'https://iptv-ape.duckdns.org',
-    'versions_dir' => '/mnt/data/iptv-lists/versions/',
+    'versions_dir' => '/var/www/lists/versions/',
     'default_filename' => 'APE_ULTIMATE_v9.m3u8',
     'auth_token' => '',
 ];
@@ -65,8 +65,11 @@ function validateAuth($config)
 
 function sanitizeFilename($filename)
 {
-    // Eliminar caracteres peligrosos
-    $filename = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
+    $filename = preg_replace('/[()]/', '', $filename);
+    $filename = preg_replace('/\s+/', '_', $filename);
+    $filename = preg_replace('/[^a-zA-Z0-9._-]/', '', $filename);
+    $filename = preg_replace('/_+/', '_', $filename);
+
     // Asegurar extensión .m3u8 o .m3u8.gz
     if (!preg_match('/\.(m3u8\.gz|m3u8|m3u)$/i', $filename)) {
         $filename .= '.m3u8';
@@ -129,47 +132,47 @@ if (!validateAuth($CONFIG)) {
 }
 
 // ============================================
-// OBTENER CONTENIDO - DUAL MODE
+// OBTENER CONTENIDO - DUAL MODE SIN FILE_GET_CONTENTS
 // ============================================
-// Modo 1: FormData/multipart (browser XHR con FormData)
-// Modo 2: Raw body (curl, fetch con body directo)
-$content = null;
+
 $originalFilename_fromUpload = null;
+$tmpPath = null;
+$isRawBody = false;
 
 if (!empty($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name'])) {
-    // MODO FORMDATA: Browser envía FormData con campo 'file'
-    $content = file_get_contents($_FILES['file']['tmp_name']);
+    // MODO FORMDATA: Browser envía FormData
+    $tmpPath = $_FILES['file']['tmp_name'];
     $originalFilename_fromUpload = $_FILES['file']['name'] ?? null;
 } else {
-    // MODO RAW BODY: curl o fetch con body directo
-    $content = file_get_contents('php://input');
+    // MODO RAW BODY: stream a temp file
+    $tmpPath = sys_get_temp_dir() . '/raw_upload_' . uniqid();
+    $in = fopen('php://input', 'rb');
+    $out = fopen($tmpPath, 'wb');
+    stream_copy_to_stream($in, $out);
+    fclose($in);
+    fclose($out);
+    $isRawBody = true;
 }
 
-if (empty($content)) {
+if (!file_exists($tmpPath) || filesize($tmpPath) === 0) {
     http_response_code(400);
     respond(false, [], 'Empty body. Send M3U8 as FormData field "file" or raw body.');
 }
 
+$fileSize = filesize($tmpPath);
+
 // Validar tamaño
-if (strlen($content) > $CONFIG['max_size']) {
+if ($fileSize > $CONFIG['max_size']) {
+    @unlink($tmpPath);
     http_response_code(413);
     respond(false, [], 'File too large. Max: ' . ($CONFIG['max_size'] / 1024 / 1024) . 'MB');
-}
-
-// Validar que es M3U8 (skip para archivos gzip: primeros bytes son \x1f\x8b)
-$isGzipContent = (strlen($content) >= 2 && ord($content[0]) === 0x1f && ord($content[1]) === 0x8b);
-if (!$isGzipContent && strpos($content, '#EXTM3U') !== 0 && strpos($content, '#EXTINF') === false) {
-    http_response_code(400);
-    respond(false, [], 'Invalid M3U8 content. Must start with #EXTM3U or contain #EXTINF.');
 }
 
 // Obtener parámetros
 $strategy = $_SERVER['HTTP_X_STRATEGY'] ?? 'replace';
 $customFilename = $_SERVER['HTTP_X_CUSTOM_FILENAME'] ?? '';
-// Prioridad: header X-Filename > nombre del archivo FormData > default
 $originalFilename = $_SERVER['HTTP_X_FILENAME'] ?? $originalFilename_fromUpload ?? $CONFIG['default_filename'];
 
-// Determinar nombre de archivo
 if (!empty($customFilename)) {
     $filename = sanitizeFilename($customFilename);
 } else {
@@ -181,65 +184,86 @@ if (!is_dir($CONFIG['versions_dir'])) {
     mkdir($CONFIG['versions_dir'], 0755, true);
 }
 
-$results = [
-    'strategy' => $strategy,
-    'channels' => countChannels($content),
-    'size_bytes' => strlen($content),
-    'size_formatted' => round(strlen($content) / 1024 / 1024, 2) . ' MB',
-];
-
 // ============================================
-// EJECUTAR ESTRATEGIA
+// EJECUTAR ESTRATEGIA CON MOVE_UPLOADED_FILE
 // ============================================
 
 try {
-    switch ($strategy) {
-        case 'replace':
-            // Solo reemplazar archivo principal
-            $mainPath = $CONFIG['upload_dir'] . $filename;
-            file_put_contents($mainPath, $content);
-            chmod($mainPath, 0644);
-
-            $results['main_file'] = $filename;
-            $results['public_url'] = $CONFIG['base_url'] . '/lists/' . $filename;
-            break;
-
-        case 'version':
-            // Solo crear versión con timestamp
-            $versionedFilename = generateVersionedFilename($filename);
-            $versionPath = $CONFIG['versions_dir'] . $versionedFilename;
-            file_put_contents($versionPath, $content);
-            chmod($versionPath, 0644);
-
-            $results['version_file'] = $versionedFilename;
-            $results['version_url'] = $CONFIG['base_url'] . '/versions/' . $versionedFilename;
-            break;
-
-        case 'both':
-            // Reemplazar principal + crear versión
-            $mainPath = $CONFIG['upload_dir'] . $filename;
-            file_put_contents($mainPath, $content);
-            chmod($mainPath, 0644);
-
-            $versionedFilename = generateVersionedFilename($filename);
-            $versionPath = $CONFIG['versions_dir'] . $versionedFilename;
-            file_put_contents($versionPath, $content);
-            chmod($versionPath, 0644);
-
-            // Limpiar versiones antiguas (mantener últimas 10)
-            $cleaned = cleanOldVersions($CONFIG['versions_dir'], 10);
-
-            $results['main_file'] = $filename;
-            $results['public_url'] = $CONFIG['base_url'] . '/lists/' . $filename;
-            $results['version_file'] = $versionedFilename;
-            $results['version_url'] = $CONFIG['base_url'] . '/versions/' . $versionedFilename;
-            $results['versions_cleaned'] = $cleaned;
-            break;
-
-        default:
-            http_response_code(400);
-            respond(false, [], 'Invalid strategy. Use: replace, version, or both.');
+    $mainPath = $CONFIG['upload_dir'] . $filename;
+    
+    // Mover archivo
+    if ($isRawBody) {
+        rename($tmpPath, $mainPath);
+    } else {
+        move_uploaded_file($tmpPath, $mainPath);
     }
+    chmod($mainPath, 0644);
+
+    // Contar canales por streaming (Regla: contar ANTES del placeholder)
+    $channels = 0;
+    $handle = fopen($mainPath, "r");
+    if ($handle) {
+        while (($line = fgets($handle)) !== false) {
+            if (stripos($line, '#EXTINF:') === 0) {
+                $channels++;
+            }
+        }
+        fclose($handle);
+    }
+
+    $results = [
+        'strategy' => $strategy,
+        'channels' => $channels,
+        'size_bytes' => $fileSize,
+        'size_formatted' => round($fileSize / 1024 / 1024, 2) . ' MB',
+    ];
+
+    // GZIP STREAMING
+    $gzipPath = $mainPath . '.gz';
+    $gzipCmd = sprintf('gzip -9 -k -f %s 2>&1', escapeshellarg($mainPath));
+    $gzipOutput = shell_exec($gzipCmd);
+
+    $gzipOk = false;
+    if (file_exists($gzipPath)) {
+        $gzipSize = filesize($gzipPath);
+        $gzipRatio = round((1 - $gzipSize / $fileSize) * 100, 1);
+        $gzipOk = true;
+        chmod($gzipPath, 0644);
+        
+        // REGLA 84: SIEMPRE crear el placeholder DESPUÉS de verificar que el .gz se creó exitosamente
+        file_put_contents($mainPath, "#EXTM3U\n");
+        
+        $results['gzip'] = [
+            'enabled' => true,
+            'compressed_size' => $gzipSize,
+            'compressed_formatted' => round($gzipSize / 1048576, 2) . ' MB',
+            'ratio' => $gzipRatio . '%',
+            'serving_mode' => 'gzip_static_always'
+        ];
+    } else {
+        $results['gzip'] = ['enabled' => false, 'error' => 'Gzip failed: ' . trim($gzipOutput)];
+        error_log('[GZIP-STATIC-UPLOAD] FAILED for: ' . $filename . ' | Output: ' . trim($gzipOutput));
+    }
+
+    if ($strategy === 'both' || $strategy === 'version') {
+        $versionedFilename = generateVersionedFilename($filename);
+        $versionPath = $CONFIG['versions_dir'] . $versionedFilename;
+        copy($gzipOk ? $gzipPath : $mainPath, $versionPath . ($gzipOk ? '.gz' : ''));
+        if ($gzipOk) {
+            // Also copy the placeholder for the version
+            file_put_contents($versionPath, "#EXTM3U\n");
+        }
+        
+        if ($strategy === 'both') {
+            cleanOldVersions($CONFIG['versions_dir'], 10);
+        }
+        $results['version_file'] = $versionedFilename;
+        $results['version_url'] = $CONFIG['base_url'] . '/versions/' . $versionedFilename;
+    }
+
+    $results['main_file'] = $filename;
+    $results['public_url'] = $CONFIG['base_url'] . '/lists/' . $filename;
+    $results['url'] = $results['public_url']; // Compatibilidad con legacy JS
 
     // Éxito
     http_response_code(200);

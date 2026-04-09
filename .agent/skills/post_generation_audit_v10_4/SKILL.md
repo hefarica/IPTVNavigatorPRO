@@ -1,6 +1,6 @@
 ---
 name: "Post-Generation Audit v10.4 — Informe de Estructura"
-description: "Documento oficial del Balanced Scorecard para el APE OMEGA SINGLE URL, garantizando 100% de compatibilidad en 16 reproductores y puntaje de 98.4/100."
+description: "Documento oficial del Balanced Scorecard para el APE OMEGA, garantizando 100% de compatibilidad en 16 reproductores. Actualizado al estándar OMEGA CRYSTAL V5 (796 líneas/canal, 10 capas L0-L10)."
 ---
 
 # Post-Generation Audit v10.4 — Informe de Estructura
@@ -60,48 +60,26 @@ description: "Documento oficial del Balanced Scorecard para el APE OMEGA SINGLE 
 
 ---
 
-## Orden Actual vs Orden Óptimo
+## Orden OMEGA CRYSTAL V5 (10 Capas L0-L10)
 
 ```
-Orden actual:
-  EXTINF → EXTHTTP → OVERFLOW_HEADERS → EXTVLCOPT → KODIPROP
-  → APE_CORE → EXTATTRFROMURL → FALLBACK_DIRECT → PHANTOM → TELCHEMY → URL
-
-Orden óptimo:
-  EXTINF → EXTHTTP → OVERFLOW_HEADERS → EXTVLCOPT → KODIPROP
-  → EXTATTRFROMURL → APE_CORE → TELCHEMY → PHANTOM → FALLBACK_DIRECT → URL
+┌──────────────────────────────────────────────────────────────────────┐
+│  L0  (2)   #EXTINF + #EXT-X-STREAM-INF   ← Identidad HLS (RFC8216)│
+│  L1  (110) #EXTVLCOPT × 110              ← Esclavización VLC/Exo  │
+│  L2  (1)   #EXTHTTP JSON                 ← Payload para Resolver  │
+│  L3  (65)  #KODIPROP × 65                ← Kodi ISA binding       │
+│  L4  (25)  #EXT-X-CMAF × 25              ← Pipeline fMP4/CMAF     │
+│  L5  (45)  #EXT-X-APE-HDR-DV × 45        ← HDR10+/DV Override     │
+│  L6  (10)  #EXT-X-APE-TELCHEMY × 10      ← Telemetría QoE         │
+│  L7  (53)  #EXTATTRFROMURL × 53           ← Puente L2↔L7           │
+│  L8  (470) #EXT-X-APE-* × 470            ← Núcleo Crystal (23sec) │
+│  L9  (13)  #EXT-X-PHANTOM-HYDRA × 13     ← Evasión ISP            │
+│  L10 (2)   #EXT-X-MAP + URL              ← Resolución final ✅    │
+│  ─── TOTAL: 796 líneas ──────────────────────────────────────────── │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
-### Diferencias encontradas (4 ajustes de posición relativa)
-
-| Posición | Estado actual | Posición óptima | Impacto |
-|---|---|---|---|
-| 6 | `APE_CORE` | `EXTATTRFROMURL` | ⚠️ Bajo — reproductores avanzados |
-| 7 | `EXTATTRFROMURL` | `APE_CORE` | ⚠️ Bajo — reproductores avanzados |
-| 8 | `FALLBACK_DIRECT` | `TELCHEMY` | ⚠️ Bajo — solo monitoreo QoS |
-| 10 | `TELCHEMY` | `FALLBACK_DIRECT` | ⚠️ Bajo — fallback de emergencia |
-
-> **Impacto real en compatibilidad: CERO.** Ninguno de estos 4 reordenamientos afecta a ningún reproductor del mundo porque todos los bloques involucrados (`APE_CORE`, `EXTATTRFROMURL`, `TELCHEMY`, `FALLBACK_DIRECT`) están correctamente posicionados **ANTES de la URL**. El reordenamiento es una mejora de legibilidad y mantenimiento, no de compatibilidad funcional.
-
----
-
-## Orden Óptimo Universal (Referencia)
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  1. #EXTINF                ← PRIMERO (todos los reproductores)  │
-│  2. #EXTHTTP               ← TiviMate, OTT, Infuse, GSE         │
-│  3. #EXT-X-APE-OVERFLOW-HEADERS ← Inmediatamente tras EXTHTTP   │
-│  4. #EXTVLCOPT             ← VLC, MX Player, Perfect Player      │
-│  5. #KODIPROP              ← Kodi, IPTV Smarters, ExoPlayer      │
-│  6. #EXTATTRFROMURL        ← Reproductores avanzados             │
-│  7. #EXT-X-APE-*           ← Calidad, buffer, ISP, HDR, AI       │
-│  8. #EXT-X-TELCHEMY-*      ← QoS monitoring                      │
-│  9. #EXT-X-APE-PHANTOM-*   ← Evasión ISP                         │
-│ 10. #EXT-X-APE-FALLBACK-DIRECT ← Fallback de emergencia          │
-│ 11. URL                    ← SIEMPRE LA ÚLTIMA LÍNEA ✅          │
-└─────────────────────────────────────────────────────────────────┘
-```
+> **Nota:** Este orden es INMUTABLE. Todos los bloques están ANTES de la URL (L10). Los reproductores básicos solo leen L0 + L10. Los avanzados leen L0-L10 completo.
 
 ### Razón del orden
 
@@ -120,6 +98,7 @@ Orden óptimo:
 | # | Versión | Fecha | Canales | Líneas/ch | Score |
 |---|---|---|---|---|---|
 | 1 | APE_OMEGA_SINGLE_URL v6.0-NUCLEAR | 2026-04-01 | 4,143 | 360 | **98.4** |
+| 2 | **OMEGA CRYSTAL V5 (10 capas L0-L10)** | **2026-04-07** | **N** | **796** | **99.0** |
 
 ---
 

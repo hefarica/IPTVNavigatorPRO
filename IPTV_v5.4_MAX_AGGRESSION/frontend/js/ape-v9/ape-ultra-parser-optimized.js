@@ -492,32 +492,219 @@ class APEUltraParserOptimized {
     _parseChannelEntry(lines, extinifIndex) {
         const extinf = lines[extinifIndex];
         let url = '';
+        const directives = [];
 
-        // Buscar URL (puede estar varias líneas después)
-        for (let i = extinifIndex + 1; i < Math.min(extinifIndex + 150, lines.length); i++) {
-            if (lines[i].startsWith('http')) {
-                url = lines[i];
+        // ── Lookahead dinámico: hasta 2000 líneas o próximo #EXTINF (lo que ocurra primero) ──
+        // Razón: el generador OMEGA v10 emite ~840 líneas por canal HLS (L0-L10). El límite
+        // anterior de 150 rompía el re-import. 2000 cubre L10 + margen de seguridad.
+        const MAX_LOOKAHEAD = 2000;
+        const hardLimit = Math.min(extinifIndex + MAX_LOOKAHEAD, lines.length);
+
+        for (let i = extinifIndex + 1; i < hardLimit; i++) {
+            const ln = lines[i];
+            if (!ln) continue;
+
+            // Parar si encontramos el siguiente EXTINF sin URL intermedia (canal corrupto)
+            if (ln.startsWith('#EXTINF')) break;
+
+            // URL encontrada — fin de búsqueda, canal completo
+            if (ln.startsWith('http://') || ln.startsWith('https://') || ln.startsWith('rtmp://') || ln.startsWith('rtsp://') || ln.startsWith('udp://') || ln.startsWith('rtp://')) {
+                url = ln;
                 break;
+            }
+
+            // Preservar directiva para análisis / re-emisión fiel
+            if (ln.startsWith('#')) {
+                directives.push(ln);
             }
         }
 
         if (!url) return null;
 
-        // Extraer información
-        const nameMatch = extinf.match(/,(.+)$/);
-        const idMatch = extinf.match(/tvg-id="([^"]+)"/);
-        const logoMatch = extinf.match(/tvg-logo="([^"]+)"/);
-        const groupMatch = extinf.match(/group-title="([^"]+)"/);
+        // ── Extracción completa de atributos EXTINF (no solo 4) ──
+        const nameMatch     = extinf.match(/,(.+)$/);
+        const idMatch       = extinf.match(/tvg-id="([^"]*)"/);
+        const tvgNameMatch  = extinf.match(/tvg-name="([^"]*)"/);
+        const logoMatch     = extinf.match(/tvg-logo="([^"]*)"/);
+        const groupMatch    = extinf.match(/group-title="([^"]*)"/);
+        const tvgShiftMatch = extinf.match(/tvg-shift="([^"]*)"/);
+        const radioMatch    = extinf.match(/radio="([^"]*)"/);
+        const catchupMatch  = extinf.match(/catchup="([^"]*)"/);
+        const catchupDays   = extinf.match(/catchup-days="([^"]*)"/);
+        const catchupSrc    = extinf.match(/catchup-source="([^"]*)"/);
+        const apeProfile    = extinf.match(/ape-profile="([^"]*)"/);
+        const apeBuild      = extinf.match(/ape-build="([^"]*)"/);
+        const apeRegion     = extinf.match(/ape-region="([^"]*)"/);
+        const apeContent    = extinf.match(/ape-content-type="([^"]*)"/);
+        const apeLang       = extinf.match(/ape-lang="([^"]*)"/);
+        const apeCountry    = extinf.match(/ape-country="([^"]*)"/);
+        const apeFps        = extinf.match(/ape-fps="([^"]*)"/);
+        const apeTransport  = extinf.match(/ape-transport="([^"]*)"/);
+        const apeCodecFam   = extinf.match(/ape-codec-family="([^"]*)"/);
+
+        // Parse numérico de stream_id pero conservar string como fallback
+        let streamId = null;
+        if (idMatch) {
+            const parsed = parseInt(idMatch[1], 10);
+            streamId = Number.isFinite(parsed) ? parsed : idMatch[1];
+        }
 
         return {
-            stream_id: idMatch ? parseInt(idMatch[1]) : null,
-            name: nameMatch ? nameMatch[1].trim() : 'Unknown',
-            icon: logoMatch ? logoMatch[1] : '',
-            url: url.trim(),
-            category_id: groupMatch ? this._hashCategory(groupMatch[1]) : null,
+            stream_id:     streamId,
+            name:          nameMatch ? nameMatch[1].trim() : (tvgNameMatch ? tvgNameMatch[1] : 'Unknown'),
+            tvg_name:      tvgNameMatch ? tvgNameMatch[1] : null,
+            icon:          logoMatch ? logoMatch[1] : '',
+            url:           url.trim(),
+            category_id:   groupMatch ? this._hashCategory(groupMatch[1]) : null,
             category_name: groupMatch ? groupMatch[1] : 'Other',
+            tvg_shift:     tvgShiftMatch ? tvgShiftMatch[1] : null,
+            radio:         radioMatch ? radioMatch[1] : null,
+            catchup:       catchupMatch ? catchupMatch[1] : null,
+            catchup_days:  catchupDays ? catchupDays[1] : null,
+            catchup_source:catchupSrc ? catchupSrc[1] : null,
+            ape_meta: {
+                profile:       apeProfile  ? apeProfile[1]  : null,
+                build:         apeBuild    ? apeBuild[1]    : null,
+                region:        apeRegion   ? apeRegion[1]   : null,
+                content_type:  apeContent  ? apeContent[1]  : null,
+                lang:          apeLang     ? apeLang[1]     : null,
+                country:       apeCountry  ? apeCountry[1]  : null,
+                fps:           apeFps      ? apeFps[1]      : null,
+                transport:     apeTransport? apeTransport[1]: null,
+                codec_family:  apeCodecFam ? apeCodecFam[1] : null
+            },
+            directives:      directives,           // Preserva TODAS las directivas OMEGA entre EXTINF y URL
+            directive_count: directives.length,    // Métrica de densidad (L0→L10 debe ser ~840)
             source: 'extinf'
         };
+    }
+
+    /**
+     * ── VALIDATOR PRE-EXPORT — Auditoría de compatibilidad con target player ──
+     * Analiza la lista parseada y reporta si llegará íntegra al player/TV destino.
+     * Targets soportados: 'exoplayer', 'avplayer', 'vlc', 'kodi', 'hlsjs', 'shaka'.
+     */
+    validateForTarget(targetPlayer = 'exoplayer') {
+        const report = {
+            target: targetPlayer,
+            timestamp: new Date().toISOString(),
+            total_channels: this.channels.length,
+            warnings: [],
+            errors: [],
+            directive_stats: {
+                total_directives: 0,
+                avg_per_channel: 0,
+                max_per_channel: 0,
+                min_per_channel: Infinity,
+                will_be_executed: 0,
+                will_be_ignored: 0
+            },
+            compatibility_score: 0
+        };
+
+        // Tags que cada motor SÍ ejecuta (lista no-exhaustiva basada en docs oficiales)
+        const EXECUTABLE_TAGS = {
+            exoplayer: ['#EXTINF', '#EXT-X-STREAM-INF', '#EXT-X-MAP', '#EXT-X-PART-INF', '#EXT-X-SERVER-CONTROL', '#EXT-X-PRELOAD-HINT', '#EXT-X-RENDITION-REPORT', '#KODIPROP', '#EXTVLCOPT:http-user-agent', '#EXTHTTP'],
+            avplayer:  ['#EXTINF', '#EXT-X-STREAM-INF', '#EXT-X-MAP', '#EXT-X-PART-INF', '#EXT-X-SERVER-CONTROL', '#EXT-X-PRELOAD-HINT', '#EXT-X-RENDITION-REPORT'],
+            vlc:       ['#EXTINF', '#EXT-X-STREAM-INF', '#EXT-X-MAP', '#EXTVLCOPT', '#EXTHTTP'],
+            kodi:      ['#EXTINF', '#EXT-X-STREAM-INF', '#EXT-X-MAP', '#KODIPROP'],
+            hlsjs:     ['#EXTINF', '#EXT-X-STREAM-INF', '#EXT-X-MAP', '#EXT-X-PART-INF', '#EXT-X-SERVER-CONTROL'],
+            shaka:     ['#EXTINF', '#EXT-X-STREAM-INF', '#EXT-X-MAP', '#EXT-X-PART-INF']
+        };
+
+        const targetTags = EXECUTABLE_TAGS[targetPlayer] || EXECUTABLE_TAGS.exoplayer;
+
+        let totalDirs = 0;
+        let executed = 0;
+        let ignored = 0;
+
+        for (const ch of this.channels) {
+            const dirs = ch.directives || [];
+            totalDirs += dirs.length;
+
+            if (dirs.length > report.directive_stats.max_per_channel) report.directive_stats.max_per_channel = dirs.length;
+            if (dirs.length < report.directive_stats.min_per_channel) report.directive_stats.min_per_channel = dirs.length;
+
+            for (const d of dirs) {
+                const matches = targetTags.some(t => d.startsWith(t));
+                if (matches) executed++; else ignored++;
+            }
+
+            // Validaciones específicas por target
+            if (targetPlayer === 'avplayer') {
+                if (dirs.filter(d => d.startsWith('#EXT-X-PART-INF')).length > 1) {
+                    report.warnings.push(`Canal "${ch.name}": duplicación #EXT-X-PART-INF (Apple AVPlayer es strict)`);
+                }
+                if (dirs.filter(d => d.startsWith('#EXT-X-SERVER-CONTROL')).length > 1) {
+                    report.warnings.push(`Canal "${ch.name}": duplicación #EXT-X-SERVER-CONTROL (Apple AVPlayer es strict)`);
+                }
+            }
+
+            if (!ch.url) report.errors.push(`Canal "${ch.name}": URL ausente`);
+            if (!dirs.find(d => d.startsWith('#EXT-X-STREAM-INF'))) {
+                if (targetPlayer === 'exoplayer' || targetPlayer === 'avplayer') {
+                    report.warnings.push(`Canal "${ch.name}": sin #EXT-X-STREAM-INF (CODECS hint ausente)`);
+                }
+            }
+        }
+
+        report.directive_stats.total_directives = totalDirs;
+        report.directive_stats.avg_per_channel  = this.channels.length > 0 ? Math.round(totalDirs / this.channels.length) : 0;
+        report.directive_stats.will_be_executed = executed;
+        report.directive_stats.will_be_ignored  = ignored;
+
+        if (report.directive_stats.min_per_channel === Infinity) report.directive_stats.min_per_channel = 0;
+
+        // Score de compatibilidad: % de directivas que el target player ejecutará
+        report.compatibility_score = totalDirs > 0 ? Math.round((executed / totalDirs) * 100) : 0;
+
+        console.log(`✅ Validator [${targetPlayer}]: ${report.compatibility_score}% compatible | ${executed}/${totalDirs} directivas ejecutables | ${report.warnings.length} warnings | ${report.errors.length} errors`);
+
+        return report;
+    }
+
+    /**
+     * ── SELF-TEST — Roundtrip integrity check ──
+     * Verifica que el parser puede re-leer las listas densas generadas por el propio proyecto.
+     * Útil antes de exportar al TV para confirmar que no hay pérdida de directivas.
+     */
+    selfTest(sampleM3U8Content) {
+        const result = {
+            success: false,
+            channels_parsed: 0,
+            directives_preserved: 0,
+            avg_density: 0,
+            issues: []
+        };
+
+        try {
+            const parsed = this.parse(sampleM3U8Content);
+            result.channels_parsed = parsed.channels.length;
+
+            let totalDirs = 0;
+            let minDensity = Infinity;
+            let maxDensity = 0;
+
+            for (const ch of parsed.channels) {
+                const d = (ch.directives || []).length;
+                totalDirs += d;
+                if (d < minDensity) minDensity = d;
+                if (d > maxDensity) maxDensity = d;
+                if (d < 10 && ch.source === 'extinf') {
+                    result.issues.push(`Canal "${ch.name}": densidad baja (${d} directivas) — posible truncamiento`);
+                }
+            }
+
+            result.directives_preserved = totalDirs;
+            result.avg_density = parsed.channels.length > 0 ? Math.round(totalDirs / parsed.channels.length) : 0;
+            result.success = result.channels_parsed > 0 && result.issues.length === 0;
+
+            console.log(`🧪 SelfTest: ${result.channels_parsed} canales, ${result.avg_density} directivas/canal (min ${minDensity}, max ${maxDensity}), ${result.issues.length} issues`);
+        } catch (e) {
+            result.issues.push(`Excepción: ${e.message}`);
+        }
+
+        return result;
     }
 
     _deduplicateChannels(channels) {
